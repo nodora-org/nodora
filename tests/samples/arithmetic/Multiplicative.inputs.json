@@ -1,0 +1,26 @@
+[
+  {
+    "input": {
+      "a": 2,
+      "b": 4
+    },
+    "expected": {
+      "outputs": {
+        "mul": 8,
+        "div": 0.5
+      }
+    }
+  },
+  {
+    "input": {
+      "a": 4,
+      "b": 2
+    },
+    "expected": {
+      "outputs": {
+        "mul": 8,
+        "div": 2
+      }
+    }
+  }
+]

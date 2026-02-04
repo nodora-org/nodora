@@ -1,0 +1,8 @@
+rule RelationalRule {
+    a = input.a
+    b = input.b
+    out gt = a > b
+    out lt = a < b
+    out gte = a >= b
+    out lte = a <= b
+}

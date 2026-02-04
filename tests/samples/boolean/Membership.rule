@@ -1,0 +1,6 @@
+rule MembershipRule {
+    a = input.a
+    b = input.b
+    out c = a in b
+    out d = c in [a, b, input.c]
+}

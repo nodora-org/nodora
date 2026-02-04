@@ -1,0 +1,6 @@
+rule ReassignmentRule {
+    a = input.a
+    b = a
+    c = b
+    out d = c
+}

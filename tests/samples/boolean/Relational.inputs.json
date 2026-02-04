@@ -1,0 +1,44 @@
+[
+  {
+    "input": {
+      "a": 1,
+      "b": 2
+    },
+    "expected": {
+      "outputs": {
+        "gt": false,
+        "lt": true,
+        "gte": false,
+        "lte": true
+      }
+    }
+  },
+  {
+    "input": {
+      "a": 2,
+      "b": 1
+    },
+    "expected": {
+      "outputs": {
+        "gt": true,
+        "lt": false,
+        "gte": true,
+        "lte": false
+      }
+    }
+  },
+  {
+    "input": {
+      "a": 2,
+      "b": 2
+    },
+    "expected": {
+      "outputs": {
+        "gt": false,
+        "lt": false,
+        "gte": true,
+        "lte": true
+      }
+    }
+  }
+]

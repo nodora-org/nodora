@@ -1,0 +1,13 @@
+signal BlockAccount(user_id)
+signal SendVerificationEmail(user_id)
+
+rule AccountApproval {
+    is_adult = input.age >= 18
+    allowed_country = input.country == "us" || input.country == "ca"
+    eligible = is_adult && allowed_country
+
+    emit SendVerificationEmail(input.user_id) when eligible && !input.email_verified
+    emit BlockAccount(input.user_id) when !eligible
+
+    out approved = eligible && input.email_verified
+}

@@ -1,0 +1,5 @@
+rule ConditionalRule {
+    a = input.a
+    b = input.b
+    out c = if a < b then input.c else input.d
+}

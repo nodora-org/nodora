@@ -1,0 +1,6 @@
+rule UnaryRule {
+    a = input.a
+    b = input.b
+    out c = !a
+    out d = -b
+}

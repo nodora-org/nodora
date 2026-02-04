@@ -1,0 +1,7 @@
+rule AdditiveRule {
+    a = input.a
+    b = input.b
+    out add = a + b
+    out sub = a - b
+    out mod = a % b
+}

@@ -1,0 +1,6 @@
+rule LogicalRule {
+    a = input.a
+    b = input.b
+    out and = a && b
+    out or = a || b
+}

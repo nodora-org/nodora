@@ -1,0 +1,50 @@
+[
+  {
+    "input": {
+      "a": false,
+      "b": false
+    },
+    "expected": {
+      "outputs": {
+        "and": false,
+        "or": false
+      }
+    }
+  },
+  {
+    "input": {
+      "a": true,
+      "b": false
+    },
+    "expected": {
+      "outputs": {
+        "and": false,
+        "or": true
+      }
+    }
+  },
+  {
+    "input": {
+      "a": false,
+      "b": true
+    },
+    "expected": {
+      "outputs": {
+        "and": false,
+        "or": true
+      }
+    }
+  },
+  {
+    "input": {
+      "a": true,
+      "b": true
+    },
+    "expected": {
+      "outputs": {
+        "and": true,
+        "or": true
+      }
+    }
+  }
+]

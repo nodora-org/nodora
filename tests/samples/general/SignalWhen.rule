@@ -1,0 +1,6 @@
+signal SimpleSignal(id, msg)
+
+rule SignalWhenRule {
+    id = input.id
+    emit SimpleSignal(id, "id lt 100") when id < 100
+}

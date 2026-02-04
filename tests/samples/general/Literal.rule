@@ -1,0 +1,9 @@
+rule LiteralRule {
+    out a = input.a
+    out b = 2
+    out c = "hello"
+    out d = true
+    out e = false
+    out f = [1, 2, 3]
+    out g = (a)
+}

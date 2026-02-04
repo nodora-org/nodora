@@ -1,0 +1,3 @@
+rule ExampleRule {
+    out is_adult = input.age >= 18
+}

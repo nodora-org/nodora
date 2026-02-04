@@ -1,0 +1,14 @@
+signal FlagForReview(user_id)
+signal FreezeAccount(user_id)
+
+rule RiskAssessment {
+    high_risk = input.risk_score >= 80
+    excessive_failures = input.failed_logins_24h >= 5
+
+    severe_risk = high_risk && excessive_failures
+
+    emit FlagForReview(input.user_id) when high_risk
+    emit FreezeAccount(input.user_id) when severe_risk
+
+    out allow_actions = !severe_risk
+}

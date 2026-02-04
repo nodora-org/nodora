@@ -1,0 +1,6 @@
+signal SimpleSignal(id)
+
+rule SignalRule {
+    id = input.id
+    emit SimpleSignal(id)
+}

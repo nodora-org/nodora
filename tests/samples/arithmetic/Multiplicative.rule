@@ -1,0 +1,6 @@
+rule MultiplicativeRule {
+    a = input.a
+    b = input.b
+    out mul = a * b
+    out div = a / b
+}

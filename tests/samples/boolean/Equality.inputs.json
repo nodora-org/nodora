@@ -1,0 +1,26 @@
+[
+  {
+    "input": {
+      "a": 1,
+      "b": 2
+    },
+    "expected": {
+      "outputs": {
+        "eq": false,
+        "neq": true
+      }
+    }
+  },
+  {
+    "input": {
+      "a": 2,
+      "b": 2
+    },
+    "expected": {
+      "outputs": {
+        "eq": true,
+        "neq": false
+      }
+    }
+  }
+]

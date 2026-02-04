@@ -1,0 +1,14 @@
+signal RequireKYC(user_id)
+signal ReportToCompliance(user_id)
+
+rule ComplianceCheck {
+    high_risk_country = input.country in input.restricted_countries
+    high_volume = input.annual_volume > 100000
+
+    kyc_required = high_risk_country || high_volume
+
+    emit RequireKYC(input.user_id) when kyc_required && !input.kyc_completed
+    emit ReportToCompliance(input.user_id) when high_risk_country && high_volume
+
+    out compliant = !kyc_required || input.kyc_completed
+}

@@ -1,0 +1,41 @@
+[
+  {
+    "input": {
+      "a": 2,
+      "b": 3
+    },
+    "expected": {
+      "outputs": {
+        "add": 5,
+        "sub": -1,
+        "mod": 2
+      }
+    }
+  },
+  {
+    "input": {
+      "a": 3,
+      "b": 2
+    },
+    "expected": {
+      "outputs": {
+        "add": 5,
+        "sub": 1,
+        "mod": 1
+      }
+    }
+  },
+  {
+    "input": {
+      "a": 3.2,
+      "b": 2
+    },
+    "expected": {
+      "outputs": {
+        "add": 5.2,
+        "sub": 1.2,
+        "mod": 1
+      }
+    }
+  }
+]

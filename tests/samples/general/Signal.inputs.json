@@ -1,0 +1,11 @@
+[
+  {
+    "input": {
+      "id": 123
+    },
+    "expected": {
+      "outputs": {},
+      "emitted_signals": [{ "name": "SimpleSignal", "args": [123] }]
+    }
+  }
+]

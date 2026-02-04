@@ -1,0 +1,6 @@
+rule EqualityRule {
+    a = input.a
+    b = input.b
+    out eq = a == b
+    out neq = a != b
+}

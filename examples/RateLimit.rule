@@ -1,0 +1,13 @@
+signal BlockUser(user_id)
+signal NotifyUser(user_id, message)
+
+rule RateLimitCheck {
+    limit = if input.plan == "free" then 100 else 1000
+
+    exceeded = input.requests_last_hour > limit
+
+    emit BlockUser(input.user_id) when exceeded
+    emit NotifyUser(input.user_id, "You exceeded your hourly quota") when exceeded
+
+    out allowed = !exceeded
+}

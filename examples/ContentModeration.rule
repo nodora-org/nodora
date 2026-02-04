@@ -1,0 +1,17 @@
+signal RemoveContent(content_id)
+signal NotifyModerator(content_id)
+
+rule ContentModeration {
+    cid = input.content_id
+    toxic = input.toxicity_score > 1
+    spam = input.spam_score > 1
+    trusted_user = input.user_reputation >= 80
+
+    violation = toxic || spam
+    auto_removable = violation && !trusted_user
+
+    emit RemoveContent(cid) when auto_removable
+    emit NotifyModerator(cid) when violation && trusted_user
+
+    out allowed = !violation
+}
