@@ -65,29 +65,34 @@ func (sc *SemanticAnalyzer) isReservedNamespace(name string) bool {
 	return name == "input"
 }
 
-func (sc *SemanticAnalyzer) declareSymbol(name, typ, kind string, value any) error {
+func (sc *SemanticAnalyzer) declareSymbol(name, typ, kind string, value any, span ast.Span) error {
 	if sc.isReservedNamespace(name) {
 		return fmt.Errorf("symbol '%s' is a reserved namespace", name)
 	}
 	scope := sc.currentScope()
 	if _, exists := scope.symbols[name]; exists {
-		return fmt.Errorf("symbol '%s' already declared in this scope", name)
+		return errorAt(span, "symbol '%s' already declared in this scope", name)
 	}
 	scope.symbols[name] = &Symbol{Name: name, Type: typ, Kind: kind, Value: value}
 	return nil
 }
 
-func (sc *SemanticAnalyzer) lookupSymbol(name string) (*Symbol, error) {
+func (sc *SemanticAnalyzer) lookupSymbol(name string, span ast.Span) (*Symbol, error) {
 	for i := len(sc.scopes) - 1; i >= 0; i-- {
 		if sym, exists := sc.scopes[i].symbols[name]; exists {
 			return sym, nil
 		}
 	}
-	return nil, fmt.Errorf("undefined symbol '%s'", name)
+	return nil, errorAt(span, "undefined symbol '%s'", name)
 }
 
 func (sc *SemanticAnalyzer) addError(err error) {
 	sc.errors = append(sc.errors, err)
+}
+
+func errorAt(span ast.WithSpan, format string, args ...interface{}) error {
+	pos := span.GetSpan().Start.String()
+	return fmt.Errorf("%s: %s", pos, fmt.Sprintf(format, args...))
 }
 
 func (sc *SemanticAnalyzer) inferType(expr ast.Expr) string {
@@ -99,7 +104,7 @@ func (sc *SemanticAnalyzer) inferType(expr ast.Expr) string {
 	case *ast.BoolLiteral:
 		return "bool"
 	case *ast.Identifier:
-		if sym, err := sc.lookupSymbol(e.Name); err == nil {
+		if sym, err := sc.lookupSymbol(e.Name, expr.GetSpan()); err == nil {
 			return sym.Type
 		}
 		return "unknown" // symbol not found
@@ -166,7 +171,7 @@ func (sc *SemanticAnalyzer) VisitProgram(p *ast.Program) error {
 }
 
 func (sc *SemanticAnalyzer) VisitSignal(s *ast.Signal) error {
-	if err := sc.declareSymbol(s.Name, "", "signal", s); err != nil {
+	if err := sc.declareSymbol(s.Name, "", "signal", s, s.Span); err != nil {
 		return err
 	}
 	return nil
@@ -191,7 +196,7 @@ func (sc *SemanticAnalyzer) VisitAssignment(a *ast.Assignment) error {
 	}
 
 	a.Annotate(sc.inferType(a.Expr))
-	if err := sc.declareSymbol(a.Name, a.Type, "var", nil); err != nil {
+	if err := sc.declareSymbol(a.Name, a.Type, "var", nil, a.Span); err != nil {
 		return err
 	}
 
@@ -211,27 +216,27 @@ func (sc *SemanticAnalyzer) VisitEmitStatement(es *ast.EmitStatement) error {
 		}
 	}
 
-	signalSym, err := sc.lookupSymbol(es.Signal)
+	signalSym, err := sc.lookupSymbol(es.Signal, es.GetSpan())
 	if err != nil {
-		sc.addError(fmt.Errorf("undefined signal '%s'", es.Signal))
+		sc.addError(errorAt(es.Span, "undefined signal '%s'", es.Signal))
 		return nil
 	}
 
 	if signalSym.Kind != "signal" {
-		sc.addError(fmt.Errorf("'%s' is not a signal", es.Signal))
+		sc.addError(errorAt(es.Span, "'%s' is not a signal", es.Signal))
 		return nil
 	}
 
 	signal := signalSym.Value.(*ast.Signal)
 	if len(es.Args) != len(signal.Params) {
-		sc.addError(fmt.Errorf("signal '%s' expects %d arguments, got %d", es.Signal, len(signal.Params), len(es.Args)))
+		sc.addError(errorAt(es.Span, "signal '%s' expects %d arguments, got %d", es.Signal, len(signal.Params), len(es.Args)))
 		return nil
 	}
 
 	for _, arg := range es.Args {
 		if ident, ok := arg.(*ast.Identifier); ok {
-			if _, err := sc.lookupSymbol(ident.Name); err != nil {
-				sc.addError(fmt.Errorf("undefined symbol '%s' in signal emit argument", ident.Name))
+			if _, err := sc.lookupSymbol(ident.Name, ident.Span); err != nil {
+				sc.addError(err)
 			}
 		}
 	}
@@ -257,12 +262,12 @@ func (sc *SemanticAnalyzer) VisitBinaryExpr(be *ast.BinaryExpr) error {
 		lok := sc.requireType(leftType, "number")
 		rok := sc.requireType(rightType, "number")
 		if !(lok && rok) {
-			return fmt.Errorf("operator '%s' cannot be applied to %s and %s", be.Op, leftType, rightType)
+			return errorAt(be, "operator '%s' cannot be applied to %s and %s", be.Op, leftType, rightType)
 		}
 		be.Annotate("number")
 	case "==", "!=":
 		if leftType != rightType && leftType != "unknown" && rightType != "unknown" {
-			sc.addError(fmt.Errorf("cannot compare %s with %s using '%s'", leftType, rightType, be.Op))
+			sc.addError(errorAt(be, "cannot compare %s with %s using '%s'", leftType, rightType, be.Op))
 		}
 		be.Annotate("bool")
 	case "<", "<=", ">", ">=":
@@ -270,7 +275,7 @@ func (sc *SemanticAnalyzer) VisitBinaryExpr(be *ast.BinaryExpr) error {
 		lok := sc.requireType(leftType, "number")
 		rok := sc.requireType(rightType, "number")
 		if !(lok && rok) {
-			return fmt.Errorf("operator '%s' cannot be applied to %s and %s", be.Op, leftType, rightType)
+			return errorAt(be, "operator '%s' cannot be applied to %s and %s", be.Op, leftType, rightType)
 		}
 		be.Annotate("bool")
 	case "&&", "||":
@@ -278,17 +283,17 @@ func (sc *SemanticAnalyzer) VisitBinaryExpr(be *ast.BinaryExpr) error {
 		lok := sc.requireType(leftType, "bool")
 		rok := sc.requireType(rightType, "bool")
 		if !(lok && rok) {
-			return fmt.Errorf("operator '%s' cannot be applied to %s and %s", be.Op, leftType, rightType)
+			return errorAt(be, "operator '%s' cannot be applied to %s and %s", be.Op, leftType, rightType)
 		}
 		be.Annotate("bool")
 	case "in":
 		// right operand should be an array
 		if !sc.requireType(rightType, "array") {
-			return fmt.Errorf("operator '%s' cannot be applied to type %s", be.Op, rightType)
+			return errorAt(be, "operator '%s' cannot be applied to type %s", be.Op, rightType)
 		}
 		be.Annotate("bool")
 	default:
-		sc.addError(fmt.Errorf("unknown binary operator '%s'", be.Op))
+		sc.addError(errorAt(be, "unknown binary operator '%s'", be.Op))
 	}
 
 	return nil
@@ -304,23 +309,23 @@ func (sc *SemanticAnalyzer) VisitUnaryExpr(ue *ast.UnaryExpr) error {
 	case "!":
 		// logical NOT requires boolean operand
 		if ty != "bool" && ty != "unknown" {
-			sc.addError(fmt.Errorf("operand of '!' must be a boolean, got %s", ty))
+			sc.addError(errorAt(ue, "operand of '!' must be a boolean, got %s", ty))
 		}
 		ue.Annotate("bool")
 	case "-":
 		if ty != "number" && ty != "unknown" {
-			sc.addError(fmt.Errorf("operand of '-' must be a number, got %s", ty))
+			sc.addError(errorAt(ue, "operand of '-' must be a number, got %s", ty))
 		}
 		ue.Annotate("number")
 	default:
-		sc.addError(fmt.Errorf("unknown unary operator '%s'", ue.Op))
+		sc.addError(errorAt(ue, "unknown unary operator '%s'", ue.Op))
 	}
 
 	return nil
 }
 
 func (sc *SemanticAnalyzer) VisitIdentifier(id *ast.Identifier) error {
-	if _, err := sc.lookupSymbol(id.Name); err != nil {
+	if _, err := sc.lookupSymbol(id.Name, id.Span); err != nil {
 		return err
 	}
 	return nil
@@ -361,7 +366,7 @@ func (sc *SemanticAnalyzer) VisitConditionalExpr(ce *ast.ConditionalExpr) error 
 	}
 	condType := sc.inferType(ce.Cond)
 	if condType != "bool" {
-		sc.addError(fmt.Errorf("condition in conditional expression must be boolean, got %s", condType))
+		sc.addError(errorAt(ce, "condition in conditional expression must be boolean, got %s", condType))
 	}
 
 	if err := ce.Then.(ast.Node).Accept(sc); err != nil {
@@ -375,7 +380,7 @@ func (sc *SemanticAnalyzer) VisitConditionalExpr(ce *ast.ConditionalExpr) error 
 	elseType := sc.inferType(ce.Else)
 
 	if thenType != elseType {
-		sc.addError(fmt.Errorf("then and else branches of conditional expression must have compatible types, got %s and %s", thenType, elseType))
+		sc.addError(errorAt(ce, "then and else branches of conditional expression must have compatible types, got %s and %s", thenType, elseType))
 	}
 
 	ce.Annotate(thenType)
@@ -385,13 +390,13 @@ func (sc *SemanticAnalyzer) VisitConditionalExpr(ce *ast.ConditionalExpr) error 
 func (sc *SemanticAnalyzer) VisitSelectorExpr(se *ast.SelectorExpr) error {
 	switch e := se.Expr.(type) {
 	case *ast.Identifier:
-		sym, err := sc.lookupSymbol(e.Name)
+		sym, err := sc.lookupSymbol(e.Name, se.GetSpan())
 		if err != nil {
 			return err
 		}
 		baseType := sc.inferType(se.Expr)
 		if sym.Type != "object" && sym.Type != "unknown" {
-			return fmt.Errorf("cannot access property '%s' on type %s (%s)", se.Field, baseType, e.Name)
+			return errorAt(se, "cannot access property '%s' on type %s (%s)", se.Field, baseType, e.Name)
 		}
 	case *ast.IndexExpr:
 		if err := se.Expr.(ast.Node).Accept(sc); err != nil {
@@ -402,7 +407,7 @@ func (sc *SemanticAnalyzer) VisitSelectorExpr(se *ast.SelectorExpr) error {
 			return err
 		}
 	default:
-		return fmt.Errorf("cannot access property '%s' on type %s", se.Field, sc.inferType(se.Expr))
+		return errorAt(se, "cannot access property '%s' on type %s", se.Field, sc.inferType(se.Expr))
 	}
 	return nil
 }
@@ -417,12 +422,12 @@ func (sc *SemanticAnalyzer) VisitIndexExpr(ie *ast.IndexExpr) error {
 
 	baseType := sc.inferType(ie.Expr)
 	if baseType != "array" && baseType != "unknown" {
-		return fmt.Errorf("cannot index on base type %s", baseType)
+		return errorAt(ie, "cannot index on base type %s", baseType)
 	}
 
 	indexType := sc.inferType(ie.Index)
 	if indexType != "number" && indexType != "unknown" {
-		return fmt.Errorf("cannot index with type %s", indexType)
+		return errorAt(ie, "cannot index with type %s", indexType)
 	}
 
 	return nil
