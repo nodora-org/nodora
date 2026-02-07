@@ -1,0 +1,4 @@
+rule DynamicIndexRule {
+    idx = input.idx
+    out el = input.data[idx]
+}

@@ -44,7 +44,7 @@ func Eval(ctx context.Context, cmd *cli.Command) error {
 		return err
 	}
 
-	var input map[string]any
+	var input nir.ValueMap
 
 	inputFile := cmd.String("input-file")
 	if inputFile != "" {

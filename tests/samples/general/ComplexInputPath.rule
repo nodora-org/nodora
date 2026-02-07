@@ -1,0 +1,3 @@
+rule ComplexInputPathRule {
+    out val = input.a[input.i].b[1].c
+}

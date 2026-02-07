@@ -44,8 +44,31 @@ func (f SignalListenerFunc) Invoke(args []Value) error {
 	return f(args)
 }
 
+type ValueMap map[string]Value
+
+func NewValueMap(raw map[string]any) ValueMap {
+	result := make(map[string]Value, len(raw))
+	for k, v := range raw {
+		result[k] = normalizeValue(v)
+	}
+	return result
+}
+
+func (n *ValueMap) UnmarshalJSON(data []byte) error {
+	var raw map[string]any
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+
+	*n = make(map[string]Value, len(raw))
+	for k, v := range raw {
+		(*n)[k] = normalizeValue(v)
+	}
+	return nil
+}
+
 type EvaluationContext struct {
-	Input     map[string]any
+	Input     ValueMap
 	Slots     []Value
 	Emissions []EmittedSignal
 	Listeners map[string][]SignalListener
@@ -94,25 +117,100 @@ func (s *SymExpr) Evaluate(ctx *EvaluationContext) (Value, error) {
 	return ctx.Slots[s.Index], nil
 }
 
+type IdxExpr struct {
+	Value []RawExpr `json:"idx"`
+}
+
+func (i *IdxExpr) Evaluate(ctx *EvaluationContext) (Value, error) {
+	if len(i.Value) != 2 {
+		return nil, fmt.Errorf("index expression requires 2 arguments, got %d", len(i.Value))
+	}
+	arr, err := i.Value[0].Expr.Evaluate(ctx)
+	if err != nil {
+		return nil, err
+	}
+	a, ok := arr.([]Value)
+	if !ok {
+		return nil, fmt.Errorf("cannot index into non-array type %T", arr)
+	}
+
+	index, err := i.Value[1].Expr.Evaluate(ctx)
+	if err != nil {
+		return nil, err
+	}
+	idx, ok := toInt(index)
+	if !ok {
+		return nil, fmt.Errorf("index must be int, got %T", index)
+	}
+
+	if idx < 0 || idx >= len(a) {
+		return nil, fmt.Errorf("index %d out of bounds for array of length %d", idx, len(a))
+	}
+
+	return a[idx], nil
+}
+
 type InputExpr struct {
-	Value string `json:"input"`
+	Path  string    `json:"path"`
+	Exprs []RawExpr `json:"$"`
 }
 
 func (s *InputExpr) Evaluate(ctx *EvaluationContext) (Value, error) {
-	keys := strings.Split(s.Value, ".")
-	current := any(ctx.Input)
+	keys := strings.Split(s.Path, ".")
+	current := Value(ctx.Input)
+	exprIdx := 0
+
 	for _, key := range keys {
-		m, ok := current.(map[string]any)
-		if !ok {
-			return nil, fmt.Errorf("cannot access field '%s': parent is not an object", key)
+		var err error
+		if key == "$" {
+			current, err = s.evaluateArrayIndex(ctx, current, exprIdx)
+			exprIdx++
+		} else {
+			current, err = s.evaluateFieldAccess(current, key)
 		}
-		val, exists := m[key]
-		if !exists {
-			return nil, fmt.Errorf("field '%s' does not exist in path '%s'", key, s.Value)
+		if err != nil {
+			return nil, err
 		}
-		current = val
 	}
+
 	return current, nil
+}
+
+func (s *InputExpr) evaluateArrayIndex(ctx *EvaluationContext, current Value, exprIdx int) (Value, error) {
+	arr, ok := current.([]Value)
+	if !ok {
+		return nil, fmt.Errorf("cannot index into %T (expected array)", current)
+	}
+
+	indexVal, err := s.Exprs[exprIdx].Evaluate(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	idx, ok := toInt(indexVal)
+	if !ok {
+		return nil, fmt.Errorf("array index must be int, got %T", indexVal)
+	}
+
+	if idx < 0 || idx >= len(arr) {
+		return nil, fmt.Errorf("index %d out of bounds (length %d)", idx, len(arr))
+	}
+
+	return arr[idx], nil
+}
+
+func (s *InputExpr) evaluateFieldAccess(current Value, key string) (Value, error) {
+	m, ok := current.(ValueMap)
+	if !ok {
+		return nil, fmt.Errorf("cannot access field '%s': parent is not an object", key)
+	}
+
+	val, exists := m[key]
+	if !exists {
+		return nil, fmt.Errorf("field '%s' does not exist", key)
+	}
+
+	return val, nil
 }
 
 type SignalExpr struct {
@@ -188,45 +286,28 @@ type Op struct {
 func (o *Op) Execute(ctx *EvaluationContext) error {
 	switch o.Kind {
 	case OpCopy:
-		if len(o.Args) != 1 {
-			return fmt.Errorf("invalid operation arguments for '%s'", o.Kind)
+		if err := validateOp(o, ctx, 1); err != nil {
+			return err
 		}
-		if o.Out == nil {
-			return fmt.Errorf("output index required for '%s'", o.Kind)
+		val, err := o.Args[0].Expr.Evaluate(ctx)
+		if err != nil {
+			return err
 		}
-		ctx.Slots[*o.Out], _ = o.Args[0].Expr.Evaluate(ctx)
+		ctx.Slots[*o.Out] = val
 		return nil
 	case OpAdd, OpSub, OpMul, OpDiv, OpMod, OpIn, OpAnd, OpOr, OpLt, OpGt, OpLte, OpGte, OpEq, OpNeq:
-		if len(o.Args) != 2 {
-			return fmt.Errorf("invalid operation arguments for '%s'", o.Kind)
-		}
-		if o.Out == nil {
-			return fmt.Errorf("output index required for '%s'", o.Kind)
-		}
-		if *o.Out < 0 || *o.Out >= len(ctx.Slots) {
-			return fmt.Errorf("output index %d is out of bounds", *o.Out)
+		if err := validateOp(o, ctx, 2); err != nil {
+			return err
 		}
 		return executeBinaryOp(o, ctx)
 	case OpNot:
-		if len(o.Args) != 1 {
-			return fmt.Errorf("invalid operation arguments for '%s'", o.Kind)
-		}
-		if o.Out == nil {
-			return fmt.Errorf("output index required for '%s'", o.Kind)
-		}
-		if *o.Out < 0 || *o.Out >= len(ctx.Slots) {
-			return fmt.Errorf("output index %d is out of bounds", *o.Out)
+		if err := validateOp(o, ctx, 1); err != nil {
+			return err
 		}
 		return executeUnaryOp(o, ctx)
 	case OpSelect:
-		if len(o.Args) != 3 {
-			return fmt.Errorf("invalid operation arguments for '%s', expected 3 args (condition, true_val, false_val)", o.Kind)
-		}
-		if o.Out == nil {
-			return fmt.Errorf("output index required for '%s'", o.Kind)
-		}
-		if *o.Out < 0 || *o.Out >= len(ctx.Slots) {
-			return fmt.Errorf("output index %d is out of bounds", *o.Out)
+		if err := validateOp(o, ctx, 3); err != nil {
+			return err
 		}
 		condVal, err := o.Args[0].Evaluate(ctx)
 		if err != nil {
@@ -236,15 +317,19 @@ func (o *Op) Execute(ctx *EvaluationContext) error {
 		if !ok {
 			return fmt.Errorf("select condition must be boolean, got %T", condVal)
 		}
-		if condBool {
-			ctx.Slots[*o.Out], _ = o.Args[1].Evaluate(ctx)
-		} else {
-			ctx.Slots[*o.Out], _ = o.Args[2].Evaluate(ctx)
+		idx := 1
+		if !condBool {
+			idx = 2
 		}
+		val, err := o.Args[idx].Evaluate(ctx)
+		if err != nil {
+			return err
+		}
+		ctx.Slots[*o.Out] = val
 		return nil
 	case OpEmit:
-		if len(o.Args) != 1 {
-			return fmt.Errorf("invalid operation arguments for '%s'", o.Kind)
+		if err := validateArgs(o, 1); err != nil {
+			return err
 		}
 		val, err := o.Args[0].Evaluate(ctx)
 		if err != nil {
@@ -255,7 +340,7 @@ func (o *Op) Execute(ctx *EvaluationContext) error {
 		}
 		return nil
 	}
-	return fmt.Errorf("unsupported operation: %s", o.Kind)
+	return fmt.Errorf("unknown operation '%s'", o.Kind)
 }
 
 func executeUnaryOp(op *Op, ctx *EvaluationContext) error {
@@ -408,7 +493,13 @@ func (w *RawExpr) UnmarshalJSON(data []byte) error {
 			return err
 		}
 		w.Expr = &e
-	case probe["input"] != nil:
+	case probe["idx"] != nil:
+		var e IdxExpr
+		if err := json.Unmarshal(data, &e); err != nil {
+			return err
+		}
+		w.Expr = &e
+	case probe["path"] != nil:
 		var e InputExpr
 		if err := json.Unmarshal(data, &e); err != nil {
 			return err

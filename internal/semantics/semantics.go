@@ -2,6 +2,8 @@ package semantics
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 
 	"nodora.org/nodora/internal/ast"
 )
@@ -325,6 +327,23 @@ func (sc *SemanticAnalyzer) VisitIdentifier(id *ast.Identifier) error {
 }
 
 func (sc *SemanticAnalyzer) VisitNumberLiteral(nl *ast.NumberLiteral) error {
+	if strings.Contains(nl.Value, ".") {
+		val, err := strconv.ParseFloat(nl.Value, 64)
+		if err != nil {
+			return err
+		}
+		nl.Kind = ast.FloatNumber
+		nl.Float = val
+		return nil
+	}
+
+	val, err := strconv.ParseInt(nl.Value, 10, 64)
+	if err != nil {
+		return err
+	}
+
+	nl.Kind = ast.IntNumber
+	nl.Int = val
 	return nil
 }
 
@@ -371,8 +390,12 @@ func (sc *SemanticAnalyzer) VisitSelectorExpr(se *ast.SelectorExpr) error {
 			return err
 		}
 		baseType := sc.inferType(se.Expr)
-		if sym.Type != "unknown" && sym.Type != "object" {
+		if sym.Type != "object" && sym.Type != "unknown" {
 			return fmt.Errorf("cannot access property '%s' on type %s (%s)", se.Field, baseType, e.Name)
+		}
+	case *ast.IndexExpr:
+		if err := se.Expr.(ast.Node).Accept(sc); err != nil {
+			return err
 		}
 	case *ast.SelectorExpr:
 		if err := se.Expr.(ast.Node).Accept(sc); err != nil {
@@ -381,6 +404,27 @@ func (sc *SemanticAnalyzer) VisitSelectorExpr(se *ast.SelectorExpr) error {
 	default:
 		return fmt.Errorf("cannot access property '%s' on type %s", se.Field, sc.inferType(se.Expr))
 	}
+	return nil
+}
+
+func (sc *SemanticAnalyzer) VisitIndexExpr(ie *ast.IndexExpr) error {
+	if err := ie.Expr.(ast.Node).Accept(sc); err != nil {
+		return err
+	}
+	if err := ie.Index.(ast.Node).Accept(sc); err != nil {
+		return err
+	}
+
+	baseType := sc.inferType(ie.Expr)
+	if baseType != "array" && baseType != "unknown" {
+		return fmt.Errorf("cannot index on base type %s", baseType)
+	}
+
+	indexType := sc.inferType(ie.Index)
+	if indexType != "number" && indexType != "unknown" {
+		return fmt.Errorf("cannot index with type %s", indexType)
+	}
+
 	return nil
 }
 

@@ -88,6 +88,42 @@ func toInt64(v any) (int64, bool) {
 	}
 }
 
+func toInt(v any) (int, bool) {
+	switch val := v.(type) {
+	case int:
+		return val, true
+	case int64:
+		return int(val), true
+	case float32:
+		return int(val), true
+	case float64:
+		return int(val), true
+	}
+	return 0, false
+}
+
+func normalizeValue(v any) Value {
+	switch val := v.(type) {
+	case []any:
+		// convert []any to []Value
+		result := make([]Value, len(val))
+		for i, item := range val {
+			result[i] = normalizeValue(item) // Recursive
+		}
+		return result
+	case map[string]any:
+		// convert map[string]any to map[string]Value if needed
+		result := make(ValueMap, len(val))
+		for k, item := range val {
+			result[k] = normalizeValue(item)
+		}
+		return result
+	default:
+		// primitives (string, float64, bool, nil) stay as-is
+		return val
+	}
+}
+
 func containsValue(slice, value any) (bool, error) {
 	switch s := slice.(type) {
 	case []Value:
@@ -97,4 +133,24 @@ func containsValue(slice, value any) (bool, error) {
 	default:
 		return false, fmt.Errorf("expected array, got %T", slice)
 	}
+}
+
+func validateArgs(o *Op, argCount int) error {
+	if len(o.Args) != argCount {
+		return fmt.Errorf("invalid operation arguments for '%s'", o.Kind)
+	}
+	return nil
+}
+
+func validateOp(o *Op, ctx *EvaluationContext, argCount int) error {
+	if err := validateArgs(o, argCount); err != nil {
+		return err
+	}
+	if o.Out == nil {
+		return fmt.Errorf("output index required for '%s'", o.Kind)
+	}
+	if *o.Out < 0 || *o.Out >= len(ctx.Slots) {
+		return fmt.Errorf("output index %d is out of bounds", *o.Out)
+	}
+	return nil
 }

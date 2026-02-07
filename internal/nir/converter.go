@@ -2,7 +2,6 @@ package nir
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 
 	"nodora.org/nodora/internal/ast"
@@ -30,8 +29,12 @@ func symResult(index int) exprResult {
 	return exprResult{symIndex: index, expr: &SymExpr{Index: index}}
 }
 
-func inputResult(path string) exprResult {
-	return exprResult{expr: &InputExpr{Value: path}}
+func inputResult(path string, exprs []RawExpr) exprResult {
+	return exprResult{expr: &InputExpr{Path: path, Exprs: exprs}}
+}
+
+func idxResult(e exprResult, idx exprResult) exprResult {
+	return exprResult{expr: &IdxExpr{Value: []RawExpr{e.toRawExpr(), idx.toRawExpr()}}}
 }
 
 func (r exprResult) toRawExpr() RawExpr {
@@ -197,11 +200,14 @@ func (c *Converter) convertExpr(expr ast.Expr) exprResult {
 
 	switch e := expr.(type) {
 	case *ast.NumberLiteral:
-		val, err := strconv.ParseFloat(e.Value, 64)
-		if err == nil {
-			return immResult(val)
+		switch e.Kind {
+		case ast.FloatNumber:
+			return immResult(e.Float)
+		case ast.IntNumber:
+			return immResult(e.Int)
+		default:
+			return immResult(e.Value)
 		}
-		return immResult(e.Value)
 
 	case *ast.StringLiteral:
 		return immResult(e.Value)
@@ -216,17 +222,36 @@ func (c *Converter) convertExpr(expr ast.Expr) exprResult {
 		if symIndex, exists := c.symbols[e.Name]; exists {
 			return symResult(symIndex)
 		}
-		// Undefined identifier - allocate symbol
+		// undefined identifier - allocate symbol
 		sym := c.allocSymbol()
 		c.symbols[e.Name] = sym
 		return symResult(sym)
 
 	case *ast.SelectorExpr:
-		if path := e.Path(); path != "" {
-			path, _ = strings.CutPrefix(path, "input.")
-			return inputResult(path)
+		parts := []string{}
+		exprs := []RawExpr{}
+
+		var walk func(ast.Expr)
+		walk = func(e ast.Expr) {
+			switch n := e.(type) {
+			case *ast.SelectorExpr:
+				walk(n.Expr)
+				parts = append(parts, n.Field)
+			case *ast.IndexExpr:
+				walk(n.Expr)
+				parts = append(parts, "$")
+				exprs = append(exprs, c.convertExpr(n.Index).toRawExpr())
+			case *ast.Identifier:
+				parts = append(parts, n.Name)
+			}
 		}
-		return exprResult{isImmediate: true, expr: nil}
+
+		walk(expr)
+		inputless := parts[1:]
+		return inputResult(strings.Join(inputless, "."), exprs)
+
+	case *ast.IndexExpr:
+		return idxResult(c.convertExpr(e.Expr), c.convertExpr(e.Index))
 
 	case *ast.UnaryExpr:
 		return c.convertUnaryExpr(e)

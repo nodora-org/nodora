@@ -9,6 +9,7 @@ type Visitor interface {
 	VisitBinaryExpr(be *BinaryExpr) error
 	VisitUnaryExpr(ue *UnaryExpr) error
 	VisitSelectorExpr(se *SelectorExpr) error
+	VisitIndexExpr(ie *IndexExpr) error
 	VisitIdentifier(id *Identifier) error
 	VisitNumberLiteral(nl *NumberLiteral) error
 	VisitStringLiteral(sl *StringLiteral) error
@@ -85,6 +86,14 @@ func VisitSelectorExpr(dv Visitor, se *SelectorExpr) error {
 		return err
 	}
 	return nil
+}
+
+// SelectorExpr traversal
+func VisitIndexExpr(dv Visitor, ie *IndexExpr) error {
+	if err := ie.Expr.(Node).Accept(dv); err != nil {
+		return err
+	}
+	return ie.Index.(Node).Accept(dv)
 }
 
 // Identifier - leaf node

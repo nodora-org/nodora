@@ -16,7 +16,7 @@ import (
 )
 
 type TestSample struct {
-	Input    map[string]any             `json:"input"`
+	Input    nir.ValueMap               `json:"input"`
 	Expected evaluator.EvaluationResult `json:"expected"`
 }
 
@@ -39,7 +39,6 @@ func TestE2E(t *testing.T) {
 
 		testName := strings.TrimSuffix(filepath.Base(path), ".rule")
 		testDir := filepath.Dir(path)
-
 		inputsPath := filepath.Join(testDir, testName+".inputs.json")
 
 		if _, err := os.Stat(inputsPath); os.IsNotExist(err) {
@@ -117,8 +116,8 @@ func runTest(t *testing.T, rulePath, inputsPath, testName string) {
 				}
 
 				if !compareValues(expectedVal, actualVal) {
-					t.Errorf("Test %d: output '%s' mismatch:\n  expected: %v\n  actual:   %v",
-						i, key, expectedVal, actualVal)
+					t.Errorf("Test %d: output '%s' mismatch:\n  expected: %v (%T)\n  actual:   %v (%T)",
+						i, key, expectedVal, expectedVal, actualVal, actualVal)
 				}
 			}
 
@@ -142,21 +141,20 @@ func runTest(t *testing.T, rulePath, inputsPath, testName string) {
 
 const EPSILON = 1e-6
 
+func floatEquals(a, b, epsilon float64) bool {
+	return math.Abs(a-b) < epsilon
+}
 func compareValues(expected, actual any) bool {
-	switch e := expected.(type) {
+	switch exp := expected.(type) {
 	case float64:
-		a, ok := actual.(float64)
-		if !ok {
-			return false
+		if act, ok := actual.(float64); ok {
+			return floatEquals(exp, act, EPSILON)
 		}
-		return math.Abs(e-a) < EPSILON
-	default:
-		// fallback: use JSON comparison for everything else
-		expectedJSON, err1 := json.Marshal(expected)
-		actualJSON, err2 := json.Marshal(actual)
-		if err1 != nil || err2 != nil {
-			return false
-		}
-		return string(expectedJSON) == string(actualJSON)
 	}
+	expectedJSON, err1 := json.Marshal(expected)
+	actualJSON, err2 := json.Marshal(actual)
+	if err1 != nil || err2 != nil {
+		return false
+	}
+	return string(expectedJSON) == string(actualJSON)
 }

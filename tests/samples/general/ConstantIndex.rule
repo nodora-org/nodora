@@ -1,0 +1,6 @@
+rule ConstantIndexRule {
+    data = [1, 2, 3]
+    idx = 0
+    out el1 = data[0]
+    out el2 = data[idx]
+}

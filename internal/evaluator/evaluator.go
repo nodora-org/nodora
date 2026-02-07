@@ -25,7 +25,7 @@ func (e *Evaluator) OnSignalFunc(signalName string, listener func([]nir.Value) e
 	e.signalListeners[signalName] = append(e.signalListeners[signalName], nir.SignalListenerFunc(listener))
 }
 
-func (e *Evaluator) EvaluateRule(ruleName string, input map[string]any) (*EvaluationResult, error) {
+func (e *Evaluator) EvaluateRule(ruleName string, input nir.ValueMap) (*EvaluationResult, error) {
 	rule, ok := e.program.Rules[ruleName]
 	if !ok {
 		return nil, fmt.Errorf("rule not found: %s", ruleName)
@@ -82,7 +82,7 @@ func (e *Evaluator) GetSignalNames() []string {
 	return names
 }
 
-func debugRule(ruleName string, rule *nir.Rule, input map[string]any, evalCtx *nir.EvaluationContext) {
+func debugRule(ruleName string, rule *nir.Rule, input nir.ValueMap, evalCtx *nir.EvaluationContext) {
 	fmt.Printf("=== rule %s ===\n", ruleName)
 
 	fmt.Printf("\nInputs (len = %d)\n", len(input))

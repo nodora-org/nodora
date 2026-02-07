@@ -215,6 +215,8 @@ postfix_expr
         { $$ = $1 }
     | postfix_expr DOT IDENT
         { $$ = &ast.SelectorExpr{Expr: $1, Field: $3} }
+    | postfix_expr LBRACKET expr RBRACKET
+        { $$ = &ast.IndexExpr{Expr: $1, Index: $3} }
     ;
 
 primary_expr

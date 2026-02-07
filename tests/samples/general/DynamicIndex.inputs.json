@@ -1,0 +1,35 @@
+[
+  {
+    "input": {
+      "data": [1, 2, 3],
+      "idx": 0
+    },
+    "expected": {
+      "outputs": {
+        "el": 1
+      }
+    }
+  },
+  {
+    "input": {
+      "data": [1, 2, 3],
+      "idx": 1
+    },
+    "expected": {
+      "outputs": {
+        "el": 2
+      }
+    }
+  },
+  {
+    "input": {
+      "data": [1, 2, 3],
+      "idx": 2
+    },
+    "expected": {
+      "outputs": {
+        "el": 3
+      }
+    }
+  }
+]
