@@ -1,5 +1,7 @@
 package ast
 
+import "fmt"
+
 type Node interface {
 	Accept(visitor Visitor) error
 }
@@ -12,6 +14,37 @@ func (t *Typed) Annotate(ty string) {
 	t.Type = ty
 }
 
+type Position struct {
+	Line int
+	Col  int
+}
+
+func (p Position) String() string {
+	return fmt.Sprintf("%d:%d", p.Line, p.Col)
+}
+
+type WithSpan interface {
+	GetSpan() Span
+}
+
+type Span struct {
+	Start Position
+	End   Position
+}
+
+func (s *Span) SetSpan(startLine, startCol, endLine, endCol int) {
+	s.Start = Position{Line: startLine, Col: startCol}
+	s.End = Position{Line: endLine, Col: endCol}
+}
+
+func (s Span) String() string {
+	return s.Start.String()
+}
+
+func (s Span) GetSpan() Span {
+	return s
+}
+
 type Program struct {
 	Decls []Node
 }
@@ -21,6 +54,7 @@ func (p *Program) Accept(visitor Visitor) error {
 }
 
 type Signal struct {
+	Span
 	Name   string
 	Params []Param
 }
@@ -30,6 +64,7 @@ func (s *Signal) Accept(visitor Visitor) error {
 }
 
 type Rule struct {
+	Span
 	Name       string
 	Statements []Statement
 }
@@ -39,6 +74,7 @@ func (r *Rule) Accept(visitor Visitor) error {
 }
 
 type Param struct {
+	Span
 	Name string
 }
 
@@ -48,10 +84,12 @@ func (p *Param) Accept(visitor Visitor) error {
 
 type Statement interface {
 	Node
+	WithSpan
 }
 
 type Assignment struct {
 	Typed
+	Span
 	Name  string
 	Expr  Expr
 	IsOut bool
@@ -62,6 +100,7 @@ func (a *Assignment) Accept(visitor Visitor) error {
 }
 
 type EmitStatement struct {
+	Span
 	Signal    string
 	Args      []Expr
 	Condition Expr
@@ -71,10 +110,14 @@ func (es *EmitStatement) Accept(visitor Visitor) error {
 	return visitor.VisitEmitStatement(es)
 }
 
-type Expr interface{}
+type Expr interface {
+	Node
+	WithSpan
+}
 
 type BinaryExpr struct {
 	Typed
+	Span
 	Left  Expr
 	Op    string
 	Right Expr
@@ -86,6 +129,7 @@ func (be *BinaryExpr) Accept(visitor Visitor) error {
 
 type UnaryExpr struct {
 	Typed
+	Span
 	Op   string
 	Expr Expr
 }
@@ -95,6 +139,7 @@ func (ue *UnaryExpr) Accept(visitor Visitor) error {
 }
 
 type SelectorExpr struct {
+	Span
 	Expr  Expr
 	Field string
 }
@@ -104,6 +149,7 @@ func (se *SelectorExpr) Accept(visitor Visitor) error {
 }
 
 type IndexExpr struct {
+	Span
 	Expr  Expr
 	Index Expr
 }
@@ -113,6 +159,7 @@ func (ie *IndexExpr) Accept(visitor Visitor) error {
 }
 
 type Identifier struct {
+	Span
 	Name string
 }
 
@@ -128,6 +175,7 @@ const (
 )
 
 type NumberLiteral struct {
+	Span
 	Kind  NumberKind
 	Value string
 	Int   int64
@@ -149,6 +197,7 @@ func (nl *NumberLiteral) GetValue() (bool, any) {
 }
 
 type StringLiteral struct {
+	Span
 	Value string
 }
 
@@ -157,6 +206,7 @@ func (sl *StringLiteral) Accept(visitor Visitor) error {
 }
 
 type BoolLiteral struct {
+	Span
 	Value bool
 }
 
@@ -166,6 +216,7 @@ func (bl *BoolLiteral) Accept(visitor Visitor) error {
 
 type ConditionalExpr struct {
 	Typed
+	Span
 	Cond Expr
 	Then Expr
 	Else Expr
@@ -176,6 +227,7 @@ func (ce *ConditionalExpr) Accept(visitor Visitor) error {
 }
 
 type ArrayLiteral struct {
+	Span
 	Elements []Expr
 }
 

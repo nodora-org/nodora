@@ -2,6 +2,8 @@ package parser
 
 import (
 	"strings"
+
+	"nodora.org/nodora/internal/ast"
 )
 
 // lexer implements a simple, goyacc-compatible lexer for the grammar in parser.y.
@@ -71,27 +73,49 @@ func (l *lexer) Lex(lval *yySymType) int {
 		return 0
 	}
 
+	// Capture the start position of this token
+	startLine := l.line
+	startCol := l.col
+
+	// Helper to set span in lval
+	setSpan := func() {
+		lval.span.Start = ast.Position{Line: startLine, Col: startCol}
+		lval.span.End = ast.Position{Line: l.line, Col: l.col}
+	}
+
 	// two-char tokens
 	if l.pos+1 < len(l.input) {
 		two := l.input[l.pos : l.pos+2]
 		switch two {
 		case "&&":
 			l.pos += 2
+			l.col += 2
+			setSpan()
 			return AND
 		case "||":
 			l.pos += 2
+			l.col += 2
+			setSpan()
 			return OR
 		case "==":
 			l.pos += 2
+			l.col += 2
+			setSpan()
 			return EQ
 		case "!=":
 			l.pos += 2
+			l.col += 2
+			setSpan()
 			return NEQ
 		case ">=":
 			l.pos += 2
+			l.col += 2
+			setSpan()
 			return GTE
 		case "<=":
 			l.pos += 2
+			l.col += 2
+			setSpan()
 			return LTE
 		}
 	}
@@ -101,18 +125,28 @@ func (l *lexer) Lex(lval *yySymType) int {
 	// string literal
 	if ch == '"' {
 		l.pos++
+		l.col++
 		start := l.pos
 		for l.pos < len(l.input) {
 			if l.input[l.pos] == '"' {
 				raw := l.input[start:l.pos]
 				lval.str = unescape(raw)
 				l.pos++
+				l.col++
+				setSpan()
 				return STRING
 			}
 			if l.input[l.pos] == '\\' && l.pos+1 < len(l.input) {
 				// skip escape; the content is captured in unescape below
 				l.pos += 2
+				l.col += 2
 				continue
+			}
+			if l.input[l.pos] == '\n' {
+				l.line++
+				l.col = 0
+			} else {
+				l.col++
 			}
 			l.pos++
 		}
@@ -125,60 +159,98 @@ func (l *lexer) Lex(lval *yySymType) int {
 	switch ch {
 	case '(':
 		l.pos++
+		l.col++
+		setSpan()
 		return LPAREN
 	case ')':
 		l.pos++
+		l.col++
+		setSpan()
 		return RPAREN
 	case '!':
 		l.pos++
+		l.col++
+		setSpan()
 		return NOT
 	case '{':
 		l.pos++
+		l.col++
+		setSpan()
 		return LBRACE
 	case '}':
 		l.pos++
+		l.col++
+		setSpan()
 		return RBRACE
 	case '[':
 		l.pos++
+		l.col++
+		setSpan()
 		return LBRACKET
 	case ']':
 		l.pos++
+		l.col++
+		setSpan()
 		return RBRACKET
 	case '?':
 		l.pos++
+		l.col++
+		setSpan()
 		return QMARK
 	case ':':
 		l.pos++
+		l.col++
+		setSpan()
 		return COLON
 	case ',':
 		l.pos++
+		l.col++
+		setSpan()
 		return COMMA
 	case '.':
 		l.pos++
+		l.col++
+		setSpan()
 		return DOT
 	case '>':
 		l.pos++
+		l.col++
+		setSpan()
 		return GT
 	case '<':
 		l.pos++
+		l.col++
+		setSpan()
 		return LT
 	case '=':
 		l.pos++
+		l.col++
+		setSpan()
 		return ASSIGN
 	case '+':
 		l.pos++
+		l.col++
+		setSpan()
 		return PLUS
 	case '-':
 		l.pos++
+		l.col++
+		setSpan()
 		return MINUS
 	case '*':
 		l.pos++
+		l.col++
+		setSpan()
 		return STAR
 	case '/':
 		l.pos++
+		l.col++
+		setSpan()
 		return SLASH
 	case '%':
 		l.pos++
+		l.col++
+		setSpan()
 		return MOD
 	}
 
@@ -186,19 +258,23 @@ func (l *lexer) Lex(lval *yySymType) int {
 	if isAlpha(ch) {
 		start := l.pos
 		l.pos++
+		l.col++
 		for l.pos < len(l.input) {
 			c := l.input[l.pos]
 			if isAlphaNum(c) {
 				l.pos++
+				l.col++
 			} else {
 				break
 			}
 		}
 		lit := l.input[start:l.pos]
 		if tok, ok := keywords[lit]; ok {
+			setSpan()
 			return tok
 		}
 		lval.str = lit
+		setSpan()
 		return IDENT
 	}
 
@@ -207,13 +283,16 @@ func (l *lexer) Lex(lval *yySymType) int {
 		start := l.pos
 		for l.pos < len(l.input) && isDigit(l.input[l.pos]) {
 			l.pos++
+			l.col++
 		}
 		lval.str = l.input[start:l.pos]
+		setSpan()
 		return NUMBER
 	}
 
 	// unknown character
 	l.pos++
+	l.col++
 	l.Error("unexpected character: " + string(ch))
 	return 0
 }
