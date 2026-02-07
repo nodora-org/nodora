@@ -1,7 +1,5 @@
 package ast
 
-import "strings"
-
 type Node interface {
 	Accept(visitor Visitor) error
 }
@@ -103,24 +101,6 @@ type SelectorExpr struct {
 
 func (se *SelectorExpr) Accept(visitor Visitor) error {
 	return visitor.VisitSelectorExpr(se)
-}
-
-func (se *SelectorExpr) Path() string {
-	parts := []string{se.Field}
-	expr := se.Expr
-
-	for {
-		switch e := expr.(type) {
-		case *SelectorExpr:
-			parts = append([]string{e.Field}, parts...)
-			expr = e.Expr
-		case *Identifier:
-			parts = append([]string{e.Name}, parts...)
-			return strings.Join(parts, ".")
-		default:
-			return ""
-		}
-	}
 }
 
 type IndexExpr struct {

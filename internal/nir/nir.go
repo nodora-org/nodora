@@ -152,7 +152,7 @@ func (i *IdxExpr) Evaluate(ctx *EvaluationContext) (Value, error) {
 
 type InputExpr struct {
 	Path  string    `json:"path"`
-	Exprs []RawExpr `json:"$"`
+	Exprs []RawExpr `json:"$,omitempty"`
 }
 
 func (s *InputExpr) Evaluate(ctx *EvaluationContext) (Value, error) {
