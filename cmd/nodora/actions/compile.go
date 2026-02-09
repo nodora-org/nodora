@@ -45,10 +45,10 @@ func Compile(ctx context.Context, cmd *cli.Command) error {
 		return nil
 	}
 
-	converter := nir.NewConverter()
-	nirProg, err := converter.ConvertFromAST(p)
+	builder := nir.NewBuilder()
+	nirProg, err := builder.BuildFromAST(p)
 	if err != nil {
-		return fmt.Errorf("conversion failed: %v", err)
+		return fmt.Errorf("build failed: %v", err)
 	}
 
 	nir_encoded, err := json.Marshal(nirProg)

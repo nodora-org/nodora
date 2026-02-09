@@ -78,8 +78,8 @@ func runTest(t *testing.T, rulePath, inputsPath, testName string) {
 		t.FailNow()
 	}
 
-	converter := nir.NewConverter()
-	program, err := converter.ConvertFromAST(ast)
+	builder := nir.NewBuilder()
+	program, err := builder.BuildFromAST(ast)
 	if err != nil {
 		t.Fatalf("Failed to convert rule %s: %v", testName, err)
 	}

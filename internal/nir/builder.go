@@ -41,7 +41,7 @@ func (r exprResult) toRawExpr() RawExpr {
 	return RawExpr{Expr: r.expr}
 }
 
-type Converter struct {
+type Builder struct {
 	symbols   map[string]int
 	symIndex  int
 	outputs   map[string]bool
@@ -49,8 +49,8 @@ type Converter struct {
 	constants map[string]any
 }
 
-func NewConverter() *Converter {
-	return &Converter{
+func NewBuilder() *Builder {
+	return &Builder{
 		symbols:   make(map[string]int),
 		symIndex:  0,
 		outputs:   make(map[string]bool),
@@ -59,7 +59,7 @@ func NewConverter() *Converter {
 	}
 }
 
-func (c *Converter) ConvertFromAST(program *ast.Program) (Program, error) {
+func (b *Builder) BuildFromAST(program *ast.Program) (Program, error) {
 	result := Program{
 		Signals: make(map[string]Signal),
 		Rules:   make(map[string]Rule),
@@ -69,10 +69,10 @@ func (c *Converter) ConvertFromAST(program *ast.Program) (Program, error) {
 		switch node := decl.(type) {
 		case *ast.Signal:
 			result.Signals[node.Name] = Signal{
-				Params: c.convertParams(node.Params),
+				Params: b.buildParams(node.Params),
 			}
 		case *ast.Rule:
-			rule, err := c.convertRule(node)
+			rule, err := b.buildRule(node)
 			if err != nil {
 				return Program{}, fmt.Errorf("error converting rule %s: %w", node.Name, err)
 			}
@@ -83,16 +83,16 @@ func (c *Converter) ConvertFromAST(program *ast.Program) (Program, error) {
 	return result, nil
 }
 
-func (c *Converter) reset() {
-	c.symbols = make(map[string]int)
-	c.symIndex = 0
-	c.outputs = make(map[string]bool)
-	c.ops = make([]Op, 0)
-	c.constants = make(map[string]any)
+func (b *Builder) reset() {
+	b.symbols = make(map[string]int)
+	b.symIndex = 0
+	b.outputs = make(map[string]bool)
+	b.ops = make([]Op, 0)
+	b.constants = make(map[string]any)
 }
 
-func (c *Converter) convertRule(rule *ast.Rule) (Rule, error) {
-	c.reset()
+func (b *Builder) buildRule(rule *ast.Rule) (Rule, error) {
+	b.reset()
 
 	result := Rule{
 		Outputs:  make(map[string]Output),
@@ -102,50 +102,50 @@ func (c *Converter) convertRule(rule *ast.Rule) (Rule, error) {
 	}
 
 	for _, stmt := range rule.Statements {
-		if err := c.convertStatement(stmt); err != nil {
+		if err := b.buildStatement(stmt); err != nil {
 			return Rule{}, err
 		}
 	}
 
-	for outputName := range c.outputs {
-		symIndex, exists := c.symbols[outputName]
+	for outputName := range b.outputs {
+		symIndex, exists := b.symbols[outputName]
 		if !exists {
 			return Rule{}, fmt.Errorf("output variable %s not found", outputName)
 		}
 		result.Outputs[outputName] = Output{Sym: symIndex}
 	}
 
-	result.Symbols = c.symbols
-	result.Symslots = c.symIndex
-	result.Ops = c.ops
+	result.Symbols = b.symbols
+	result.Symslots = b.symIndex
+	result.Ops = b.ops
 
 	return result, nil
 }
 
-func (c *Converter) convertStatement(stmt ast.Statement) error {
+func (b *Builder) buildStatement(stmt ast.Statement) error {
 	switch s := stmt.(type) {
 	case *ast.Assignment:
 		if s.IsOut {
-			c.outputs[s.Name] = true
+			b.outputs[s.Name] = true
 		}
-		return c.convertAssignment(s)
+		return b.buildAssignment(s)
 	case *ast.EmitStatement:
-		return c.convertEmitStatement(s)
+		return b.buildEmitStatement(s)
 	default:
 		return fmt.Errorf("unsupported statement type: %T", s)
 	}
 }
 
-func (c *Converter) addOp(kind OpKind, args []RawExpr, outSym *int) {
-	c.ops = append(c.ops, Op{
+func (b *Builder) addOp(kind OpKind, args []RawExpr, outSym *int) {
+	b.ops = append(b.ops, Op{
 		Kind: kind,
 		Args: args,
 		Out:  outSym,
 	})
 }
 
-func (c *Converter) convertAssignment(assign *ast.Assignment) error {
-	result := c.convertExpr(assign.Expr)
+func (b *Builder) buildAssignment(assign *ast.Assignment) error {
+	result := b.buildExpr(assign.Expr)
 
 	var targetSym int
 	if symExpr, ok := result.expr.(*SymExpr); ok && !result.isImmediate {
@@ -153,23 +153,23 @@ func (c *Converter) convertAssignment(assign *ast.Assignment) error {
 		targetSym = symExpr.Index
 	} else {
 		// allocate a new symbol for other expressions
-		targetSym = c.allocSymbol()
-		c.addOp(OpCopy, []RawExpr{result.toRawExpr()}, &targetSym)
+		targetSym = b.allocSymbol()
+		b.addOp(OpCopy, []RawExpr{result.toRawExpr()}, &targetSym)
 	}
 
-	c.symbols[assign.Name] = targetSym
+	b.symbols[assign.Name] = targetSym
 
 	if result.isImmediate {
-		c.constants[assign.Name] = result.expr.(*ImmExpr).Value
+		b.constants[assign.Name] = result.expr.(*ImmExpr).Value
 	}
 
 	return nil
 }
 
-func (c *Converter) convertEmitStatement(emit *ast.EmitStatement) error {
+func (b *Builder) buildEmitStatement(emit *ast.EmitStatement) error {
 	args := make([]RawExpr, len(emit.Args))
 	for i, arg := range emit.Args {
-		result := c.convertExpr(arg)
+		result := b.buildExpr(arg)
 		args[i] = result.toRawExpr()
 	}
 
@@ -179,21 +179,21 @@ func (c *Converter) convertEmitStatement(emit *ast.EmitStatement) error {
 	}
 
 	if emit.Condition != nil {
-		condResult := c.convertExpr(emit.Condition)
+		condResult := b.buildExpr(emit.Condition)
 		signalExpr.When = &RawExpr{Expr: condResult.expr}
 	}
 
-	c.addOp(OpEmit, []RawExpr{{Expr: signalExpr}}, nil)
+	b.addOp(OpEmit, []RawExpr{{Expr: signalExpr}}, nil)
 	return nil
 }
 
-func (c *Converter) allocSymbol() int {
-	sym := c.symIndex
-	c.symIndex++
+func (b *Builder) allocSymbol() int {
+	sym := b.symIndex
+	b.symIndex++
 	return sym
 }
 
-func (c *Converter) convertExpr(expr ast.Expr) exprResult {
+func (b *Builder) buildExpr(expr ast.Expr) exprResult {
 	if expr == nil {
 		return exprResult{isImmediate: true, expr: nil}
 	}
@@ -216,15 +216,15 @@ func (c *Converter) convertExpr(expr ast.Expr) exprResult {
 		return immResult(e.Value)
 
 	case *ast.Identifier:
-		if val, isConst := c.constants[e.Name]; isConst {
+		if val, isConst := b.constants[e.Name]; isConst {
 			return immResult(val)
 		}
-		if symIndex, exists := c.symbols[e.Name]; exists {
+		if symIndex, exists := b.symbols[e.Name]; exists {
 			return symResult(symIndex)
 		}
 		// undefined identifier - allocate symbol
-		sym := c.allocSymbol()
-		c.symbols[e.Name] = sym
+		sym := b.allocSymbol()
+		b.symbols[e.Name] = sym
 		return symResult(sym)
 
 	case *ast.SelectorExpr:
@@ -240,7 +240,7 @@ func (c *Converter) convertExpr(expr ast.Expr) exprResult {
 			case *ast.IndexExpr:
 				walk(n.Expr)
 				parts = append(parts, "$")
-				exprs = append(exprs, c.convertExpr(n.Index).toRawExpr())
+				exprs = append(exprs, b.buildExpr(n.Index).toRawExpr())
 			case *ast.Identifier:
 				parts = append(parts, n.Name)
 			}
@@ -251,75 +251,75 @@ func (c *Converter) convertExpr(expr ast.Expr) exprResult {
 		return inputResult(strings.Join(inputless, "."), exprs)
 
 	case *ast.IndexExpr:
-		return idxResult(c.convertExpr(e.Expr), c.convertExpr(e.Index))
+		return idxResult(b.buildExpr(e.Expr), b.buildExpr(e.Index))
 
 	case *ast.UnaryExpr:
-		return c.convertUnaryExpr(e)
+		return b.buildUnaryExpr(e)
 
 	case *ast.BinaryExpr:
-		return c.convertBinaryExpr(e)
+		return b.buildBinaryExpr(e)
 
 	case *ast.ConditionalExpr:
-		return c.convertConditionalExpr(e)
+		return b.buildConditionalExpr(e)
 
 	case *ast.ArrayLiteral:
-		return c.convertArrayLiteral(e)
+		return b.buildArrayLiteral(e)
 
 	default:
 		return exprResult{isImmediate: true, expr: nil}
 	}
 }
 
-func (c *Converter) convertUnaryExpr(expr *ast.UnaryExpr) exprResult {
-	inner := c.convertExpr(expr.Expr)
-	out := c.allocSymbol()
+func (b *Builder) buildUnaryExpr(expr *ast.UnaryExpr) exprResult {
+	inner := b.buildExpr(expr.Expr)
+	out := b.allocSymbol()
 
 	switch expr.Op {
 	case "-":
-		c.addOp(OpSub, []RawExpr{{Expr: &ImmExpr{Value: 0}}, inner.toRawExpr()}, &out)
+		b.addOp(OpSub, []RawExpr{{Expr: &ImmExpr{Value: 0}}, inner.toRawExpr()}, &out)
 	case "!":
-		c.addOp(OpNot, []RawExpr{inner.toRawExpr()}, &out)
+		b.addOp(OpNot, []RawExpr{inner.toRawExpr()}, &out)
 	}
 
 	return symResult(out)
 }
 
-func (c *Converter) convertBinaryExpr(expr *ast.BinaryExpr) exprResult {
-	left := c.convertExpr(expr.Left)
-	right := c.convertExpr(expr.Right)
+func (b *Builder) buildBinaryExpr(expr *ast.BinaryExpr) exprResult {
+	left := b.buildExpr(expr.Left)
+	right := b.buildExpr(expr.Right)
 
-	out := c.allocSymbol()
+	out := b.allocSymbol()
 
-	opKind := c.mapBinaryOp(expr.Op)
+	opKind := b.mapBinaryOp(expr.Op)
 	if opKind == "" {
 		return symResult(out)
 	}
 
-	c.addOp(opKind, []RawExpr{left.toRawExpr(), right.toRawExpr()}, &out)
+	b.addOp(opKind, []RawExpr{left.toRawExpr(), right.toRawExpr()}, &out)
 	return symResult(out)
 }
 
-func (c *Converter) convertConditionalExpr(expr *ast.ConditionalExpr) exprResult {
-	cond := c.convertExpr(expr.Cond)
-	thenBranch := c.convertExpr(expr.Then)
-	elseBranch := c.convertExpr(expr.Else)
+func (b *Builder) buildConditionalExpr(expr *ast.ConditionalExpr) exprResult {
+	cond := b.buildExpr(expr.Cond)
+	thenBranch := b.buildExpr(expr.Then)
+	elseBranch := b.buildExpr(expr.Else)
 
-	out := c.allocSymbol()
+	out := b.allocSymbol()
 
-	c.addOp(OpSelect, []RawExpr{cond.toRawExpr(), thenBranch.toRawExpr(), elseBranch.toRawExpr()}, &out)
+	b.addOp(OpSelect, []RawExpr{cond.toRawExpr(), thenBranch.toRawExpr(), elseBranch.toRawExpr()}, &out)
 	return symResult(out)
 }
 
-func (c *Converter) convertArrayLiteral(lit *ast.ArrayLiteral) exprResult {
+func (b *Builder) buildArrayLiteral(lit *ast.ArrayLiteral) exprResult {
 	elements := make([]exprResult, len(lit.Elements))
 	for i, elem := range lit.Elements {
-		result := c.convertExpr(elem)
+		result := b.buildExpr(elem)
 		elements[i] = result
 	}
 	return arrResult(elements)
 }
 
-func (c *Converter) mapBinaryOp(op string) OpKind {
+func (b *Builder) mapBinaryOp(op string) OpKind {
 	switch op {
 	case "+":
 		return OpAdd
@@ -354,7 +354,7 @@ func (c *Converter) mapBinaryOp(op string) OpKind {
 	}
 }
 
-func (c *Converter) convertParams(params []ast.Param) []Param {
+func (b *Builder) buildParams(params []ast.Param) []Param {
 	result := make([]Param, len(params))
 	for i, p := range params {
 		result[i] = Param{Name: p.Name}

@@ -59,8 +59,6 @@ rule test {
 			}
 
 			errMsg := errors[0].Error()
-			t.Logf("Got error message: %s", errMsg)
-
 			if !strings.Contains(errMsg, ":") {
 				t.Error("Expected error to contain position information (line:col)")
 			}
