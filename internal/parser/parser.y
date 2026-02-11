@@ -137,7 +137,7 @@ assign_stmt
     : IDENT ASSIGN expr
         { 
           a := &ast.Assignment{Name: $1, Expr: $3, IsOut: false}
-          a.Span = mergeSpans($2, $3.GetSpan())
+          a.Span = mergeSpans($<span>1, $3.GetSpan())
           $$ = a
         }
     | OUT IDENT ASSIGN expr

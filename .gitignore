@@ -17,5 +17,5 @@
 # Logs
 *.log
 
-test_*.json
-test/
+# Examples
+examples/*.json

@@ -67,7 +67,7 @@ func (sc *SemanticAnalyzer) isReservedNamespace(name string) bool {
 
 func (sc *SemanticAnalyzer) declareSymbol(name, typ, kind string, value any, span ast.Span) error {
 	if sc.isReservedNamespace(name) {
-		return fmt.Errorf("symbol '%s' is a reserved namespace", name)
+		return errorAt(span, "symbol '%s' is a reserved namespace", name)
 	}
 	scope := sc.currentScope()
 	if _, exists := scope.symbols[name]; exists {

@@ -1,1 +1,0 @@
-{"signals":{},"rules":{"ExampleRule":{"outputs":{"is_adult":{"sym":0}},"symslots":1,"symbols":{"is_adult":0},"ops":[{"op":"gte","args":[{"path":"age"},{"imm":18}],"out":0}]}}}

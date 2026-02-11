@@ -68,7 +68,6 @@ func (n *ValueMap) UnmarshalJSON(data []byte) error {
 }
 
 type EvaluationContext struct {
-	Input     ValueMap
 	Slots     []Value
 	Emissions []EmittedSignal
 	Listeners map[string][]SignalListener
@@ -150,16 +149,20 @@ func (i *IdxExpr) Evaluate(ctx *EvaluationContext) (Value, error) {
 	return a[idx], nil
 }
 
-type InputExpr struct {
+type SelExpr struct {
 	Path  string    `json:"path"`
+	From  RawExpr   `json:"from"`
 	Exprs []RawExpr `json:"$,omitempty"`
 }
 
-func (s *InputExpr) Evaluate(ctx *EvaluationContext) (Value, error) {
+func (s *SelExpr) Evaluate(ctx *EvaluationContext) (Value, error) {
 	keys := strings.Split(s.Path, ".")
-	current := Value(ctx.Input)
-	exprIdx := 0
+	current, err := s.From.Evaluate(ctx)
+	if err != nil {
+		return nil, err
+	}
 
+	exprIdx := 0
 	for _, key := range keys {
 		var err error
 		if key == "$" {
@@ -176,7 +179,7 @@ func (s *InputExpr) Evaluate(ctx *EvaluationContext) (Value, error) {
 	return current, nil
 }
 
-func (s *InputExpr) evaluateArrayIndex(ctx *EvaluationContext, current Value, exprIdx int) (Value, error) {
+func (s *SelExpr) evaluateArrayIndex(ctx *EvaluationContext, current Value, exprIdx int) (Value, error) {
 	arr, ok := current.([]Value)
 	if !ok {
 		return nil, fmt.Errorf("cannot index into %T (expected array)", current)
@@ -199,7 +202,7 @@ func (s *InputExpr) evaluateArrayIndex(ctx *EvaluationContext, current Value, ex
 	return arr[idx], nil
 }
 
-func (s *InputExpr) evaluateFieldAccess(current Value, key string) (Value, error) {
+func (s *SelExpr) evaluateFieldAccess(current Value, key string) (Value, error) {
 	m, ok := current.(ValueMap)
 	if !ok {
 		return nil, fmt.Errorf("cannot access field '%s': parent is not an object", key)
@@ -500,7 +503,7 @@ func (w *RawExpr) UnmarshalJSON(data []byte) error {
 		}
 		w.Expr = &e
 	case probe["path"] != nil:
-		var e InputExpr
+		var e SelExpr
 		if err := json.Unmarshal(data, &e); err != nil {
 			return err
 		}

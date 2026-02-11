@@ -31,9 +31,11 @@ func (e *Evaluator) EvaluateRule(ruleName string, input nir.ValueMap) (*Evaluati
 		return nil, fmt.Errorf("rule not found: %s", ruleName)
 	}
 
+	slots := make([]nir.Value, rule.Symslots)
+	slots[0] = input
+
 	evalCtx := &nir.EvaluationContext{
-		Input:     input,
-		Slots:     make([]nir.Value, rule.Symslots),
+		Slots:     slots,
 		Emissions: []nir.EmittedSignal{},
 		Listeners: e.signalListeners,
 	}

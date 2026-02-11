@@ -29,8 +29,8 @@ func symResult(index int) exprResult {
 	return exprResult{symIndex: index, expr: &SymExpr{Index: index}}
 }
 
-func inputResult(path string, exprs []RawExpr) exprResult {
-	return exprResult{expr: &InputExpr{Path: path, Exprs: exprs}}
+func selResult(path string, from RawExpr, exprs []RawExpr) exprResult {
+	return exprResult{expr: &SelExpr{Path: path, From: from, Exprs: exprs}}
 }
 
 func idxResult(e exprResult, idx exprResult) exprResult {
@@ -42,20 +42,18 @@ func (r exprResult) toRawExpr() RawExpr {
 }
 
 type Builder struct {
-	symbols   map[string]int
-	symIndex  int
-	outputs   map[string]bool
-	ops       []Op
-	constants map[string]any
+	symbols  map[string]int
+	symIndex int
+	outputs  map[string]bool
+	ops      []Op
 }
 
 func NewBuilder() *Builder {
 	return &Builder{
-		symbols:   make(map[string]int),
-		symIndex:  0,
-		outputs:   make(map[string]bool),
-		ops:       make([]Op, 0),
-		constants: make(map[string]any),
+		symbols:  make(map[string]int),
+		symIndex: 0,
+		outputs:  make(map[string]bool),
+		ops:      make([]Op, 0),
 	}
 }
 
@@ -84,11 +82,10 @@ func (b *Builder) BuildFromAST(program *ast.Program) (Program, error) {
 }
 
 func (b *Builder) reset() {
-	b.symbols = make(map[string]int)
-	b.symIndex = 0
+	b.symbols = make(map[string]int, 1)
+	b.symIndex = 1 // 0 is reserved
 	b.outputs = make(map[string]bool)
 	b.ops = make([]Op, 0)
-	b.constants = make(map[string]any)
 }
 
 func (b *Builder) buildRule(rule *ast.Rule) (Rule, error) {
@@ -97,7 +94,7 @@ func (b *Builder) buildRule(rule *ast.Rule) (Rule, error) {
 	result := Rule{
 		Outputs:  make(map[string]Output),
 		Symbols:  make(SymbolMap),
-		Symslots: 0,
+		Symslots: 1,
 		Ops:      make([]Op, 0),
 	}
 
@@ -158,11 +155,6 @@ func (b *Builder) buildAssignment(assign *ast.Assignment) error {
 	}
 
 	b.symbols[assign.Name] = targetSym
-
-	if result.isImmediate {
-		b.constants[assign.Name] = result.expr.(*ImmExpr).Value
-	}
-
 	return nil
 }
 
@@ -216,8 +208,8 @@ func (b *Builder) buildExpr(expr ast.Expr) exprResult {
 		return immResult(e.Value)
 
 	case *ast.Identifier:
-		if val, isConst := b.constants[e.Name]; isConst {
-			return immResult(val)
+		if e.Name == "input" {
+			return symResult(0)
 		}
 		if symIndex, exists := b.symbols[e.Name]; exists {
 			return symResult(symIndex)
@@ -231,6 +223,7 @@ func (b *Builder) buildExpr(expr ast.Expr) exprResult {
 		parts := []string{}
 		exprs := []RawExpr{}
 
+		var from RawExpr
 		var walk func(ast.Expr)
 		walk = func(e ast.Expr) {
 			switch n := e.(type) {
@@ -243,12 +236,12 @@ func (b *Builder) buildExpr(expr ast.Expr) exprResult {
 				exprs = append(exprs, b.buildExpr(n.Index).toRawExpr())
 			case *ast.Identifier:
 				parts = append(parts, n.Name)
+				from = b.buildExpr(e).toRawExpr()
 			}
 		}
 
 		walk(expr)
-		inputless := parts[1:]
-		return inputResult(strings.Join(inputless, "."), exprs)
+		return selResult(strings.Join(parts[1:], "."), from, exprs)
 
 	case *ast.IndexExpr:
 		return idxResult(b.buildExpr(e.Expr), b.buildExpr(e.Index))

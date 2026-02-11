@@ -18,28 +18,28 @@ func TestSemanticErrorsWithSpan(t *testing.T) {
 			name: "undefined variable",
 			input: `
 rule test {
-	x = undefined_var + 1
+    x = undefined_var + 1
 }
 `,
-			expectedErrMsg: "3:5: undefined symbol 'undefined_var'",
+			expectedErrMsg: "3:8: undefined symbol 'undefined_var'",
 		},
 		{
 			name: "type mismatch",
 			input: `
 rule test {
-	x = "hello" + 5
+    x = "hello" + 5
 }
 `,
-			expectedErrMsg: "3:5: operator '+' cannot be applied to string and number",
+			expectedErrMsg: "3:8: operator '+' cannot be applied to string and number",
 		},
 		{
 			name: "undefined signal",
 			input: `
 rule test {
-	emit undefined_signal()
+    emit undefined_signal()
 }
 `,
-			expectedErrMsg: "3:1: undefined signal 'undefined_signal'",
+			expectedErrMsg: "3:4: undefined signal 'undefined_signal'",
 		},
 	}
 
