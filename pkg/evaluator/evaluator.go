@@ -3,7 +3,7 @@ package evaluator
 import (
 	"fmt"
 
-	"nodora.org/nodora/internal/nir"
+	"nodora.org/nodora/pkg/nir"
 )
 
 type Evaluator struct {

@@ -6,9 +6,12 @@ import (
 	"strings"
 )
 
+type Metadata map[string]any
+
 type Program struct {
-	Signals map[string]Signal `json:"signals"`
-	Rules   map[string]Rule   `json:"rules"`
+	Metadata Metadata          `json:"meta"`
+	Signals  map[string]Signal `json:"signals"`
+	Rules    map[string]Rule   `json:"rules"`
 }
 
 type Signal struct {

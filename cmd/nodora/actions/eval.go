@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/urfave/cli/v3"
-	"nodora.org/nodora/internal/evaluator"
-	"nodora.org/nodora/internal/nir"
+	"nodora.org/nodora/pkg/evaluator"
+	"nodora.org/nodora/pkg/nir"
 )
 
 func formatDuration(d time.Duration) string {

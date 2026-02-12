@@ -6,12 +6,21 @@ import (
 	"os"
 
 	"github.com/urfave/cli/v3"
+	version "nodora.org/nodora"
 	"nodora.org/nodora/cmd/nodora/actions"
 )
 
 func main() {
 	cmd := &cli.Command{
 		Commands: []*cli.Command{
+			{
+				Name:  "version",
+				Usage: "Print Nodora version",
+				Action: func(ctx context.Context, c *cli.Command) error {
+					fmt.Println(version.Version)
+					return nil
+				},
+			},
 			{
 				Name:  "compile",
 				Usage: "Compile a rule file",

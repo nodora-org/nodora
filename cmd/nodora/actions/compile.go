@@ -9,9 +9,8 @@ import (
 	"strings"
 
 	"github.com/urfave/cli/v3"
-	"nodora.org/nodora/internal/nir"
-	"nodora.org/nodora/internal/parser"
 	"nodora.org/nodora/internal/semantics"
+	"nodora.org/nodora/pkg/compiler"
 )
 
 func Compile(ctx context.Context, cmd *cli.Command) error {
@@ -26,32 +25,27 @@ func Compile(ctx context.Context, cmd *cli.Command) error {
 		input = data
 	}
 
-	p, err := parser.Parse(string(input))
+	c := compiler.NewCompiler()
+	nir, err := c.Compile(string(input))
+
 	if err != nil {
-		return fmt.Errorf("%v:%w", filePath, err)
-	}
-
-	analyzer := semantics.NewSemanticAnalyzer()
-	errors := analyzer.Analyze(p)
-
-	errorsCount := len(errors)
-	if errorsCount > 0 {
-		fmt.Printf("Found %v issues in %v\n", errorsCount, filePath)
-
-		for _, err := range errors {
-			fmt.Printf("\t%v\n", err)
+		semErrs, ok := err.(*semantics.SemanticErrors)
+		if !ok {
+			return fmt.Errorf("%v:%w", filePath, err)
 		}
 
-		return nil
+		errCount := semErrs.Count()
+		if errCount > 0 {
+			var sb strings.Builder
+			sb.WriteString(fmt.Sprintf("Found %v issues in %v\n\n", errCount, filePath))
+			for _, e := range semErrs.Errors {
+				sb.WriteString(fmt.Sprintf("> %v:%v\n", filePath, e))
+			}
+			return fmt.Errorf("%v", sb.String())
+		}
 	}
 
-	builder := nir.NewBuilder()
-	nirProg, err := builder.BuildFromAST(p)
-	if err != nil {
-		return fmt.Errorf("build failed: %v", err)
-	}
-
-	nir_encoded, err := json.Marshal(nirProg)
+	nirEncoded, err := json.Marshal(nir)
 	if err != nil {
 		return fmt.Errorf("json encoding failed: %v", err)
 	}
@@ -61,7 +55,7 @@ func Compile(ctx context.Context, cmd *cli.Command) error {
 		outputPath = strings.TrimSuffix(filePath, filepath.Ext(filePath)) + ".json"
 	}
 
-	if err := os.WriteFile(outputPath, nir_encoded, 0644); err != nil {
+	if err := os.WriteFile(outputPath, nirEncoded, 0644); err != nil {
 		return fmt.Errorf("failed to write output file: %v", err)
 	}
 

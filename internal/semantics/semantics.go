@@ -8,39 +8,61 @@ import (
 	"nodora.org/nodora/internal/ast"
 )
 
-type Scope struct {
-	symbols map[string]*Symbol
-	parent  *Scope
+type scope struct {
+	symbols map[string]*symbol
+	parent  *scope
 }
 
-type Symbol struct {
+type symbol struct {
 	Name  string
 	Type  string
 	Kind  string
 	Value any
 }
 
+type SemanticErrors struct {
+	Errors []error
+}
+
+func (se *SemanticErrors) Add(err error) {
+	se.Errors = append(se.Errors, err)
+}
+
+func (se *SemanticErrors) Count() int {
+	return len(se.Errors)
+}
+
+func (se *SemanticErrors) Error() string {
+	var sb strings.Builder
+
+	for _, v := range se.Errors {
+		sb.WriteString(v.Error())
+		sb.WriteString("\n")
+	}
+	return sb.String()
+}
+
 type SemanticAnalyzer struct {
-	scopes []*Scope
-	errors []error
+	scopes []*scope
+	errors SemanticErrors
 }
 
 func NewSemanticAnalyzer() *SemanticAnalyzer {
 	return &SemanticAnalyzer{
-		scopes: []*Scope{newScope(nil)}, // global scope
-		errors: []error{},
+		scopes: []*scope{newScope(nil)}, // global scope
+		errors: SemanticErrors{},
 	}
 }
 
-func newScope(parent *Scope) *Scope {
-	symbols := make(map[string]*Symbol)
-	symbols["input"] = &Symbol{
+func newScope(parent *scope) *scope {
+	symbols := make(map[string]*symbol)
+	symbols["input"] = &symbol{
 		Name:  "input",
 		Type:  "object",
 		Kind:  "namespace",
 		Value: make(map[string]any),
 	}
-	return &Scope{
+	return &scope{
 		symbols: symbols,
 		parent:  parent,
 	}
@@ -57,7 +79,7 @@ func (sc *SemanticAnalyzer) popScope() {
 	}
 }
 
-func (sc *SemanticAnalyzer) currentScope() *Scope {
+func (sc *SemanticAnalyzer) currentScope() *scope {
 	return sc.scopes[len(sc.scopes)-1]
 }
 
@@ -73,11 +95,11 @@ func (sc *SemanticAnalyzer) declareSymbol(name, typ, kind string, value any, spa
 	if _, exists := scope.symbols[name]; exists {
 		return errorAt(span, "symbol '%s' already declared in this scope", name)
 	}
-	scope.symbols[name] = &Symbol{Name: name, Type: typ, Kind: kind, Value: value}
+	scope.symbols[name] = &symbol{Name: name, Type: typ, Kind: kind, Value: value}
 	return nil
 }
 
-func (sc *SemanticAnalyzer) lookupSymbol(name string, span ast.Span) (*Symbol, error) {
+func (sc *SemanticAnalyzer) lookupSymbol(name string, span ast.Span) (*symbol, error) {
 	for i := len(sc.scopes) - 1; i >= 0; i-- {
 		if sym, exists := sc.scopes[i].symbols[name]; exists {
 			return sym, nil
@@ -87,12 +109,12 @@ func (sc *SemanticAnalyzer) lookupSymbol(name string, span ast.Span) (*Symbol, e
 }
 
 func (sc *SemanticAnalyzer) addError(err error) {
-	sc.errors = append(sc.errors, err)
+	sc.errors.Add(err)
 }
 
-func errorAt(span ast.WithSpan, format string, args ...interface{}) error {
-	pos := span.GetSpan().Start.String()
-	return fmt.Errorf("%s: %s", pos, fmt.Sprintf(format, args...))
+func errorAt(span ast.WithSpan, format string, args ...any) error {
+	pos := span.GetSpan().Start
+	return fmt.Errorf("%d:%d: %s", pos.Line, pos.Col+1, fmt.Sprintf(format, args...))
 }
 
 func (sc *SemanticAnalyzer) inferType(expr ast.Expr) string {
@@ -149,7 +171,7 @@ func (sc *SemanticAnalyzer) requireType(actualType string, expectedType string) 
 	return actualType == expectedType || actualType == "unknown"
 }
 
-func (sc *SemanticAnalyzer) Analyze(program *ast.Program) []error {
+func (sc *SemanticAnalyzer) Analyze(program *ast.Program) error {
 	for _, decl := range program.Decls {
 		switch d := decl.(type) {
 		case *ast.Signal:
@@ -163,7 +185,11 @@ func (sc *SemanticAnalyzer) Analyze(program *ast.Program) []error {
 		}
 	}
 
-	return sc.errors
+	if sc.errors.Count() > 0 {
+		return &sc.errors
+	}
+
+	return nil
 }
 
 func (sc *SemanticAnalyzer) VisitProgram(p *ast.Program) error {

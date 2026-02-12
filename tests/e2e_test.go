@@ -9,10 +9,9 @@ import (
 	"strings"
 	"testing"
 
-	"nodora.org/nodora/internal/evaluator"
-	"nodora.org/nodora/internal/nir"
-	"nodora.org/nodora/internal/parser"
-	"nodora.org/nodora/internal/semantics"
+	"nodora.org/nodora/pkg/compiler"
+	"nodora.org/nodora/pkg/evaluator"
+	"nodora.org/nodora/pkg/nir"
 )
 
 type TestSample struct {
@@ -64,27 +63,13 @@ func runTest(t *testing.T, rulePath, inputsPath, testName string) {
 		t.Fatalf("Failed to read rule file %s: %v", rulePath, err)
 	}
 
-	ast, err := parser.Parse(string(ruleContent))
-	if err != nil {
-		t.Fatalf("Failed to parse rule %s: %v", testName, err)
-	}
-
-	analyzer := semantics.NewSemanticAnalyzer()
-	errors := analyzer.Analyze(ast)
-	if len(errors) > 0 {
-		for _, e := range errors {
-			t.Errorf("Semantic error in %s: %v", testName, e)
-		}
-		t.FailNow()
-	}
-
-	builder := nir.NewBuilder()
-	program, err := builder.BuildFromAST(ast)
+	compiler := compiler.NewCompiler()
+	program, err := compiler.Compile(string(ruleContent))
 	if err != nil {
 		t.Fatalf("Failed to convert rule %s: %v", testName, err)
 	}
 
-	ev := evaluator.NewEvaluator(&program)
+	ev := evaluator.NewEvaluator(program)
 
 	inputsContent, err := os.ReadFile(inputsPath)
 	if err != nil {

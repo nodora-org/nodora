@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	version "nodora.org/nodora"
 	"nodora.org/nodora/internal/ast"
 )
 
@@ -57,10 +58,12 @@ func NewBuilder() *Builder {
 	}
 }
 
-func (b *Builder) BuildFromAST(program *ast.Program) (Program, error) {
-	result := Program{
-		Signals: make(map[string]Signal),
-		Rules:   make(map[string]Rule),
+func (b *Builder) Build(program *ast.Program) (*Program, error) {
+	meta := Metadata{"version": version.Version}
+	result := &Program{
+		Metadata: meta,
+		Signals:  make(map[string]Signal),
+		Rules:    make(map[string]Rule),
 	}
 
 	for _, decl := range program.Decls {
@@ -72,7 +75,7 @@ func (b *Builder) BuildFromAST(program *ast.Program) (Program, error) {
 		case *ast.Rule:
 			rule, err := b.buildRule(node)
 			if err != nil {
-				return Program{}, fmt.Errorf("error converting rule %s: %w", node.Name, err)
+				return nil, fmt.Errorf("error converting rule %s: %w", node.Name, err)
 			}
 			result.Rules[node.Name] = rule
 		}

@@ -21,7 +21,7 @@ rule test {
     x = undefined_var + 1
 }
 `,
-			expectedErrMsg: "3:8: undefined symbol 'undefined_var'",
+			expectedErrMsg: "3:9: undefined symbol 'undefined_var'",
 		},
 		{
 			name: "type mismatch",
@@ -30,7 +30,7 @@ rule test {
     x = "hello" + 5
 }
 `,
-			expectedErrMsg: "3:8: operator '+' cannot be applied to string and number",
+			expectedErrMsg: "3:9: operator '+' cannot be applied to string and number",
 		},
 		{
 			name: "undefined signal",
@@ -39,7 +39,7 @@ rule test {
     emit undefined_signal()
 }
 `,
-			expectedErrMsg: "3:4: undefined signal 'undefined_signal'",
+			expectedErrMsg: "3:5: undefined signal 'undefined_signal'",
 		},
 	}
 
@@ -51,20 +51,24 @@ rule test {
 			}
 
 			analyzer := semantics.NewSemanticAnalyzer()
-			errors := analyzer.Analyze(program)
+			err = analyzer.Analyze(program)
 
-			if len(errors) == 0 {
-				t.Errorf("Expected error for %s", tt.name)
-				return
-			}
+			if semErrs, ok := err.(*semantics.SemanticErrors); ok {
+				if semErrs.Count() == 0 {
+					t.Errorf("Expected error for %s", tt.name)
+					return
+				}
 
-			errMsg := errors[0].Error()
-			if !strings.Contains(errMsg, ":") {
-				t.Error("Expected error to contain position information (line:col)")
-			}
+				errMsg := semErrs.Errors[0].Error()
+				if !strings.Contains(errMsg, ":") {
+					t.Error("Expected error to contain position information (line:col)")
+				}
 
-			if errMsg != tt.expectedErrMsg {
-				t.Errorf("Expected error to be '%s', but got: %s", tt.expectedErrMsg, errMsg)
+				if errMsg != tt.expectedErrMsg {
+					t.Errorf("Expected error to be '%s', but got '%s'", tt.expectedErrMsg, errMsg)
+				}
+			} else {
+				t.Errorf("Unexpected error %s", err)
 			}
 		})
 	}
