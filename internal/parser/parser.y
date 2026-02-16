@@ -3,7 +3,6 @@ package parser
 
 import (
 	"fmt"
-	"errors"
     "nodora.org/nodora/internal/ast"
 )
 
@@ -402,10 +401,6 @@ func Parse(input string) (*ast.Program, error) {
     p := yyNewParser()
 
     if p.Parse(l) != 0 {
-        return nil, errors.New("parsing failed")
-    }
-
-    if l.lastError != "" {
         return nil, &ParserError{
             l.line,
             l.col,

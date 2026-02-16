@@ -1,0 +1,41 @@
+{
+  "name": "@nodora/js",
+  "version": "0.0.1",
+  "description": "JS bindings for Nodora rule engine",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "build": "make build",
+    "clean": "make clean",
+    "test": "make test",
+    "prepublishOnly": "bun run build"
+  },
+  "keywords": [
+    "nodora",
+    "rule",
+    "policy",
+    "engine",
+    "wasm"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.11.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nodora/nodora.git"
+  },
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./lib/index.d.ts",
+        "default": "./lib/index.js"
+      },
+      "require": {
+        "types": "./lib/index.d.ts",
+        "default": "./lib/index.js"
+      }
+    }
+  }
+}

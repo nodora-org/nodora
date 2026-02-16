@@ -1,0 +1,13 @@
+# Build artifacts
+*.wasm
+lib/wasm_exec.js
+
+# Dependencies
+node_modules/
+
+# Test outputs
+dist/
+
+# OS files
+.DS_Store
+Thumbs.db
