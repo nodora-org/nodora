@@ -92,11 +92,6 @@ func debugRule(ruleName string, rule *nir.Rule, input nir.ValueMap, evalCtx *nir
 		fmt.Printf("  %s: %v\n", k, v)
 	}
 
-	fmt.Printf("\nSymbols (len = %d)\n", len(evalCtx.Slots))
-	for symName, slotIdx := range rule.Symbols {
-		fmt.Printf("  %s -> [%d]\n", symName, slotIdx)
-	}
-
 	fmt.Printf("\nSlots (len = %d)\n", len(evalCtx.Slots))
 	for i, value := range evalCtx.Slots {
 		fmt.Printf("  [%d]: %v\n", i, value)

@@ -3,17 +3,9 @@ package parser
 
 import (
 	"fmt"
+	"errors"
     "nodora.org/nodora/internal/ast"
 )
-
-var parseResult *ast.Program
-
-func mergeSpans(start, end ast.Span) ast.Span {
-	return ast.Span{
-		Start: start.Start,
-		End:   end.End,
-	}
-}
 
 %}
 
@@ -64,7 +56,7 @@ func mergeSpans(start, end ast.Span) ast.Span {
 
 program
     : decl_list
-        { parseResult = &ast.Program{Decls: $1} }
+        { yylex.(*lexer).result = &ast.Program{Decls: $1} }
     ;
 
 decl_list
@@ -85,7 +77,7 @@ signal_decl
     : SIGNAL IDENT LPAREN params_opt RPAREN
         { 
           $$ = &ast.Signal{Name: $2, Params: $4}
-          $$.Span = mergeSpans($1, $5)
+          $$.Span = $1.Merge($5)
         }
     ;
 
@@ -93,7 +85,7 @@ rule_decl
     : RULE IDENT LBRACE stmt_list RBRACE
         { 
           $$ = &ast.Rule{Name: $2, Statements: $4}
-          $$.Span = mergeSpans($1, $5)
+          $$.Span = $1.Merge($5)
         }
     ;
 
@@ -137,13 +129,13 @@ assign_stmt
     : IDENT ASSIGN expr
         { 
           a := &ast.Assignment{Name: $1, Expr: $3, IsOut: false}
-          a.Span = mergeSpans($<span>1, $3.GetSpan())
+          a.Span = $<span>1.Merge($3.GetSpan())
           $$ = a
         }
     | OUT IDENT ASSIGN expr
         { 
           a := &ast.Assignment{Name: $2, Expr: $4, IsOut: true}
-          a.Span = mergeSpans($1, $4.GetSpan())
+          a.Span = $1.Merge($4.GetSpan())
           $$ = a
         }
     ;
@@ -152,13 +144,13 @@ emit_stmt
     : EMIT IDENT LPAREN args_opt RPAREN WHEN expr
         { 
           e := &ast.EmitStatement{Signal: $2, Args: $4, Condition: $7}
-          e.Span = mergeSpans($1, $7.GetSpan())
+          e.Span = $1.Merge($7.GetSpan())
           $$ = e
         }
     | EMIT IDENT LPAREN args_opt RPAREN
         { 
           e := &ast.EmitStatement{Signal: $2, Args: $4}
-          e.Span = mergeSpans($1, $5)
+          e.Span = $1.Merge($5)
           $$ = e
         }
     ;
@@ -174,13 +166,13 @@ conditional_expr
     | IF expr THEN expr ELSE conditional_expr
         { 
           c := &ast.ConditionalExpr{Cond: $2, Then: $4, Else: $6}
-          c.Span = mergeSpans($1, $6.GetSpan())
+          c.Span = $1.Merge($6.GetSpan())
           $$ = c
         }
     | logical_or_expr QMARK expr COLON conditional_expr
         { 
           c := &ast.ConditionalExpr{Cond: $1, Then: $3, Else: $5}
-          c.Span = mergeSpans($1.GetSpan(), $5.GetSpan())
+          c.Span = $1.GetSpan().Merge($5.GetSpan())
           $$ = c
         }
     ;
@@ -189,7 +181,7 @@ logical_or_expr
     : logical_or_expr OR logical_and_expr
         { 
           b := &ast.BinaryExpr{Left: $1, Op: "||", Right: $3}
-          b.Span = mergeSpans($1.GetSpan(), $3.GetSpan())
+          b.Span = $1.GetSpan().Merge($3.GetSpan())
           $$ = b
         }
     | logical_and_expr
@@ -200,7 +192,7 @@ logical_and_expr
     : logical_and_expr AND equality_expr
         { 
           b := &ast.BinaryExpr{Left: $1, Op: "&&", Right: $3}
-          b.Span = mergeSpans($1.GetSpan(), $3.GetSpan())
+          b.Span = $1.GetSpan().Merge($3.GetSpan())
           $$ = b
         }
     | equality_expr
@@ -211,13 +203,13 @@ equality_expr
     : equality_expr EQ relational_expr
         { 
           b := &ast.BinaryExpr{Left: $1, Op: "==", Right: $3}
-          b.Span = mergeSpans($1.GetSpan(), $3.GetSpan())
+          b.Span = $1.GetSpan().Merge($3.GetSpan())
           $$ = b
         }
     | equality_expr NEQ relational_expr
         { 
           b := &ast.BinaryExpr{Left: $1, Op: "!=", Right: $3}
-          b.Span = mergeSpans($1.GetSpan(), $3.GetSpan())
+          b.Span = $1.GetSpan().Merge($3.GetSpan())
           $$ = b
         }
     | relational_expr
@@ -228,25 +220,25 @@ relational_expr
     : relational_expr GT membership_expr
         { 
           b := &ast.BinaryExpr{Left: $1, Op: ">", Right: $3}
-          b.Span = mergeSpans($1.GetSpan(), $3.GetSpan())
+          b.Span = $1.GetSpan().Merge($3.GetSpan())
           $$ = b
         }
     | relational_expr LT membership_expr
         { 
           b := &ast.BinaryExpr{Left: $1, Op: "<", Right: $3}
-          b.Span = mergeSpans($1.GetSpan(), $3.GetSpan())
+          b.Span = $1.GetSpan().Merge($3.GetSpan())
           $$ = b
         }
     | relational_expr GTE membership_expr
         { 
           b := &ast.BinaryExpr{Left: $1, Op: ">=", Right: $3}
-          b.Span = mergeSpans($1.GetSpan(), $3.GetSpan())
+          b.Span = $1.GetSpan().Merge($3.GetSpan())
           $$ = b
         }
     | relational_expr LTE membership_expr
         { 
           b := &ast.BinaryExpr{Left: $1, Op: "<=", Right: $3}
-          b.Span = mergeSpans($1.GetSpan(), $3.GetSpan())
+          b.Span = $1.GetSpan().Merge($3.GetSpan())
           $$ = b
         }
     | membership_expr
@@ -257,7 +249,7 @@ membership_expr
     : membership_expr IN postfix_expr
         { 
           b := &ast.BinaryExpr{Left: $1, Op: "in", Right: $3}
-          b.Span = mergeSpans($1.GetSpan(), $3.GetSpan())
+          b.Span = $1.GetSpan().Merge($3.GetSpan())
           $$ = b
         }
     | additive_expr
@@ -268,19 +260,19 @@ additive_expr
     : additive_expr PLUS multiplicative_expr
         { 
           b := &ast.BinaryExpr{Left: $1, Op: "+", Right: $3}
-          b.Span = mergeSpans($1.GetSpan(), $3.GetSpan())
+          b.Span = $1.GetSpan().Merge($3.GetSpan())
           $$ = b
         }
     | additive_expr MINUS multiplicative_expr
         { 
           b := &ast.BinaryExpr{Left: $1, Op: "-", Right: $3}
-          b.Span = mergeSpans($1.GetSpan(), $3.GetSpan())
+          b.Span = $1.GetSpan().Merge($3.GetSpan())
           $$ = b
         }
     | additive_expr MOD unary_expr
         { 
           b := &ast.BinaryExpr{Left: $1, Op: "%", Right: $3}
-          b.Span = mergeSpans($1.GetSpan(), $3.GetSpan())
+          b.Span = $1.GetSpan().Merge($3.GetSpan())
           $$ = b
         }
     | multiplicative_expr
@@ -291,13 +283,13 @@ multiplicative_expr
     : multiplicative_expr STAR unary_expr
         { 
           b := &ast.BinaryExpr{Left: $1, Op: "*", Right: $3}
-          b.Span = mergeSpans($1.GetSpan(), $3.GetSpan())
+          b.Span = $1.GetSpan().Merge($3.GetSpan())
           $$ = b
         }
     | multiplicative_expr SLASH unary_expr
         { 
           b := &ast.BinaryExpr{Left: $1, Op: "/", Right: $3}
-          b.Span = mergeSpans($1.GetSpan(), $3.GetSpan())
+          b.Span = $1.GetSpan().Merge($3.GetSpan())
           $$ = b
         }
     | unary_expr
@@ -310,13 +302,13 @@ unary_expr
     | NOT unary_expr
         { 
           u := &ast.UnaryExpr{Op: "!", Expr: $2}
-          u.Span = mergeSpans($1, $2.GetSpan())
+          u.Span = $1.Merge($2.GetSpan())
           $$ = u
         }
     | MINUS unary_expr
         { 
           u := &ast.UnaryExpr{Op: "-", Expr: $2}
-          u.Span = mergeSpans($1, $2.GetSpan())
+          u.Span = $1.Merge($2.GetSpan())
           $$ = u
         }
     ;
@@ -333,7 +325,7 @@ postfix_expr
     | postfix_expr LBRACKET expr RBRACKET
         { 
           i := &ast.IndexExpr{Expr: $1, Index: $3}
-          i.Span = mergeSpans($1.GetSpan(), $4)
+          i.Span = $1.GetSpan().Merge($4)
           $$ = i
         }
     ;
@@ -372,7 +364,7 @@ primary_expr
     | LBRACKET args_opt RBRACKET
         { 
           a := &ast.ArrayLiteral{Elements: $2}
-          a.Span = mergeSpans($1, $3)
+          a.Span = $1.Merge($3)
           $$ = a
         }
     | LPAREN expr RPAREN
@@ -395,12 +387,31 @@ arg_list
 
 %%
 
+type ParserError struct {
+	line      int
+	col       int
+	lastError string
+}
+
+func (pe ParserError) Error() string {
+	return fmt.Sprintf("%d:%d: %s", pe.line, pe.col, pe.lastError)
+}
+
 func Parse(input string) (*ast.Program, error) {
-	l := NewLexer(input)
-	p := yyNewParser()
-	p.Parse(l)
-	if l.lastError != "" {
-		return nil, fmt.Errorf("%d:%d : %s", l.line, l.col, l.lastError)
-	}
-	return parseResult, nil
+    l := newLexer(input)
+    p := yyNewParser()
+
+    if p.Parse(l) != 0 {
+        return nil, errors.New("parsing failed")
+    }
+
+    if l.lastError != "" {
+        return nil, &ParserError{
+            l.line,
+            l.col,
+            l.lastError,
+        }
+    }
+
+    return l.result, nil
 }

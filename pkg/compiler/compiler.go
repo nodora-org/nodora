@@ -1,6 +1,8 @@
 package compiler
 
 import (
+	"nodora.org/nodora/internal/optimizer"
+	"nodora.org/nodora/internal/optimizer/passes"
 	"nodora.org/nodora/internal/parser"
 	"nodora.org/nodora/internal/semantics"
 	"nodora.org/nodora/pkg/nir"
@@ -26,6 +28,15 @@ func (c *Compiler) Compile(src string) (*nir.Program, error) {
 	builder := nir.NewBuilder()
 	prog, err := builder.Build(p)
 	if err != nil {
+		return nil, err
+	}
+
+	opt := optimizer.NewOptimizer()
+	opt.AddPass(passes.NewConstantFolding())
+	opt.AddPass(passes.NewDeadCodeElimination())
+	opt.AddPass(passes.NewSymbolRemap())
+
+	if err := opt.Run(prog); err != nil {
 		return nil, err
 	}
 

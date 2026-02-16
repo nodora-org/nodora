@@ -21,6 +21,10 @@ type Numeric interface {
 	Signed | Unsigned | Float
 }
 
+func IntPtr(i int) *int {
+	return &i
+}
+
 func isFloat(v any) bool {
 	switch v.(type) {
 	case float32, float64:
@@ -108,11 +112,11 @@ func normalizeValue(v any) Value {
 		// convert []any to []Value
 		result := make([]Value, len(val))
 		for i, item := range val {
-			result[i] = normalizeValue(item) // Recursive
+			result[i] = normalizeValue(item)
 		}
 		return result
 	case map[string]any:
-		// convert map[string]any to map[string]Value if needed
+		// convert map[string]any to map[string]Value
 		result := make(ValueMap, len(val))
 		for k, item := range val {
 			result[k] = normalizeValue(item)

@@ -59,7 +59,7 @@ func newScope(parent *scope) *scope {
 	symbols["input"] = &symbol{
 		Name:  "input",
 		Type:  "object",
-		Kind:  "namespace",
+		Kind:  "reserved",
 		Value: make(map[string]any),
 	}
 	return &scope{
@@ -83,13 +83,13 @@ func (sc *SemanticAnalyzer) currentScope() *scope {
 	return sc.scopes[len(sc.scopes)-1]
 }
 
-func (sc *SemanticAnalyzer) isReservedNamespace(name string) bool {
+func (sc *SemanticAnalyzer) isReservedName(name string) bool {
 	return name == "input"
 }
 
 func (sc *SemanticAnalyzer) declareSymbol(name, typ, kind string, value any, span ast.Span) error {
-	if sc.isReservedNamespace(name) {
-		return errorAt(span, "symbol '%s' is a reserved namespace", name)
+	if sc.isReservedName(name) {
+		return errorAt(span, "symbol '%s' is a reserved name", name)
 	}
 	scope := sc.currentScope()
 	if _, exists := scope.symbols[name]; exists {

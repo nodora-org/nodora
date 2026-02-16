@@ -1,11 +1,10 @@
-package tests
+package semantics
 
 import (
 	"strings"
 	"testing"
 
 	"nodora.org/nodora/internal/parser"
-	"nodora.org/nodora/internal/semantics"
 )
 
 func TestSemanticErrorsWithSpan(t *testing.T) {
@@ -50,10 +49,10 @@ rule test {
 				t.Fatalf("Failed to parse: %v", err)
 			}
 
-			analyzer := semantics.NewSemanticAnalyzer()
+			analyzer := NewSemanticAnalyzer()
 			err = analyzer.Analyze(program)
 
-			if semErrs, ok := err.(*semantics.SemanticErrors); ok {
+			if semErrs, ok := err.(*SemanticErrors); ok {
 				if semErrs.Count() == 0 {
 					t.Errorf("Expected error for %s", tt.name)
 					return

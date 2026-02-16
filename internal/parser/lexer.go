@@ -6,16 +6,13 @@ import (
 	"nodora.org/nodora/internal/ast"
 )
 
-// lexer implements a simple, goyacc-compatible lexer for the grammar in parser.y.
-// It returns token codes defined in the generated parser.go and places literal
-// values (identifiers, strings, numbers) into the yylval (yySymType).
-
 type lexer struct {
 	input     string
 	pos       int
 	line      int
 	col       int
 	lastError string
+	result    *ast.Program
 }
 
 var keywords = map[string]int{
@@ -33,7 +30,7 @@ var keywords = map[string]int{
 }
 
 // NewLexer creates a new lexer for the given input string.
-func NewLexer(input string) *lexer {
+func newLexer(input string) *lexer {
 	return &lexer{input: input, line: 1, col: 0}
 }
 
@@ -299,7 +296,6 @@ func (l *lexer) Lex(lval *yySymType) int {
 
 func (l *lexer) Error(s string) {
 	l.lastError = s
-	// Could log here if desired
 }
 
 // Helpers

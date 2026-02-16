@@ -19,126 +19,101 @@ type Visitor interface {
 	VisitParam(p *Param) error
 }
 
-// Program traversal
-func VisitProgram(dv Visitor, p *Program) error {
+type BaseVisitor struct{}
+
+func (bv *BaseVisitor) VisitProgram(p *Program) error {
 	for _, decl := range p.Decls {
-		if err := decl.Accept(dv); err != nil {
+		if err := decl.Accept(bv); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-// Declarations - no children to traverse
-func VisitSignal(dv Visitor, s *Signal) error {
-	return nil
-}
+func (bv *BaseVisitor) VisitSignal(s *Signal) error { return nil }
 
-// Rule traversal
-func VisitRule(dv Visitor, r *Rule) error {
+func (bv *BaseVisitor) VisitRule(r *Rule) error {
 	for _, stmt := range r.Statements {
-		if err := stmt.(Node).Accept(dv); err != nil {
+		if err := stmt.(Node).Accept(bv); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-// Assignment traversal
-func VisitAssignment(dv Visitor, a *Assignment) error {
-	return a.Expr.(Node).Accept(dv)
+func (bv *BaseVisitor) VisitAssignment(a *Assignment) error {
+	return a.Expr.(Node).Accept(bv)
 }
 
-// EmitStatement traversal
-func VisitEmitStatement(dv Visitor, es *EmitStatement) error {
+func (bv *BaseVisitor) VisitEmitStatement(es *EmitStatement) error {
 	for _, arg := range es.Args {
-		if err := arg.(Node).Accept(dv); err != nil {
+		if err := arg.(Node).Accept(bv); err != nil {
 			return err
 		}
 	}
 	if es.Condition != nil {
-		if err := (es.Condition).(Node).Accept(dv); err != nil {
+		if err := (es.Condition).(Node).Accept(bv); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-// BinaryExpr traversal
-func VisitBinaryExpr(dv Visitor, be *BinaryExpr) error {
-	if err := be.Left.(Node).Accept(dv); err != nil {
+func (bv *BaseVisitor) VisitBinaryExpr(be *BinaryExpr) error {
+	if err := be.Left.(Node).Accept(bv); err != nil {
 		return err
 	}
-	if err := be.Right.(Node).Accept(dv); err != nil {
-		return err
-	}
-	return nil
-}
-
-// UnaryExpr traversal
-func VisitUnaryExpr(dv Visitor, ue *UnaryExpr) error {
-	return ue.Expr.(Node).Accept(dv)
-}
-
-// SelectorExpr traversal
-func VisitSelectorExpr(dv Visitor, se *SelectorExpr) error {
-	if err := se.Expr.(Node).Accept(dv); err != nil {
+	if err := be.Right.(Node).Accept(bv); err != nil {
 		return err
 	}
 	return nil
 }
 
-// SelectorExpr traversal
-func VisitIndexExpr(dv Visitor, ie *IndexExpr) error {
-	if err := ie.Expr.(Node).Accept(dv); err != nil {
-		return err
-	}
-	return ie.Index.(Node).Accept(dv)
+func (bv *BaseVisitor) VisitUnaryExpr(ue *UnaryExpr) error {
+	return ue.Expr.(Node).Accept(bv)
 }
 
-// Identifier - leaf node
-func VisitIdentifier(dv Visitor, id *Identifier) error {
-	return nil
-}
-
-// Literals - leaf nodes
-func VisitNumberLiteral(dv Visitor, nl *NumberLiteral) error {
-	return nil
-}
-
-func VisitStringLiteral(dv Visitor, sl *StringLiteral) error {
-	return nil
-}
-
-func VisitBoolLiteral(dv Visitor, bl *BoolLiteral) error {
-	return nil
-}
-
-// ConditionalExpr traversal
-func VisitConditionalExpr(dv Visitor, ce *ConditionalExpr) error {
-	if err := ce.Cond.(Node).Accept(dv); err != nil {
-		return err
-	}
-	if err := ce.Then.(Node).Accept(dv); err != nil {
-		return err
-	}
-	if err := ce.Else.(Node).Accept(dv); err != nil {
+func (bv *BaseVisitor) VisitSelectorExpr(se *SelectorExpr) error {
+	if err := se.Expr.(Node).Accept(bv); err != nil {
 		return err
 	}
 	return nil
 }
 
-// ArrayLiteral traversal
-func VisitArrayLiteral(dv Visitor, al *ArrayLiteral) error {
+func (bv *BaseVisitor) VisitIndexExpr(ie *IndexExpr) error {
+	if err := ie.Expr.(Node).Accept(bv); err != nil {
+		return err
+	}
+	return ie.Index.(Node).Accept(bv)
+}
+func (bv *BaseVisitor) VisitIdentifier(id *Identifier) error { return nil }
+
+func (bv *BaseVisitor) VisitNumberLiteral(nl *NumberLiteral) error { return nil }
+
+func (bv *BaseVisitor) VisitStringLiteral(sl *StringLiteral) error { return nil }
+
+func (bv *BaseVisitor) VisitBoolLiteral(bl *BoolLiteral) error { return nil }
+
+func (bv *BaseVisitor) VisitConditionalExpr(ce *ConditionalExpr) error {
+	if err := ce.Cond.(Node).Accept(bv); err != nil {
+		return err
+	}
+	if err := ce.Then.(Node).Accept(bv); err != nil {
+		return err
+	}
+	if err := ce.Else.(Node).Accept(bv); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (bv *BaseVisitor) VisitArrayLiteral(al *ArrayLiteral) error {
 	for _, elem := range al.Elements {
-		if err := elem.(Node).Accept(dv); err != nil {
+		if err := elem.(Node).Accept(bv); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-// Param - leaf node
-func VisitParam(dv Visitor, p *Param) error {
-	return nil
-}
+func (bv *BaseVisitor) VisitParam(p *Param) error { return nil }

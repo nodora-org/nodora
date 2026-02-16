@@ -22,10 +22,6 @@ type Param struct {
 	Name string `json:"name"`
 }
 
-type Value any
-
-type SymbolMap map[string]int
-
 type Output struct {
 	Sym int `json:"sym"`
 }
@@ -33,7 +29,6 @@ type Output struct {
 type Rule struct {
 	Outputs  map[string]Output `json:"outputs"`
 	Symslots int               `json:"symslots"`
-	Symbols  SymbolMap         `json:"symbols"`
 	Ops      []Op              `json:"ops"`
 }
 
@@ -44,30 +39,8 @@ type SignalListener interface {
 type SignalListenerFunc func(args []Value) error
 
 func (f SignalListenerFunc) Invoke(args []Value) error {
+	defer func() { recover() }() // silent recovery
 	return f(args)
-}
-
-type ValueMap map[string]Value
-
-func NewValueMap(raw map[string]any) ValueMap {
-	result := make(map[string]Value, len(raw))
-	for k, v := range raw {
-		result[k] = normalizeValue(v)
-	}
-	return result
-}
-
-func (n *ValueMap) UnmarshalJSON(data []byte) error {
-	var raw map[string]any
-	if err := json.Unmarshal(data, &raw); err != nil {
-		return err
-	}
-
-	*n = make(map[string]Value, len(raw))
-	for k, v := range raw {
-		(*n)[k] = normalizeValue(v)
-	}
-	return nil
 }
 
 type EvaluationContext struct {
@@ -120,14 +93,12 @@ func (s *SymExpr) Evaluate(ctx *EvaluationContext) (Value, error) {
 }
 
 type IdxExpr struct {
-	Value []RawExpr `json:"idx"`
+	Index RawExpr `json:"idx"`
+	From  RawExpr `json:"from"`
 }
 
 func (i *IdxExpr) Evaluate(ctx *EvaluationContext) (Value, error) {
-	if len(i.Value) != 2 {
-		return nil, fmt.Errorf("index expression requires 2 arguments, got %d", len(i.Value))
-	}
-	arr, err := i.Value[0].Expr.Evaluate(ctx)
+	arr, err := i.From.Expr.Evaluate(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +107,7 @@ func (i *IdxExpr) Evaluate(ctx *EvaluationContext) (Value, error) {
 		return nil, fmt.Errorf("cannot index into non-array type %T", arr)
 	}
 
-	index, err := i.Value[1].Expr.Evaluate(ctx)
+	index, err := i.Index.Expr.Evaluate(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -247,10 +218,9 @@ func (s *SignalExpr) Evaluate(ctx *EvaluationContext) (Value, error) {
 		Name: s.Name,
 		Args: args,
 	}
+
 	if listeners, exists := ctx.Listeners[s.Name]; exists {
-		for _, listener := range listeners {
-			listener.Invoke(args)
-		}
+		s.invokeListeners(listeners, args)
 	}
 	return emittedSignal, nil
 }

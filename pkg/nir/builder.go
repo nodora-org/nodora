@@ -35,7 +35,7 @@ func selResult(path string, from RawExpr, exprs []RawExpr) exprResult {
 }
 
 func idxResult(e exprResult, idx exprResult) exprResult {
-	return exprResult{expr: &IdxExpr{Value: []RawExpr{e.toRawExpr(), idx.toRawExpr()}}}
+	return exprResult{expr: &IdxExpr{From: e.toRawExpr(), Index: idx.toRawExpr()}}
 }
 
 func (r exprResult) toRawExpr() RawExpr {
@@ -96,7 +96,6 @@ func (b *Builder) buildRule(rule *ast.Rule) (Rule, error) {
 
 	result := Rule{
 		Outputs:  make(map[string]Output),
-		Symbols:  make(SymbolMap),
 		Symslots: 1,
 		Ops:      make([]Op, 0),
 	}
@@ -115,7 +114,6 @@ func (b *Builder) buildRule(rule *ast.Rule) (Rule, error) {
 		result.Outputs[outputName] = Output{Sym: symIndex}
 	}
 
-	result.Symbols = b.symbols
 	result.Symslots = b.symIndex
 	result.Ops = b.ops
 

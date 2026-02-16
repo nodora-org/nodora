@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/urfave/cli/v3"
+	"nodora.org/nodora/internal/parser"
 	"nodora.org/nodora/internal/semantics"
 	"nodora.org/nodora/pkg/compiler"
 )
@@ -29,19 +30,21 @@ func Compile(ctx context.Context, cmd *cli.Command) error {
 	nir, err := c.Compile(string(input))
 
 	if err != nil {
-		semErrs, ok := err.(*semantics.SemanticErrors)
-		if !ok {
-			return fmt.Errorf("%v:%w", filePath, err)
-		}
-
-		errCount := semErrs.Count()
-		if errCount > 0 {
-			var sb strings.Builder
-			sb.WriteString(fmt.Sprintf("Found %v issues in %v\n\n", errCount, filePath))
-			for _, e := range semErrs.Errors {
-				sb.WriteString(fmt.Sprintf("> %v:%v\n", filePath, e))
+		switch ce := err.(type) {
+		case *semantics.SemanticErrors:
+			errCount := ce.Count()
+			if errCount > 0 {
+				var sb strings.Builder
+				fmt.Fprintf(&sb, "Found %v issues in %v\n\n", errCount, filePath)
+				for _, e := range ce.Errors {
+					fmt.Fprintf(&sb, "> %v:%v\n", filePath, e)
+				}
+				return fmt.Errorf("%v", sb.String())
 			}
-			return fmt.Errorf("%v", sb.String())
+		case *parser.ParserError:
+			return fmt.Errorf("%v:%w", filePath, ce)
+		default:
+			return fmt.Errorf("%v: %w", filePath, ce)
 		}
 	}
 

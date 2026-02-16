@@ -12,10 +12,12 @@ import (
 
 func main() {
 	cmd := &cli.Command{
+		Name:  "nodora",
+		Usage: "A rule compiler and evaluator for governed logic at scale",
 		Commands: []*cli.Command{
 			{
 				Name:  "version",
-				Usage: "Print Nodora version",
+				Usage: "Print version",
 				Action: func(ctx context.Context, c *cli.Command) error {
 					fmt.Println(version.Version)
 					return nil
@@ -47,6 +49,6 @@ func main() {
 	}
 
 	if err := cmd.Run(context.Background(), os.Args); err != nil {
-		fmt.Printf("💀 %v\n", err)
+		fmt.Printf("(>_<) %v\n", err)
 	}
 }
