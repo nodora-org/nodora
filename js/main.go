@@ -109,10 +109,10 @@ func registerCallback(this js.Value, args []js.Value) any {
 		return errorObject("evaluator not found: " + strconv.Itoa(id))
 	}
 
-	ev.OnSignalFunc(signalName, func(args []nir.Value) error {
+	ev.OnSignalFunc(signalName, func(args []any) error {
 		jsArgs := make([]any, len(args))
 		for i, arg := range args {
-			jsArgs[i] = valueToJS(arg)
+			jsArgs[i] = js.ValueOf(arg)
 		}
 		callback.Invoke(jsArgs...)
 		return nil
@@ -154,14 +154,16 @@ func jsToValueMap(v js.Value) nir.ValueMap {
 // converts a JS value to nir.Value
 func jsToValue(v js.Value) nir.Value {
 	switch v.Type() {
-	case js.TypeNull, js.TypeUndefined:
-		return nil
+	case js.TypeNull:
+		return nir.V(nil)
+	case js.TypeUndefined:
+		return nir.U()
 	case js.TypeBoolean:
-		return v.Bool()
+		return nir.V(v.Bool())
 	case js.TypeNumber:
-		return v.Float()
+		return nir.V(v.Float())
 	case js.TypeString:
-		return v.String()
+		return nir.V(v.String())
 	case js.TypeObject:
 		if v.InstanceOf(js.Global().Get("Array")) {
 			length := v.Length()
@@ -169,49 +171,11 @@ func jsToValue(v js.Value) nir.Value {
 			for i := range length {
 				arr[i] = jsToValue(v.Index(i))
 			}
-			return arr
+			return nir.V(arr)
 		}
-		return jsToValueMap(v)
+		return nir.V(jsToValueMap(v))
 	default:
-		return v.String()
-	}
-}
-
-// converts a nir.Value to a JS-compatible value
-func valueToJS(v nir.Value) js.Value {
-	switch val := v.(type) {
-	case nil:
-		return js.Null()
-	case bool:
-		return js.ValueOf(val)
-	case int:
-		return js.ValueOf(val)
-	case int64:
-		return js.ValueOf(float64(val))
-	case float64:
-		return js.ValueOf(val)
-	case string:
-		return js.ValueOf(val)
-	case []nir.Value:
-		arr := js.Global().Get("Array").New(len(val))
-		for i, item := range val {
-			arr.SetIndex(i, valueToJS(item))
-		}
-		return arr
-	case map[string]nir.Value:
-		obj := js.Global().Get("Object").New()
-		for k, v := range val {
-			obj.Set(k, valueToJS(v))
-		}
-		return obj
-	case nir.ValueMap:
-		obj := js.Global().Get("Object").New()
-		for k, v := range val {
-			obj.Set(k, valueToJS(v))
-		}
-		return obj
-	default:
-		return js.ValueOf(val)
+		return nir.V(v.String())
 	}
 }
 

@@ -15,7 +15,7 @@ type exprResult struct {
 }
 
 func immResult(val any) exprResult {
-	return exprResult{isImmediate: true, expr: &ImmExpr{Value: val}}
+	return exprResult{isImmediate: true, expr: &ImmExpr{Value: V(val)}}
 }
 
 func arrResult(exprs []exprResult) exprResult {
@@ -270,7 +270,7 @@ func (b *Builder) buildUnaryExpr(expr *ast.UnaryExpr) exprResult {
 
 	switch expr.Op {
 	case "-":
-		b.addOp(OpSub, []RawExpr{{Expr: &ImmExpr{Value: 0}}, inner.toRawExpr()}, &out)
+		b.addOp(OpSub, []RawExpr{{Expr: &ImmExpr{Value: V(0)}}, inner.toRawExpr()}, &out)
 	case "!":
 		b.addOp(OpNot, []RawExpr{inner.toRawExpr()}, &out)
 	}

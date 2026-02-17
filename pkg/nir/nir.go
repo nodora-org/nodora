@@ -33,12 +33,12 @@ type Rule struct {
 }
 
 type SignalListener interface {
-	Invoke(args []Value) error
+	Invoke(args []any) error
 }
 
-type SignalListenerFunc func(args []Value) error
+type SignalListenerFunc func(args []any) error
 
-func (f SignalListenerFunc) Invoke(args []Value) error {
+func (f SignalListenerFunc) Invoke(args []any) error {
 	defer func() { recover() }() // silent recovery
 	return f(args)
 }
@@ -46,7 +46,12 @@ func (f SignalListenerFunc) Invoke(args []Value) error {
 type EvaluationContext struct {
 	Slots     []Value
 	Emissions []EmittedSignal
+	Errors    []error
 	Listeners map[string][]SignalListener
+}
+
+func (ctx *EvaluationContext) addError(err error) {
+	ctx.Errors = append(ctx.Errors, err)
 }
 
 type Expr interface {
@@ -74,11 +79,11 @@ func (i *ArrExpr) Evaluate(ctx *EvaluationContext) (Value, error) {
 	for _, v := range i.Value {
 		ev, err := v.Evaluate(ctx)
 		if err != nil {
-			return nil, err
+			return U(), err
 		}
 		vals = append(vals, ev)
 	}
-	return vals, nil
+	return V(vals), nil
 }
 
 type SymExpr struct {
@@ -87,7 +92,7 @@ type SymExpr struct {
 
 func (s *SymExpr) Evaluate(ctx *EvaluationContext) (Value, error) {
 	if s.Index < 0 || s.Index >= len(ctx.Slots) {
-		return nil, fmt.Errorf("symbol index %d out of bounds", s.Index)
+		return U(), fmt.Errorf("symbol index %d out of bounds", s.Index)
 	}
 	return ctx.Slots[s.Index], nil
 }
@@ -100,13 +105,13 @@ type IdxExpr struct {
 func (i *IdxExpr) Evaluate(ctx *EvaluationContext) (Value, error) {
 	from, err := i.From.Evaluate(ctx)
 	if err != nil {
-		return nil, err
+		return U(), err
 	}
 	idx, err := i.Index.Evaluate(ctx)
 	if err != nil {
-		return nil, err
+		return U(), err
 	}
-	return evaluateAccess(from, idx)
+	return evaluateAccess(ctx, from, idx), nil
 }
 
 type SelExpr struct {
@@ -119,63 +124,85 @@ func (s *SelExpr) Evaluate(ctx *EvaluationContext) (Value, error) {
 	keys := strings.Split(s.Path, ".")
 	current, err := s.From.Evaluate(ctx)
 	if err != nil {
-		return nil, err
+		return U(), err
 	}
 
 	exprIdx := 0
 	for _, key := range keys {
-		var err error
+		if current.Undefined {
+			return U(), nil // propagate undefined
+		}
 		if key == "$" {
 			val, err := s.Exprs[exprIdx].Evaluate(ctx)
 			if err != nil {
-				return nil, err
+				return U(), err
 			}
-			current, err = evaluateAccess(current, val)
+			current = evaluateAccess(ctx, current, val)
 			exprIdx++
 		} else {
-			current, err = evaluateAccess(current, key)
-		}
-		if err != nil {
-			return nil, err
+			current = evaluateAccess(ctx, current, V(key))
 		}
 	}
 
 	return current, nil
 }
 
-func evaluateAccess(target Value, val Value) (Value, error) {
-	switch t := target.(type) {
-	case []Value:
-		return evaluateArrayAccess(t, val)
-	case ValueMap:
-		return evaluateObjectAccess(t, val)
+func evaluateAccess(ctx *EvaluationContext, target Value, val Value) Value {
+	if target.Undefined || val.Undefined {
+		return U()
 	}
-	return nil, fmt.Errorf("cannot access into %T with value of type %T", target, val)
+	switch t := target.Raw.(type) {
+	case []Value:
+		return evaluateArrayAccess(ctx, t, val)
+	case ValueMap:
+		return evaluateObjectAccess(ctx, t, val)
+	}
+	ctx.addError(fmt.Errorf("cannot access into %v with value of type %v", target.Type(), val.Type()))
+	return U()
 }
 
-func evaluateArrayAccess(from []Value, indexVal Value) (Value, error) {
+func evaluateArrayAccess(ctx *EvaluationContext, from []Value, indexVal Value) Value {
+	if indexVal.Undefined {
+		return U()
+	}
 	idx, ok := toInt(indexVal)
 	if !ok {
-		return nil, fmt.Errorf("array index must be an int, got %T", indexVal)
+		ctx.addError(fmt.Errorf(
+			"array index must be int, got %s",
+			indexVal.Type(),
+		))
+		return U()
 	}
 	if idx < 0 || idx >= len(from) {
-		return nil, fmt.Errorf("index %d out of bounds (length %d)", idx, len(from))
+		ctx.addError(fmt.Errorf(
+			"index %d out of bounds (length %d)",
+			idx,
+			len(from),
+		))
+		return U()
 	}
-	return from[idx], nil
+	return from[idx]
 }
 
-func evaluateObjectAccess(from ValueMap, keyVal Value) (Value, error) {
-	key, ok := keyVal.(string)
+func evaluateObjectAccess(ctx *EvaluationContext, from ValueMap, keyVal Value) Value {
+	if keyVal.Undefined {
+		return U()
+	}
+	key, ok := keyVal.Raw.(string)
 	if !ok {
-		return nil, fmt.Errorf("field key must be a string, got %T", keyVal)
+		ctx.addError(fmt.Errorf(
+			"field key must be string, got %s",
+			keyVal.Type(),
+		))
+		return U()
 	}
 
 	val, exists := from[key]
 	if !exists {
-		return nil, fmt.Errorf("field '%s' does not exist on object", key)
+		return U()
 	}
 
-	return val, nil
+	return val
 }
 
 type SignalExpr struct {
@@ -188,34 +215,37 @@ func (s *SignalExpr) Evaluate(ctx *EvaluationContext) (Value, error) {
 	if s.When != nil {
 		val, err := (*s.When).Evaluate(ctx)
 		if err != nil {
-			return nil, err
+			return U(), err
 		}
-		if condBool, ok := val.(bool); !ok || !condBool {
-			return nil, nil // do not emit signal if condition is false
+		if condBool, ok := val.Raw.(bool); !ok || !condBool {
+			return U(), nil // do not emit signal if condition is false
 		}
 	}
-	args := make([]Value, len(s.Args))
+	args := make([]any, len(s.Args))
 	for i, arg := range s.Args {
 		val, err := arg.Evaluate(ctx)
 		if err != nil {
-			return nil, err
+			return U(), err
 		}
-		args[i] = val
+		args[i] = val.ToRaw()
 	}
+
 	emittedSignal := EmittedSignal{
 		Name: s.Name,
 		Args: args,
 	}
 
+	ctx.Emissions = append(ctx.Emissions, emittedSignal)
 	if listeners, exists := ctx.Listeners[s.Name]; exists {
 		s.invokeListeners(listeners, args)
 	}
-	return emittedSignal, nil
+
+	return U(), nil
 }
 
 type EmittedSignal struct {
-	Name string  `json:"name"`
-	Args []Value `json:"args"`
+	Name string `json:"name"`
+	Args []any  `json:"args"`
 }
 
 type OpKind string
@@ -247,64 +277,63 @@ type Op struct {
 	Out  *int      `json:"out,omitempty"`
 }
 
-func (o *Op) Execute(ctx *EvaluationContext) error {
-	switch o.Kind {
+func (op *Op) Execute(ctx *EvaluationContext) error {
+	switch op.Kind {
 	case OpCopy:
-		if err := validateOp(o, ctx, 1); err != nil {
+		if err := validateOp(op, ctx, 1); err != nil {
 			return err
 		}
-		val, err := o.Args[0].Expr.Evaluate(ctx)
+		val, err := op.Args[0].Evaluate(ctx)
 		if err != nil {
 			return err
 		}
-		ctx.Slots[*o.Out] = val
+		ctx.Slots[*op.Out] = val
 		return nil
 	case OpAdd, OpSub, OpMul, OpDiv, OpMod, OpIn, OpAnd, OpOr, OpLt, OpGt, OpLte, OpGte, OpEq, OpNeq:
-		if err := validateOp(o, ctx, 2); err != nil {
+		if err := validateOp(op, ctx, 2); err != nil {
 			return err
 		}
-		return executeBinaryOp(o, ctx)
+		return executeBinaryOp(op, ctx)
 	case OpNot:
-		if err := validateOp(o, ctx, 1); err != nil {
+		if err := validateOp(op, ctx, 1); err != nil {
 			return err
 		}
-		return executeUnaryOp(o, ctx)
+		return executeUnaryOp(op, ctx)
 	case OpSelect:
-		if err := validateOp(o, ctx, 3); err != nil {
+		if err := validateOp(op, ctx, 3); err != nil {
 			return err
 		}
-		condVal, err := o.Args[0].Evaluate(ctx)
+		condVal, err := op.Args[0].Evaluate(ctx)
 		if err != nil {
 			return err
 		}
-		condBool, ok := condVal.(bool)
+		condBool, ok := condVal.Raw.(bool)
 		if !ok {
-			return fmt.Errorf("select condition must be boolean, got %T", condVal)
+			ctx.Slots[*op.Out] = U()
+			ctx.addError(fmt.Errorf("select condition must be a boolean, got %v", condVal.Type()))
+			return nil
 		}
 		idx := 1
 		if !condBool {
 			idx = 2
 		}
-		val, err := o.Args[idx].Evaluate(ctx)
+		val, err := op.Args[idx].Evaluate(ctx)
 		if err != nil {
 			return err
 		}
-		ctx.Slots[*o.Out] = val
+		ctx.Slots[*op.Out] = val
 		return nil
 	case OpEmit:
-		if err := validateArgs(o, 1); err != nil {
+		if err := validateArgs(op, 1); err != nil {
 			return err
 		}
-		val, err := o.Args[0].Evaluate(ctx)
+		_, err := op.Args[0].Evaluate(ctx)
 		if err != nil {
-			return fmt.Errorf("emit operation evaluation error: %v", err)
-		}
-		if val != nil {
-			ctx.Emissions = append(ctx.Emissions, val.(EmittedSignal))
+			return err
 		}
 		return nil
 	}
-	return fmt.Errorf("unknown operation '%s'", o.Kind)
+	return fmt.Errorf("unknown operation '%s'", op.Kind)
 }
 
 func executeUnaryOp(op *Op, ctx *EvaluationContext) error {
@@ -315,42 +344,47 @@ func executeUnaryOp(op *Op, ctx *EvaluationContext) error {
 
 	switch op.Kind {
 	case OpNot:
-		if b, ok := val.(bool); ok {
-			ctx.Slots[*op.Out] = !b
+		b, ok := val.Raw.(bool)
+		if !ok {
+			ctx.Slots[*op.Out] = U()
+			ctx.addError(fmt.Errorf("invalid unary operand: %v", val.Type()))
 			return nil
 		}
+		ctx.Slots[*op.Out] = V(!b)
+		return nil
 	default:
-		return fmt.Errorf("invalid unary operation: %s %v", op.Kind, val)
+		return fmt.Errorf("invalid unary operation: %s %v", op.Kind, val.Raw)
 	}
-
-	return fmt.Errorf("invalid operand for 'not': %v", val)
 }
 
 func performNumericOp[T Numeric](l T, r T, op *Op, ctx *EvaluationContext) error {
 	switch op.Kind {
 	case OpAdd:
-		ctx.Slots[*op.Out] = l + r
+		ctx.Slots[*op.Out] = V(l + r)
 	case OpSub:
-		ctx.Slots[*op.Out] = l - r
+		ctx.Slots[*op.Out] = V(l - r)
 	case OpMul:
-		ctx.Slots[*op.Out] = l * r
+		ctx.Slots[*op.Out] = V(l * r)
 	case OpDiv:
 		if r == 0 {
-			return fmt.Errorf("division by zero")
+			ctx.Slots[*op.Out] = U() // division by zero is undefined
+			return nil
 		}
-		ctx.Slots[*op.Out] = l / r
+		ctx.Slots[*op.Out] = V(l / r)
 	case OpMod:
-		ctx.Slots[*op.Out] = T(int64(l) % int64(r))
+		ctx.Slots[*op.Out] = V(T(int64(l) % int64(r)))
 	case OpLt:
-		ctx.Slots[*op.Out] = l < r
+		ctx.Slots[*op.Out] = V(l < r)
 	case OpGt:
-		ctx.Slots[*op.Out] = l > r
+		ctx.Slots[*op.Out] = V(l > r)
 	case OpLte:
-		ctx.Slots[*op.Out] = l <= r
+		ctx.Slots[*op.Out] = V(l <= r)
 	case OpGte:
-		ctx.Slots[*op.Out] = l >= r
+		ctx.Slots[*op.Out] = V(l >= r)
 	default:
-		return fmt.Errorf("invalid numeric operation: %v %s %v", l, op.Kind, r)
+		ctx.Slots[*op.Out] = U()
+		ctx.addError(fmt.Errorf("invalid numeric operation: %v %s %v", l, op.Kind, r))
+		return nil
 	}
 	return nil
 }
@@ -365,75 +399,100 @@ func executeBinaryOp(op *Op, ctx *EvaluationContext) error {
 		return err
 	}
 
+	// if either side is undefined, result is undefined
+	if lval.Undefined || rval.Undefined {
+		ctx.Slots[*op.Out] = U()
+		return nil
+	}
+
 	// handle operations that work on any type
 	switch op.Kind {
 	case OpEq:
-		ctx.Slots[*op.Out] = lval == rval
+		ctx.Slots[*op.Out] = V(lval.Raw == rval.Raw)
 		return nil
 	case OpNeq:
-		ctx.Slots[*op.Out] = lval != rval
+		ctx.Slots[*op.Out] = V(lval.Raw != rval.Raw)
 		return nil
 	case OpIn:
-		found, err := containsValue(rval, lval.(any))
-		if err != nil {
-			return fmt.Errorf("invalid right operand of '%v': %v", OpIn, err)
+		arr, ok := rval.Raw.([]Value)
+		if !ok {
+			ctx.Slots[*op.Out] = U()
+			ctx.addError(fmt.Errorf("right operand of '%v' must be an array, got %v", OpIn, rval.Type()))
+			return nil
 		}
-		ctx.Slots[*op.Out] = found
+		ctx.Slots[*op.Out] = V(contains(arr, lval.Raw))
 		return nil
 	}
 
 	// handle boolean operations
-	if l, ok := lval.(bool); ok {
-		r, ok := rval.(bool)
+	if l, ok := lval.Raw.(bool); ok {
+		r, ok := rval.Raw.(bool)
 		if !ok {
-			return fmt.Errorf("operator '%s' requires both operands to be bool, got %T and %T", op.Kind, lval, rval)
+			ctx.Slots[*op.Out] = U()
+			ctx.addError(fmt.Errorf("operator '%s' requires both operands to be bool, got %v and %v", op.Kind, lval.Type(), rval.Type()))
+			return nil
 		}
 		switch op.Kind {
 		case OpAnd:
-			ctx.Slots[*op.Out] = l && r
+			ctx.Slots[*op.Out] = V(l && r)
 		case OpOr:
-			ctx.Slots[*op.Out] = l || r
+			ctx.Slots[*op.Out] = V(l || r)
 		default:
-			return fmt.Errorf("operator '%s' is not supported for booleans", op.Kind)
+			ctx.Slots[*op.Out] = U()
+			ctx.addError(fmt.Errorf("operator '%s' is not supported for booleans", op.Kind))
+			return nil
 		}
 		return nil
 	}
 
 	// handle string operations
-	if l, ok := lval.(string); ok {
-		r, ok := rval.(string)
+	if l, ok := lval.Raw.(string); ok {
+		r, ok := rval.Raw.(string)
 		if !ok {
-			return fmt.Errorf("operator '%s' requires both operands to be strings, got %T and %T", op.Kind, lval, rval)
+			ctx.Slots[*op.Out] = U()
+			ctx.addError(fmt.Errorf("operator '%s' requires both operands to be strings, got %v and %v", op.Kind, lval.Type(), rval.Type()))
+			return nil
 		}
 		switch op.Kind {
 		case OpAdd:
-			ctx.Slots[*op.Out] = l + r
+			ctx.Slots[*op.Out] = V(l + r)
 			return nil
 		default:
-			return fmt.Errorf("operator '%s' is not supported for strings", op.Kind)
+			ctx.Slots[*op.Out] = U()
+			ctx.addError(fmt.Errorf("operator '%s' is not supported for strings", op.Kind))
+			return nil
 		}
 	}
 
 	if isFloat(lval) || isFloat(rval) {
 		l, lok := toFloat64(lval)
 		if !lok {
-			return fmt.Errorf("operator '%s' cannot convert left operand to float64: %T", op.Kind, lval)
+			ctx.Slots[*op.Out] = U()
+			ctx.addError(fmt.Errorf("operator '%s' cannot convert left operand to float64: %v", op.Kind, lval.Type()))
+			return nil
 		}
 		r, rok := toFloat64(rval)
 		if !rok {
-			return fmt.Errorf("operator '%s' cannot convert right operand to float64: %T", op.Kind, rval)
+			ctx.Slots[*op.Out] = U()
+			ctx.addError(fmt.Errorf("operator '%s' cannot convert right operand to float64: %v", op.Kind, rval.Type()))
+			return nil
 		}
 		return performNumericOp(l, r, op, ctx)
 	}
 
 	l, lok := toInt64(lval)
 	if !lok {
-		return fmt.Errorf("operator '%s' cannot convert left operand to int64: %T", op.Kind, lval)
+		ctx.Slots[*op.Out] = U()
+		ctx.addError(fmt.Errorf("operator '%s' cannot convert left operand to int64: %v", op.Kind, lval.Type()))
+		return nil
 	}
 	r, rok := toInt64(rval)
 	if !rok {
-		return fmt.Errorf("operator '%s' cannot convert right operand to int64: %T", op.Kind, rval)
+		ctx.Slots[*op.Out] = U()
+		ctx.addError(fmt.Errorf("operator '%s' cannot convert right operand to int64: %v", op.Kind, rval.Type()))
+		return nil
 	}
+
 	return performNumericOp(l, r, op, ctx)
 }
 

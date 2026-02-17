@@ -21,7 +21,7 @@ func NewEvaluator(program *nir.Program) *Evaluator {
 	return &Evaluator{program: program, signalListeners: make(map[string][]nir.SignalListener)}
 }
 
-func (e *Evaluator) OnSignalFunc(signalName string, listener func([]nir.Value) error) {
+func (e *Evaluator) OnSignalFunc(signalName string, listener func([]any) error) {
 	e.signalListeners[signalName] = append(e.signalListeners[signalName], nir.SignalListenerFunc(listener))
 }
 
@@ -32,12 +32,13 @@ func (e *Evaluator) EvaluateRule(ruleName string, input nir.ValueMap) (*Evaluati
 	}
 
 	slots := make([]nir.Value, rule.Symslots)
-	slots[0] = input
+	slots[0] = nir.V(input)
 
 	evalCtx := &nir.EvaluationContext{
 		Slots:     slots,
 		Emissions: []nir.EmittedSignal{},
 		Listeners: e.signalListeners,
+		Errors:    make([]error, 0),
 	}
 
 	// execute operations
@@ -50,12 +51,13 @@ func (e *Evaluator) EvaluateRule(ruleName string, input nir.ValueMap) (*Evaluati
 	// collect outputs
 	outputs := make(map[string]any)
 	for name, output := range rule.Outputs {
-
 		if output.Sym >= len(evalCtx.Slots) {
 			return nil, fmt.Errorf("output index out of bounds for %s", name)
 		}
 		val := evalCtx.Slots[output.Sym]
-		outputs[name] = val
+		if !val.Undefined {
+			outputs[name] = val.ToRaw()
+		}
 	}
 
 	if e.Debug {
@@ -114,6 +116,11 @@ func debugRule(ruleName string, rule *nir.Rule, input nir.ValueMap, evalCtx *nir
 	fmt.Printf("\nSignals Emitted (len = %d)\n", len(evalCtx.Emissions))
 	for _, sig := range evalCtx.Emissions {
 		fmt.Printf("  %s: %v\n", sig.Name, sig.Args)
+	}
+
+	fmt.Printf("\nErrors (len = %d)\n", len(evalCtx.Errors))
+	for _, err := range evalCtx.Errors {
+		fmt.Printf("  %v\n", err)
 	}
 
 	fmt.Println("================================")

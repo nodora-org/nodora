@@ -23,7 +23,7 @@ func TestSymbolRemap_BasicRemapping(t *testing.T) {
 					{
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: 1}},
+							{Expr: &nir.ImmExpr{Value: nir.V(1)}},
 						},
 						Out: nir.IntPtr(1),
 					},
@@ -57,7 +57,7 @@ func TestSymbolRemap_BasicRemapping(t *testing.T) {
 					{
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: 1}},
+							{Expr: &nir.ImmExpr{Value: nir.V(1)}},
 						},
 						Out: nir.IntPtr(5),
 					},
@@ -165,7 +165,7 @@ func TestSymbolRemap_SymExprRemapping(t *testing.T) {
 					{
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: 42}},
+							{Expr: &nir.ImmExpr{Value: nir.V(42)}},
 						},
 						Out: nir.IntPtr(5),
 					},
@@ -173,7 +173,7 @@ func TestSymbolRemap_SymExprRemapping(t *testing.T) {
 						Kind: nir.OpAdd,
 						Args: []nir.RawExpr{
 							{Expr: &nir.SymExpr{Index: 5}},
-							{Expr: &nir.ImmExpr{Value: 10}},
+							{Expr: &nir.ImmExpr{Value: nir.V(10)}},
 						},
 						Out: nir.IntPtr(2),
 					},
@@ -193,14 +193,14 @@ func TestSymbolRemap_SymExprRemapping(t *testing.T) {
 					{
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: 1}},
+							{Expr: &nir.ImmExpr{Value: nir.V(1)}},
 						},
 						Out: nir.IntPtr(1),
 					},
 					{
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: 2}},
+							{Expr: &nir.ImmExpr{Value: nir.V(2)}},
 						},
 						Out: nir.IntPtr(3),
 					},
@@ -312,7 +312,7 @@ func TestSymbolRemap_ComplexExpressions(t *testing.T) {
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
 							{Expr: &nir.ArrExpr{Value: []nir.RawExpr{
-								{Expr: &nir.ImmExpr{Value: 1}},
+								{Expr: &nir.ImmExpr{Value: nir.V(1)}},
 							}}},
 						},
 						Out: nir.IntPtr(5),
@@ -323,7 +323,7 @@ func TestSymbolRemap_ComplexExpressions(t *testing.T) {
 							{
 								Expr: &nir.IdxExpr{
 									Index: nir.RawExpr{
-										Expr: &nir.ImmExpr{Value: 0},
+										Expr: &nir.ImmExpr{Value: nir.V(0)},
 									},
 									From: nir.RawExpr{
 										Expr: &nir.SymExpr{Index: 5},
@@ -355,7 +355,7 @@ func TestSymbolRemap_ComplexExpressions(t *testing.T) {
 					{
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: nir.ValueMap{"field": 1}}},
+							{Expr: &nir.ImmExpr{Value: nir.V(nir.ValueMap{"field": nir.V(1)})}},
 						},
 						Out: nir.IntPtr(5),
 					},
@@ -393,7 +393,7 @@ func TestSymbolRemap_ComplexExpressions(t *testing.T) {
 					{
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: 100}},
+							{Expr: &nir.ImmExpr{Value: nir.V(100)}},
 						},
 						Out: nir.IntPtr(5),
 					},
@@ -432,14 +432,14 @@ func TestSymbolRemap_ComplexExpressions(t *testing.T) {
 					{
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: 100}},
+							{Expr: &nir.ImmExpr{Value: nir.V(100)}},
 						},
 						Out: nir.IntPtr(5),
 					},
 					{
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: true}},
+							{Expr: &nir.ImmExpr{Value: nir.V(true)}},
 						},
 						Out: nir.IntPtr(10),
 					},
@@ -484,7 +484,7 @@ func TestSymbolRemap_ComplexExpressions(t *testing.T) {
 					{
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: 100}},
+							{Expr: &nir.ImmExpr{Value: nir.V(100)}},
 						},
 						Out: nir.IntPtr(5),
 					},
@@ -493,7 +493,7 @@ func TestSymbolRemap_ComplexExpressions(t *testing.T) {
 						Args: []nir.RawExpr{
 							{
 								Expr: &nir.IdxExpr{
-									Index: nir.RawExpr{Expr: &nir.ImmExpr{Value: 0}},
+									Index: nir.RawExpr{Expr: &nir.ImmExpr{Value: nir.V(0)}},
 									From: nir.RawExpr{Expr: &nir.ArrExpr{
 										Value: []nir.RawExpr{
 											{Expr: &nir.SymExpr{Index: 5}},
@@ -550,7 +550,7 @@ func TestSymbolRemap_MultipleRules(t *testing.T) {
 					{
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: 1}},
+							{Expr: &nir.ImmExpr{Value: nir.V(1)}},
 						},
 						Out: nir.IntPtr(5),
 					},
@@ -565,7 +565,7 @@ func TestSymbolRemap_MultipleRules(t *testing.T) {
 					{
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: 2}},
+							{Expr: &nir.ImmExpr{Value: nir.V(2)}},
 						},
 						Out: nir.IntPtr(10),
 					},

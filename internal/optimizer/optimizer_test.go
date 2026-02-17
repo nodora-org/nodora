@@ -26,15 +26,15 @@ func TestOptimizer(t *testing.T) {
 					{
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: int64(1)}},
+							{Expr: &nir.ImmExpr{Value: nir.V(int64(1))}},
 						},
 						Out: nir.IntPtr(1), // slot1 = 1 (unused)
 					},
 					{
 						Kind: nir.OpAdd,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: int64(2)}},
-							{Expr: &nir.ImmExpr{Value: int64(2)}},
+							{Expr: &nir.ImmExpr{Value: nir.V(int64(2))}},
+							{Expr: &nir.ImmExpr{Value: nir.V(int64(2))}},
 						},
 						Out: nir.IntPtr(2), // slot2 = 2 + 2
 					},
@@ -50,7 +50,7 @@ func TestOptimizer(t *testing.T) {
 						Kind: nir.OpLte,
 						Args: []nir.RawExpr{
 							{Expr: &nir.SymExpr{Index: 3}},
-							{Expr: &nir.ImmExpr{Value: int64(16)}},
+							{Expr: &nir.ImmExpr{Value: nir.V(int64(16))}},
 						},
 						Out: nir.IntPtr(4), // b = a <= 16
 					},
@@ -100,7 +100,7 @@ func TestOptimizer(t *testing.T) {
 							{Expr: &nir.SignalExpr{
 								Name: "Signal2",
 								Args: []nir.RawExpr{
-									{Expr: &nir.ImmExpr{Value: int64(1)}},
+									{Expr: &nir.ImmExpr{Value: nir.V(int64(1))}},
 								},
 							}},
 						},
@@ -136,7 +136,7 @@ func TestOptimizer(t *testing.T) {
 					{
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: int64(4)}},
+							{Expr: &nir.ImmExpr{Value: nir.V(int64(4))}},
 						},
 						Out: nir.IntPtr(1), // slot1 = 4
 					},
@@ -152,7 +152,7 @@ func TestOptimizer(t *testing.T) {
 						Kind: nir.OpLte,
 						Args: []nir.RawExpr{
 							{Expr: &nir.SymExpr{Index: 2}},
-							{Expr: &nir.ImmExpr{Value: int64(16)}},
+							{Expr: &nir.ImmExpr{Value: nir.V(int64(16))}},
 						},
 						Out: nir.IntPtr(3), // b = a <= 16
 					},
@@ -183,7 +183,7 @@ func TestOptimizer(t *testing.T) {
 							{Expr: &nir.SignalExpr{
 								Name: "Signal2",
 								Args: []nir.RawExpr{
-									{Expr: &nir.ImmExpr{Value: int64(1)}},
+									{Expr: &nir.ImmExpr{Value: nir.V(int64(1))}},
 								},
 							}},
 						},

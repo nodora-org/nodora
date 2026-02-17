@@ -2,7 +2,6 @@ package nir
 
 import (
 	"fmt"
-	"slices"
 )
 
 type Float interface {
@@ -26,7 +25,9 @@ func IntPtr(i int) *int {
 }
 
 func isFloat(v any) bool {
-	switch v.(type) {
+	switch n := v.(type) {
+	case Value:
+		return isFloat(n.Raw)
 	case float32, float64:
 		return true
 	default:
@@ -36,6 +37,8 @@ func isFloat(v any) bool {
 
 func toFloat64(v any) (float64, bool) {
 	switch n := v.(type) {
+	case Value:
+		return toFloat64(n.Raw)
 	case float64:
 		return n, true
 	case float32:
@@ -67,6 +70,8 @@ func toFloat64(v any) (float64, bool) {
 
 func toInt64(v any) (int64, bool) {
 	switch n := v.(type) {
+	case Value:
+		return toInt64(n.Raw)
 	case int:
 		return int64(n), true
 	case int8:
@@ -93,15 +98,17 @@ func toInt64(v any) (int64, bool) {
 }
 
 func toInt(v any) (int, bool) {
-	switch val := v.(type) {
+	switch n := v.(type) {
+	case Value:
+		return toInt(n.Raw)
 	case int:
-		return val, true
+		return n, true
 	case int64:
-		return int(val), true
+		return int(n), true
 	case float32:
-		return int(val), true
+		return int(n), true
 	case float64:
-		return int(val), true
+		return int(n), true
 	}
 	return 0, false
 }
@@ -109,34 +116,30 @@ func toInt(v any) (int, bool) {
 func normalizeValue(v any) Value {
 	switch val := v.(type) {
 	case []any:
-		// convert []any to []Value
 		result := make([]Value, len(val))
 		for i, item := range val {
 			result[i] = normalizeValue(item)
 		}
-		return result
+		return V(result)
 	case map[string]any:
-		// convert map[string]any to map[string]Value
 		result := make(ValueMap, len(val))
 		for k, item := range val {
 			result[k] = normalizeValue(item)
 		}
-		return result
+		return V(result)
 	default:
 		// primitives (string, float64, bool, nil) stay as-is
-		return val
+		return V(val)
 	}
 }
 
-func containsValue(slice, value any) (bool, error) {
-	switch s := slice.(type) {
-	case []Value:
-		return slices.Contains(s, value), nil
-	case []any:
-		return slices.Contains(s, value), nil
-	default:
-		return false, fmt.Errorf("expected array, got %T", slice)
+func contains(arr []Value, el any) bool {
+	for _, v := range arr {
+		if v.ToRaw() == el {
+			return true
+		}
 	}
+	return false
 }
 
 func validateArgs(o *Op, argCount int) error {

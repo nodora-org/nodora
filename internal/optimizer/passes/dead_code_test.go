@@ -76,7 +76,7 @@ func TestDeadCodeElimination_UnusedSignals(t *testing.T) {
 						{
 							Kind: nir.OpCopy,
 							Args: []nir.RawExpr{
-								{Expr: &nir.ImmExpr{Value: 42}},
+								{Expr: &nir.ImmExpr{Value: nir.V(42)}},
 							},
 							Out: nir.IntPtr(0),
 						},
@@ -132,8 +132,8 @@ func TestDeadCodeElimination_DeadOperations(t *testing.T) {
 						// dead op - result not used
 						Kind: nir.OpAdd,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: 1}},
-							{Expr: &nir.ImmExpr{Value: 2}},
+							{Expr: &nir.ImmExpr{Value: nir.V(1)}},
+							{Expr: &nir.ImmExpr{Value: nir.V(2)}},
 						},
 						Out: nir.IntPtr(0),
 					},
@@ -141,8 +141,8 @@ func TestDeadCodeElimination_DeadOperations(t *testing.T) {
 						// live op - output 2 is used
 						Kind: nir.OpAdd,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: 3}},
-							{Expr: &nir.ImmExpr{Value: 4}},
+							{Expr: &nir.ImmExpr{Value: nir.V(3)}},
+							{Expr: &nir.ImmExpr{Value: nir.V(4)}},
 						},
 						Out: nir.IntPtr(1),
 					},
@@ -181,8 +181,8 @@ func TestDeadCodeElimination_DeadOperations(t *testing.T) {
 						// slot 0 = 1 + 2
 						Kind: nir.OpAdd,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: 1}},
-							{Expr: &nir.ImmExpr{Value: 2}},
+							{Expr: &nir.ImmExpr{Value: nir.V(1)}},
+							{Expr: &nir.ImmExpr{Value: nir.V(2)}},
 						},
 						Out: nir.IntPtr(0),
 					},
@@ -190,8 +190,8 @@ func TestDeadCodeElimination_DeadOperations(t *testing.T) {
 						// slot 1 = 3 + 4
 						Kind: nir.OpAdd,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: 3}},
-							{Expr: &nir.ImmExpr{Value: 4}},
+							{Expr: &nir.ImmExpr{Value: nir.V(3)}},
+							{Expr: &nir.ImmExpr{Value: nir.V(4)}},
 						},
 						Out: nir.IntPtr(1),
 					},
@@ -221,8 +221,8 @@ func TestDeadCodeElimination_DeadOperations(t *testing.T) {
 						// dead - slot 0 not used
 						Kind: nir.OpAdd,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: 1}},
-							{Expr: &nir.ImmExpr{Value: 2}},
+							{Expr: &nir.ImmExpr{Value: nir.V(1)}},
+							{Expr: &nir.ImmExpr{Value: nir.V(2)}},
 						},
 						Out: nir.IntPtr(0),
 					},
@@ -230,8 +230,8 @@ func TestDeadCodeElimination_DeadOperations(t *testing.T) {
 						// slot 1 = 3 + 4
 						Kind: nir.OpAdd,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: 3}},
-							{Expr: &nir.ImmExpr{Value: 4}},
+							{Expr: &nir.ImmExpr{Value: nir.V(3)}},
+							{Expr: &nir.ImmExpr{Value: nir.V(4)}},
 						},
 						Out: nir.IntPtr(1),
 					},
@@ -240,7 +240,7 @@ func TestDeadCodeElimination_DeadOperations(t *testing.T) {
 						Kind: nir.OpAdd,
 						Args: []nir.RawExpr{
 							{Expr: &nir.SymExpr{Index: 1}},
-							{Expr: &nir.ImmExpr{Value: 5}},
+							{Expr: &nir.ImmExpr{Value: nir.V(5)}},
 						},
 						Out: nir.IntPtr(2),
 					},
@@ -334,7 +334,7 @@ func TestDeadCodeElimination_ComplexExpressions(t *testing.T) {
 						// dead - result not used
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: 42}},
+							{Expr: &nir.ImmExpr{Value: nir.V(42)}},
 						},
 						Out: nir.IntPtr(0),
 					},
@@ -345,7 +345,7 @@ func TestDeadCodeElimination_ComplexExpressions(t *testing.T) {
 							{
 								Expr: &nir.ArrExpr{
 									Value: []nir.RawExpr{
-										{Expr: &nir.ImmExpr{Value: 100}},
+										{Expr: &nir.ImmExpr{Value: nir.V(100)}},
 									},
 								},
 							},
@@ -359,7 +359,7 @@ func TestDeadCodeElimination_ComplexExpressions(t *testing.T) {
 							{
 								Expr: &nir.IdxExpr{
 									From:  nir.RawExpr{Expr: &nir.SymExpr{Index: 1}},
-									Index: nir.RawExpr{Expr: &nir.ImmExpr{Value: 0}},
+									Index: nir.RawExpr{Expr: &nir.ImmExpr{Value: nir.V(0)}},
 								},
 							},
 						},
@@ -389,7 +389,7 @@ func TestDeadCodeElimination_ComplexExpressions(t *testing.T) {
 						// dead
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: 42}},
+							{Expr: &nir.ImmExpr{Value: nir.V(42)}},
 						},
 						Out: nir.IntPtr(0),
 					},
@@ -397,7 +397,7 @@ func TestDeadCodeElimination_ComplexExpressions(t *testing.T) {
 						// live - slot 1 is used in the array
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: 100}},
+							{Expr: &nir.ImmExpr{Value: nir.V(100)}},
 						},
 						Out: nir.IntPtr(1),
 					},
@@ -431,7 +431,7 @@ func TestDeadCodeElimination_ComplexExpressions(t *testing.T) {
 						// dead
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: 42}},
+							{Expr: &nir.ImmExpr{Value: nir.V(42)}},
 						},
 						Out: nir.IntPtr(0),
 					},
@@ -439,7 +439,7 @@ func TestDeadCodeElimination_ComplexExpressions(t *testing.T) {
 						// live - slot 1 is read in SelExpr
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: 100}},
+							{Expr: &nir.ImmExpr{Value: nir.V(100)}},
 						},
 						Out: nir.IntPtr(1),
 					},
@@ -472,7 +472,7 @@ func TestDeadCodeElimination_ComplexExpressions(t *testing.T) {
 						// dead
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: 42}},
+							{Expr: &nir.ImmExpr{Value: nir.V(42)}},
 						},
 						Out: nir.IntPtr(0),
 					},
@@ -480,7 +480,7 @@ func TestDeadCodeElimination_ComplexExpressions(t *testing.T) {
 						// live - slot 1 is read in SignalExpr When clause
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: true}},
+							{Expr: &nir.ImmExpr{Value: nir.V(true)}},
 						},
 						Out: nir.IntPtr(1),
 					},
@@ -549,7 +549,7 @@ func TestDeadCodeElimination_MultipleRules(t *testing.T) {
 					{
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: 42}},
+							{Expr: &nir.ImmExpr{Value: nir.V(42)}},
 						},
 						Out: nir.IntPtr(0),
 					},
@@ -570,7 +570,7 @@ func TestDeadCodeElimination_MultipleRules(t *testing.T) {
 					{
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: 100}},
+							{Expr: &nir.ImmExpr{Value: nir.V(100)}},
 						},
 						Out: nir.IntPtr(0),
 					},
