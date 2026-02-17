@@ -2,6 +2,7 @@ package semantics
 
 import (
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -134,8 +135,15 @@ func (sc *SemanticAnalyzer) inferType(expr ast.Expr) string {
 		if e.Type != "" {
 			return e.Type
 		}
+		left := sc.inferType(e.Left)
+		right := sc.inferType(e.Right)
 		switch e.Op {
-		case "+", "-", "*", "/", "%":
+		case "+":
+			if left == "string" || right == "string" {
+				return "string"
+			}
+			return "number"
+		case "-", "*", "/", "%":
 			return "number"
 		case "==", "!=", "<", "<=", ">", ">=", "&&", "||", "in":
 			return "bool"
@@ -167,8 +175,18 @@ func (sc *SemanticAnalyzer) inferType(expr ast.Expr) string {
 	}
 }
 
-func (sc *SemanticAnalyzer) requireType(actualType string, expectedType string) bool {
-	return actualType == expectedType || actualType == "unknown"
+func (sc *SemanticAnalyzer) requireType(actualType string, expectedTypes ...string) bool {
+	if actualType == "unknown" {
+		return true
+	}
+	return slices.Contains(expectedTypes, actualType)
+}
+
+func (sc *SemanticAnalyzer) typesCompatible(a, b string) bool {
+	if a == "unknown" || b == "unknown" {
+		return true
+	}
+	return a == b
 }
 
 func (sc *SemanticAnalyzer) Analyze(program *ast.Program) error {
@@ -283,8 +301,16 @@ func (sc *SemanticAnalyzer) VisitBinaryExpr(be *ast.BinaryExpr) error {
 	rightType := sc.inferType(be.Right)
 
 	switch be.Op {
-	case "+", "-", "*", "/", "%":
-		// arithmetic operators require both operands to be numbers
+	case "+":
+		valid := sc.requireType(leftType, "number", "string") &&
+			sc.requireType(rightType, "number", "string") &&
+			sc.typesCompatible(leftType, rightType)
+
+		if !valid {
+			return errorAt(be, "operator '%s' cannot be applied to %s and %s", be.Op, leftType, rightType)
+		}
+		be.Annotate(leftType)
+	case "-", "*", "/", "%":
 		lok := sc.requireType(leftType, "number")
 		rok := sc.requireType(rightType, "number")
 		if !(lok && rok) {
@@ -292,12 +318,11 @@ func (sc *SemanticAnalyzer) VisitBinaryExpr(be *ast.BinaryExpr) error {
 		}
 		be.Annotate("number")
 	case "==", "!=":
-		if leftType != rightType && leftType != "unknown" && rightType != "unknown" {
+		if !sc.typesCompatible(leftType, rightType) {
 			sc.addError(errorAt(be, "cannot compare %s with %s using '%s'", leftType, rightType, be.Op))
 		}
 		be.Annotate("bool")
 	case "<", "<=", ">", ">=":
-		// comparison operators require compatible numeric types
 		lok := sc.requireType(leftType, "number")
 		rok := sc.requireType(rightType, "number")
 		if !(lok && rok) {
@@ -305,7 +330,6 @@ func (sc *SemanticAnalyzer) VisitBinaryExpr(be *ast.BinaryExpr) error {
 		}
 		be.Annotate("bool")
 	case "&&", "||":
-		// logical operators require both operands to be booleans
 		lok := sc.requireType(leftType, "bool")
 		rok := sc.requireType(rightType, "bool")
 		if !(lok && rok) {
@@ -313,7 +337,6 @@ func (sc *SemanticAnalyzer) VisitBinaryExpr(be *ast.BinaryExpr) error {
 		}
 		be.Annotate("bool")
 	case "in":
-		// right operand should be an array
 		if !sc.requireType(rightType, "array") {
 			return errorAt(be, "operator '%s' cannot be applied to type %s", be.Op, rightType)
 		}
@@ -333,13 +356,12 @@ func (sc *SemanticAnalyzer) VisitUnaryExpr(ue *ast.UnaryExpr) error {
 	ty := sc.inferType(ue.Expr)
 	switch ue.Op {
 	case "!":
-		// logical NOT requires boolean operand
-		if ty != "bool" && ty != "unknown" {
+		if !sc.requireType(ty, "bool") {
 			sc.addError(errorAt(ue, "operand of '!' must be a boolean, got %s", ty))
 		}
 		ue.Annotate("bool")
 	case "-":
-		if ty != "number" && ty != "unknown" {
+		if !sc.requireType(ty, "number") {
 			sc.addError(errorAt(ue, "operand of '-' must be a number, got %s", ty))
 		}
 		ue.Annotate("number")
@@ -391,7 +413,7 @@ func (sc *SemanticAnalyzer) VisitConditionalExpr(ce *ast.ConditionalExpr) error 
 		return err
 	}
 	condType := sc.inferType(ce.Cond)
-	if condType != "bool" {
+	if !sc.requireType(condType, "bool") {
 		sc.addError(errorAt(ce, "condition in conditional expression must be boolean, got %s", condType))
 	}
 
@@ -421,7 +443,7 @@ func (sc *SemanticAnalyzer) VisitSelectorExpr(se *ast.SelectorExpr) error {
 			return err
 		}
 		baseType := sc.inferType(se.Expr)
-		if sym.Type != "object" && sym.Type != "unknown" {
+		if !sc.requireType(sym.Type, "object") {
 			return errorAt(se, "cannot access property '%s' on type %s (%s)", se.Field, baseType, e.Name)
 		}
 	case *ast.IndexExpr:
@@ -447,12 +469,12 @@ func (sc *SemanticAnalyzer) VisitIndexExpr(ie *ast.IndexExpr) error {
 	}
 
 	baseType := sc.inferType(ie.Expr)
-	if baseType != "array" && baseType != "unknown" {
+	if !sc.requireType(baseType, "object", "array") {
 		return errorAt(ie, "cannot index on base type %s", baseType)
 	}
 
 	indexType := sc.inferType(ie.Index)
-	if indexType != "number" && indexType != "unknown" {
+	if !sc.requireType(indexType, "string", "number") {
 		return errorAt(ie, "cannot index with type %s", indexType)
 	}
 

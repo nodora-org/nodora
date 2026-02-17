@@ -1,0 +1,4 @@
+rule StringConcat {
+    out ab = "a" + "b"
+    out abc = ab + input.c
+}

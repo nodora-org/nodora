@@ -1,0 +1,13 @@
+[
+  {
+    "input": {
+      "c": "c"
+    },
+    "expected": {
+      "outputs": {
+        "ab": "ab",
+        "abc": "abc"
+      }
+    }
+  }
+]

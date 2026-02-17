@@ -31,5 +31,16 @@
         "el": 3
       }
     }
+  },
+  {
+    "input": {
+      "data": { "a": "b" },
+      "idx": "a"
+    },
+    "expected": {
+      "outputs": {
+        "el": "b"
+      }
+    }
   }
 ]

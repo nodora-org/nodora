@@ -98,29 +98,15 @@ type IdxExpr struct {
 }
 
 func (i *IdxExpr) Evaluate(ctx *EvaluationContext) (Value, error) {
-	arr, err := i.From.Expr.Evaluate(ctx)
+	from, err := i.From.Evaluate(ctx)
 	if err != nil {
 		return nil, err
 	}
-	a, ok := arr.([]Value)
-	if !ok {
-		return nil, fmt.Errorf("cannot index into non-array type %T", arr)
-	}
-
-	index, err := i.Index.Expr.Evaluate(ctx)
+	idx, err := i.Index.Evaluate(ctx)
 	if err != nil {
 		return nil, err
 	}
-	idx, ok := toInt(index)
-	if !ok {
-		return nil, fmt.Errorf("index must be int, got %T", index)
-	}
-
-	if idx < 0 || idx >= len(a) {
-		return nil, fmt.Errorf("index %d out of bounds for array of length %d", idx, len(a))
-	}
-
-	return a[idx], nil
+	return evaluateAccess(from, idx)
 }
 
 type SelExpr struct {
@@ -140,10 +126,14 @@ func (s *SelExpr) Evaluate(ctx *EvaluationContext) (Value, error) {
 	for _, key := range keys {
 		var err error
 		if key == "$" {
-			current, err = s.evaluateArrayIndex(ctx, current, exprIdx)
+			val, err := s.Exprs[exprIdx].Evaluate(ctx)
+			if err != nil {
+				return nil, err
+			}
+			current, err = evaluateAccess(current, val)
 			exprIdx++
 		} else {
-			current, err = s.evaluateFieldAccess(current, key)
+			current, err = evaluateAccess(current, key)
 		}
 		if err != nil {
 			return nil, err
@@ -153,38 +143,36 @@ func (s *SelExpr) Evaluate(ctx *EvaluationContext) (Value, error) {
 	return current, nil
 }
 
-func (s *SelExpr) evaluateArrayIndex(ctx *EvaluationContext, current Value, exprIdx int) (Value, error) {
-	arr, ok := current.([]Value)
-	if !ok {
-		return nil, fmt.Errorf("cannot index into %T (expected array)", current)
+func evaluateAccess(target Value, val Value) (Value, error) {
+	switch t := target.(type) {
+	case []Value:
+		return evaluateArrayAccess(t, val)
+	case ValueMap:
+		return evaluateObjectAccess(t, val)
 	}
-
-	indexVal, err := s.Exprs[exprIdx].Evaluate(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	idx, ok := toInt(indexVal)
-	if !ok {
-		return nil, fmt.Errorf("array index must be int, got %T", indexVal)
-	}
-
-	if idx < 0 || idx >= len(arr) {
-		return nil, fmt.Errorf("index %d out of bounds (length %d)", idx, len(arr))
-	}
-
-	return arr[idx], nil
+	return nil, fmt.Errorf("cannot access into %T with value of type %T", target, val)
 }
 
-func (s *SelExpr) evaluateFieldAccess(current Value, key string) (Value, error) {
-	m, ok := current.(ValueMap)
+func evaluateArrayAccess(from []Value, indexVal Value) (Value, error) {
+	idx, ok := toInt(indexVal)
 	if !ok {
-		return nil, fmt.Errorf("cannot access field '%s': parent is not an object", key)
+		return nil, fmt.Errorf("array index must be an int, got %T", indexVal)
+	}
+	if idx < 0 || idx >= len(from) {
+		return nil, fmt.Errorf("index %d out of bounds (length %d)", idx, len(from))
+	}
+	return from[idx], nil
+}
+
+func evaluateObjectAccess(from ValueMap, keyVal Value) (Value, error) {
+	key, ok := keyVal.(string)
+	if !ok {
+		return nil, fmt.Errorf("field key must be a string, got %T", keyVal)
 	}
 
-	val, exists := m[key]
+	val, exists := from[key]
 	if !exists {
-		return nil, fmt.Errorf("field '%s' does not exist", key)
+		return nil, fmt.Errorf("field '%s' does not exist on object", key)
 	}
 
 	return val, nil
@@ -396,47 +384,55 @@ func executeBinaryOp(op *Op, ctx *EvaluationContext) error {
 
 	// handle boolean operations
 	if l, ok := lval.(bool); ok {
-		if r, ok := rval.(bool); ok {
-			switch op.Kind {
-			case OpAnd:
-				ctx.Slots[*op.Out] = l && r
-			case OpOr:
-				ctx.Slots[*op.Out] = l || r
-			default:
-				return fmt.Errorf("invalid boolean operation: %v %s %v", lval, op.Kind, rval)
-			}
-			return nil
+		r, ok := rval.(bool)
+		if !ok {
+			return fmt.Errorf("operator '%s' requires both operands to be bool, got %T and %T", op.Kind, lval, rval)
 		}
-		return fmt.Errorf("cannot perform boolean operation %s with non-boolean operand: %T", op.Kind, rval)
+		switch op.Kind {
+		case OpAnd:
+			ctx.Slots[*op.Out] = l && r
+		case OpOr:
+			ctx.Slots[*op.Out] = l || r
+		default:
+			return fmt.Errorf("operator '%s' is not supported for booleans", op.Kind)
+		}
+		return nil
 	}
 
 	// handle string operations
 	if l, ok := lval.(string); ok {
-		if r, ok := rval.(string); ok {
-			switch op.Kind {
-			case OpAdd:
-				ctx.Slots[*op.Out] = l + r
-				return nil
-			default:
-				return fmt.Errorf("invalid string operation: %v %s %v", lval, op.Kind, rval)
-			}
+		r, ok := rval.(string)
+		if !ok {
+			return fmt.Errorf("operator '%s' requires both operands to be strings, got %T and %T", op.Kind, lval, rval)
 		}
-		return fmt.Errorf("cannot perform string operation %s with non-string operand: %T", op.Kind, rval)
+		switch op.Kind {
+		case OpAdd:
+			ctx.Slots[*op.Out] = l + r
+			return nil
+		default:
+			return fmt.Errorf("operator '%s' is not supported for strings", op.Kind)
+		}
 	}
 
 	if isFloat(lval) || isFloat(rval) {
 		l, lok := toFloat64(lval)
+		if !lok {
+			return fmt.Errorf("operator '%s' cannot convert left operand to float64: %T", op.Kind, lval)
+		}
 		r, rok := toFloat64(rval)
-		if !lok || !rok {
-			return fmt.Errorf("cannot convert operands to float64: %T %s %T", lval, op.Kind, rval)
+		if !rok {
+			return fmt.Errorf("operator '%s' cannot convert right operand to float64: %T", op.Kind, rval)
 		}
 		return performNumericOp(l, r, op, ctx)
 	}
 
 	l, lok := toInt64(lval)
+	if !lok {
+		return fmt.Errorf("operator '%s' cannot convert left operand to int64: %T", op.Kind, lval)
+	}
 	r, rok := toInt64(rval)
-	if !lok || !rok {
-		return fmt.Errorf("cannot convert operands to int64: %T %s %T", lval, op.Kind, rval)
+	if !rok {
+		return fmt.Errorf("operator '%s' cannot convert right operand to int64: %T", op.Kind, rval)
 	}
 	return performNumericOp(l, r, op, ctx)
 }
