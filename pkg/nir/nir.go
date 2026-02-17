@@ -48,10 +48,11 @@ type EvaluationContext struct {
 	Emissions []EmittedSignal
 	Errors    []error
 	Listeners map[string][]SignalListener
+	OpIndex   *int
 }
 
 func (ctx *EvaluationContext) addError(err error) {
-	ctx.Errors = append(ctx.Errors, err)
+	ctx.Errors = append(ctx.Errors, fmt.Errorf("%d: %v", *ctx.OpIndex, err))
 }
 
 type Expr interface {
@@ -367,11 +368,15 @@ func performNumericOp[T Numeric](l T, r T, op *Op, ctx *EvaluationContext) error
 		ctx.Slots[*op.Out] = V(l * r)
 	case OpDiv:
 		if r == 0 {
-			ctx.Slots[*op.Out] = U() // division by zero is undefined
+			ctx.Slots[*op.Out] = U() // div by zero is undefined
 			return nil
 		}
 		ctx.Slots[*op.Out] = V(l / r)
 	case OpMod:
+		if r == 0 {
+			ctx.Slots[*op.Out] = U() // mod (div) by zero is undefined
+			return nil
+		}
 		ctx.Slots[*op.Out] = V(T(int64(l) % int64(r)))
 	case OpLt:
 		ctx.Slots[*op.Out] = V(l < r)
@@ -429,7 +434,12 @@ func executeBinaryOp(op *Op, ctx *EvaluationContext) error {
 		r, ok := rval.Raw.(bool)
 		if !ok {
 			ctx.Slots[*op.Out] = U()
-			ctx.addError(fmt.Errorf("operator '%s' requires both operands to be bool, got %v and %v", op.Kind, lval.Type(), rval.Type()))
+			ctx.addError(fmt.Errorf(
+				"operator '%s' requires both operands to be bool, got %v and %v",
+				op.Kind,
+				lval.Type(),
+				rval.Type(),
+			))
 			return nil
 		}
 		switch op.Kind {
@@ -450,7 +460,12 @@ func executeBinaryOp(op *Op, ctx *EvaluationContext) error {
 		r, ok := rval.Raw.(string)
 		if !ok {
 			ctx.Slots[*op.Out] = U()
-			ctx.addError(fmt.Errorf("operator '%s' requires both operands to be strings, got %v and %v", op.Kind, lval.Type(), rval.Type()))
+			ctx.addError(fmt.Errorf(
+				"operator '%s' requires both operands to be strings, got %v and %v",
+				op.Kind,
+				lval.Type(),
+				rval.Type(),
+			))
 			return nil
 		}
 		switch op.Kind {

@@ -42,7 +42,8 @@ func (e *Evaluator) EvaluateRule(ruleName string, input nir.ValueMap) (*Evaluati
 	}
 
 	// execute operations
-	for _, op := range rule.Ops {
+	for i, op := range rule.Ops {
+		evalCtx.OpIndex = &i
 		if err := op.Execute(evalCtx); err != nil {
 			return nil, fmt.Errorf("execution error: %v", err)
 		}
