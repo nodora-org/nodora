@@ -93,6 +93,10 @@ func (dce *DeadCodeElimination) collectSymReads(e *nir.RawExpr, usedSlots map[in
 		for _, arg := range e.Value {
 			dce.collectSymReads(&arg, usedSlots)
 		}
+	case *nir.CallExpr:
+		for _, arg := range e.Args {
+			dce.collectSymReads(&arg, usedSlots)
+		}
 	case *nir.SignalExpr:
 		for _, arg := range e.Args {
 			dce.collectSymReads(&arg, usedSlots)

@@ -420,6 +420,50 @@ func TestDeadCodeElimination_ComplexExpressions(t *testing.T) {
 			},
 			expectedOpCount: 2,
 		},
+
+		{
+			name: "tracks dependencies through CallExpr",
+			rule: nir.Rule{
+				Symslots: 3,
+				Outputs: map[string]nir.Output{
+					"result": {Sym: 2},
+				},
+				Ops: []nir.Op{
+					{
+						// dead
+						Kind: nir.OpCopy,
+						Args: []nir.RawExpr{
+							{Expr: &nir.ImmExpr{Value: core.V(42)}},
+						},
+						Out: core.IntPtr(0),
+					},
+					{
+						// live - slot 1 is used in the array
+						Kind: nir.OpCopy,
+						Args: []nir.RawExpr{
+							{Expr: &nir.ImmExpr{Value: core.V(100)}},
+						},
+						Out: core.IntPtr(1),
+					},
+					{
+						// live - calls a function with slot 1 as argument, writes to output slot 2
+						Kind: nir.OpCopy,
+						Args: []nir.RawExpr{
+							{
+								Expr: &nir.CallExpr{
+									Func: nir.CallFunc{}, // dummy
+									Args: []nir.RawExpr{
+										{Expr: &nir.SymExpr{Index: 1}},
+									},
+								},
+							},
+						},
+						Out: core.IntPtr(2),
+					},
+				},
+			},
+			expectedOpCount: 2,
+		},
 		{
 			name: "tracks dependencies through SelExpr",
 			rule: nir.Rule{
