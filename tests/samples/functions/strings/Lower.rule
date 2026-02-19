@@ -1,0 +1,3 @@
+rule LowerRule {
+    out result = strings::lower(input.str)
+}

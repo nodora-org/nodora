@@ -1,0 +1,4 @@
+rule SemverCompareRule {
+    // 0 if v == w, -1 if v < w, or +1 if v > w
+    out result = semver::compare(input.v, input.w)
+}

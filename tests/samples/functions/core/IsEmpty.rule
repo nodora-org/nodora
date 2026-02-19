@@ -1,0 +1,3 @@
+rule IsEmptyRule {
+    out isEmpty = is_empty(input.arr)
+}

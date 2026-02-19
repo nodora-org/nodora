@@ -1,0 +1,46 @@
+[
+  {
+    "input": {
+      "fmt": "Hello %s",
+      "args": ["World"]
+    },
+    "expected": {
+      "outputs": {
+        "formatted": "Hello World"
+      }
+    }
+  },
+  {
+    "input": {
+      "fmt": "%s has %d apples",
+      "args": ["Alice", 5]
+    },
+    "expected": {
+      "outputs": {
+        "formatted": "Alice has 5 apples"
+      }
+    }
+  },
+  {
+    "input": {
+      "fmt": "Value: %.2f",
+      "args": [3.14159]
+    },
+    "expected": {
+      "outputs": {
+        "formatted": "Value: 3.14"
+      }
+    }
+  },
+  {
+    "input": {
+      "fmt": "No args",
+      "args": []
+    },
+    "expected": {
+      "outputs": {
+        "formatted": "No args"
+      }
+    }
+  }
+]

@@ -1,0 +1,3 @@
+rule EndsWithRule {
+    out result = strings::ends_with(input.str, input.suffix)
+}

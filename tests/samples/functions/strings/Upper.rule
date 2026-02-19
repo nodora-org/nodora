@@ -1,0 +1,3 @@
+rule UpperRule {
+    out result = strings::upper(input.str)
+}

@@ -1,0 +1,46 @@
+[
+  {
+    "input": {
+      "str": "  hello world  ",
+      "cutset": " "
+    },
+    "expected": {
+      "outputs": {
+        "result": "hello world  "
+      }
+    }
+  },
+  {
+    "input": {
+      "str": "xxhello worldxx",
+      "cutset": "x"
+    },
+    "expected": {
+      "outputs": {
+        "result": "hello worldxx"
+      }
+    }
+  },
+  {
+    "input": {
+      "str": "hello world",
+      "cutset": " "
+    },
+    "expected": {
+      "outputs": {
+        "result": "hello world"
+      }
+    }
+  },
+  {
+    "input": {
+      "str": "",
+      "cutset": "x"
+    },
+    "expected": {
+      "outputs": {
+        "result": ""
+      }
+    }
+  }
+]

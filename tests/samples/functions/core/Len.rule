@@ -1,0 +1,3 @@
+rule LenRule {
+    out length = len(input.data)
+}

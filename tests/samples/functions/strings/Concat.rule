@@ -1,0 +1,3 @@
+rule ConcatRule {
+    out result = strings::concat(input.delim, input.arr)
+}

@@ -1,0 +1,3 @@
+rule SplitRule {
+    out result = strings::split(input.str, input.delim)
+}

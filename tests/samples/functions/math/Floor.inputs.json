@@ -1,0 +1,28 @@
+[
+  {
+    "input": {
+      "n": 1.2
+    },
+    "expected": {
+      "outputs": {
+        "floor": 1
+      }
+    }
+  },
+  {
+    "input": {
+      "n": 1.6
+    },
+    "expected": {
+      "outputs": {
+        "floor": 1
+      }
+    }
+  },
+  {
+    "input": {
+      "n": "1"
+    },
+    "err": true
+  }
+]

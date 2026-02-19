@@ -3,6 +3,7 @@ package passes
 import (
 	"testing"
 
+	"nodora.org/nodora/pkg/core"
 	"nodora.org/nodora/pkg/nir"
 )
 
@@ -23,23 +24,23 @@ func TestSymbolRemap_BasicRemapping(t *testing.T) {
 					{
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: nir.V(1)}},
+							{Expr: &nir.ImmExpr{Value: core.V(1)}},
 						},
-						Out: nir.IntPtr(1),
+						Out: core.IntPtr(1),
 					},
 					{
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
 							{Expr: &nir.SymExpr{Index: 1}},
 						},
-						Out: nir.IntPtr(2),
+						Out: core.IntPtr(2),
 					},
 					{
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
 							{Expr: &nir.SymExpr{Index: 2}},
 						},
-						Out: nir.IntPtr(3),
+						Out: core.IntPtr(3),
 					},
 				},
 				Symslots: 4,
@@ -57,16 +58,16 @@ func TestSymbolRemap_BasicRemapping(t *testing.T) {
 					{
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: nir.V(1)}},
+							{Expr: &nir.ImmExpr{Value: core.V(1)}},
 						},
-						Out: nir.IntPtr(5),
+						Out: core.IntPtr(5),
 					},
 					{
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
 							{Expr: &nir.SymExpr{Index: 5}},
 						},
-						Out: nir.IntPtr(10),
+						Out: core.IntPtr(10),
 					},
 				},
 				Symslots: 11,
@@ -165,17 +166,17 @@ func TestSymbolRemap_SymExprRemapping(t *testing.T) {
 					{
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: nir.V(42)}},
+							{Expr: &nir.ImmExpr{Value: core.V(42)}},
 						},
-						Out: nir.IntPtr(5),
+						Out: core.IntPtr(5),
 					},
 					{
 						Kind: nir.OpAdd,
 						Args: []nir.RawExpr{
 							{Expr: &nir.SymExpr{Index: 5}},
-							{Expr: &nir.ImmExpr{Value: nir.V(10)}},
+							{Expr: &nir.ImmExpr{Value: core.V(10)}},
 						},
-						Out: nir.IntPtr(2),
+						Out: core.IntPtr(2),
 					},
 				},
 			},
@@ -193,16 +194,16 @@ func TestSymbolRemap_SymExprRemapping(t *testing.T) {
 					{
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: nir.V(1)}},
+							{Expr: &nir.ImmExpr{Value: core.V(1)}},
 						},
-						Out: nir.IntPtr(1),
+						Out: core.IntPtr(1),
 					},
 					{
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: nir.V(2)}},
+							{Expr: &nir.ImmExpr{Value: core.V(2)}},
 						},
-						Out: nir.IntPtr(3),
+						Out: core.IntPtr(3),
 					},
 					{
 						Kind: nir.OpAdd,
@@ -210,7 +211,7 @@ func TestSymbolRemap_SymExprRemapping(t *testing.T) {
 							{Expr: &nir.SymExpr{Index: 1}},
 							{Expr: &nir.SymExpr{Index: 3}},
 						},
-						Out: nir.IntPtr(10),
+						Out: core.IntPtr(10),
 					},
 				},
 			},
@@ -312,10 +313,10 @@ func TestSymbolRemap_ComplexExpressions(t *testing.T) {
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
 							{Expr: &nir.ArrExpr{Value: []nir.RawExpr{
-								{Expr: &nir.ImmExpr{Value: nir.V(1)}},
+								{Expr: &nir.ImmExpr{Value: core.V(1)}},
 							}}},
 						},
-						Out: nir.IntPtr(5),
+						Out: core.IntPtr(5),
 					},
 					{
 						Kind: nir.OpCopy,
@@ -323,7 +324,7 @@ func TestSymbolRemap_ComplexExpressions(t *testing.T) {
 							{
 								Expr: &nir.IdxExpr{
 									Index: nir.RawExpr{
-										Expr: &nir.ImmExpr{Value: nir.V(0)},
+										Expr: &nir.ImmExpr{Value: core.V(0)},
 									},
 									From: nir.RawExpr{
 										Expr: &nir.SymExpr{Index: 5},
@@ -331,7 +332,7 @@ func TestSymbolRemap_ComplexExpressions(t *testing.T) {
 								},
 							},
 						},
-						Out: nir.IntPtr(2),
+						Out: core.IntPtr(2),
 					},
 				},
 			},
@@ -355,9 +356,9 @@ func TestSymbolRemap_ComplexExpressions(t *testing.T) {
 					{
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: nir.V(nir.ValueMap{"field": nir.V(1)})}},
+							{Expr: &nir.ImmExpr{Value: core.V(core.ValueMap{"field": core.V(1)})}},
 						},
-						Out: nir.IntPtr(5),
+						Out: core.IntPtr(5),
 					},
 					{
 						Kind: nir.OpCopy,
@@ -369,7 +370,7 @@ func TestSymbolRemap_ComplexExpressions(t *testing.T) {
 								},
 							},
 						},
-						Out: nir.IntPtr(2),
+						Out: core.IntPtr(2),
 					},
 				},
 			},
@@ -393,9 +394,9 @@ func TestSymbolRemap_ComplexExpressions(t *testing.T) {
 					{
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: nir.V(100)}},
+							{Expr: &nir.ImmExpr{Value: core.V(100)}},
 						},
-						Out: nir.IntPtr(5),
+						Out: core.IntPtr(5),
 					},
 					{
 						Kind: nir.OpCopy,
@@ -408,7 +409,7 @@ func TestSymbolRemap_ComplexExpressions(t *testing.T) {
 								},
 							},
 						},
-						Out: nir.IntPtr(2),
+						Out: core.IntPtr(2),
 					},
 				},
 			},
@@ -432,16 +433,16 @@ func TestSymbolRemap_ComplexExpressions(t *testing.T) {
 					{
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: nir.V(100)}},
+							{Expr: &nir.ImmExpr{Value: core.V(100)}},
 						},
-						Out: nir.IntPtr(5),
+						Out: core.IntPtr(5),
 					},
 					{
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: nir.V(true)}},
+							{Expr: &nir.ImmExpr{Value: core.V(true)}},
 						},
-						Out: nir.IntPtr(10),
+						Out: core.IntPtr(10),
 					},
 					{
 						Kind: nir.OpCopy,
@@ -456,7 +457,7 @@ func TestSymbolRemap_ComplexExpressions(t *testing.T) {
 								},
 							},
 						},
-						Out: nir.IntPtr(3),
+						Out: core.IntPtr(3),
 					},
 				},
 			},
@@ -484,16 +485,16 @@ func TestSymbolRemap_ComplexExpressions(t *testing.T) {
 					{
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: nir.V(100)}},
+							{Expr: &nir.ImmExpr{Value: core.V(100)}},
 						},
-						Out: nir.IntPtr(5),
+						Out: core.IntPtr(5),
 					},
 					{
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
 							{
 								Expr: &nir.IdxExpr{
-									Index: nir.RawExpr{Expr: &nir.ImmExpr{Value: nir.V(0)}},
+									Index: nir.RawExpr{Expr: &nir.ImmExpr{Value: core.V(0)}},
 									From: nir.RawExpr{Expr: &nir.ArrExpr{
 										Value: []nir.RawExpr{
 											{Expr: &nir.SymExpr{Index: 5}},
@@ -502,7 +503,7 @@ func TestSymbolRemap_ComplexExpressions(t *testing.T) {
 								},
 							},
 						},
-						Out: nir.IntPtr(2),
+						Out: core.IntPtr(2),
 					},
 				},
 			},
@@ -550,9 +551,9 @@ func TestSymbolRemap_MultipleRules(t *testing.T) {
 					{
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: nir.V(1)}},
+							{Expr: &nir.ImmExpr{Value: core.V(1)}},
 						},
-						Out: nir.IntPtr(5),
+						Out: core.IntPtr(5),
 					},
 				},
 				Symslots: 6,
@@ -565,9 +566,9 @@ func TestSymbolRemap_MultipleRules(t *testing.T) {
 					{
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: nir.V(2)}},
+							{Expr: &nir.ImmExpr{Value: core.V(2)}},
 						},
-						Out: nir.IntPtr(10),
+						Out: core.IntPtr(10),
 					},
 				},
 				Symslots: 11,

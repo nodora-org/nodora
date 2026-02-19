@@ -1,0 +1,52 @@
+[
+  {
+    "input": {
+      "str": "550e8400-e29b-41d4-a716-446655440000"
+    },
+    "expected": {
+      "outputs": {
+        "isValid": true
+      }
+    }
+  },
+  {
+    "input": {
+      "str": "550e8400e29b41d4a716446655440000"
+    },
+    "expected": {
+      "outputs": {
+        "isValid": true
+      }
+    }
+  },
+  {
+    "input": {
+      "str": "not-a-uuid"
+    },
+    "expected": {
+      "outputs": {
+        "isValid": false
+      }
+    }
+  },
+  {
+    "input": {
+      "str": "550e8400-e29b-41d4-a716-44665544000"
+    },
+    "expected": {
+      "outputs": {
+        "isValid": false
+      }
+    }
+  },
+  {
+    "input": {
+      "str": ""
+    },
+    "expected": {
+      "outputs": {
+        "isValid": false
+      }
+    }
+  }
+]

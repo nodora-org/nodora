@@ -201,3 +201,22 @@ type ArrayLiteral struct {
 func (al *ArrayLiteral) Accept(visitor Visitor) error {
 	return visitor.VisitArrayLiteral(al)
 }
+
+type CallExpr struct {
+	Typed
+	Span
+	Namespace string
+	Name      string
+	Args      []Expr
+}
+
+func (ce *CallExpr) FullPath() string {
+	if ce.Namespace == "" {
+		return ce.Name
+	}
+	return ce.Namespace + "::" + ce.Name
+}
+
+func (c *CallExpr) Accept(visitor Visitor) error {
+	return visitor.VisitCallExpr(c)
+}

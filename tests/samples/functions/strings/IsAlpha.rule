@@ -1,0 +1,3 @@
+rule IsAlphaRule {
+    out isAlpha = strings::is_alpha(input.str)
+}

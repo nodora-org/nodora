@@ -1,0 +1,3 @@
+rule SemverIsValidRule {
+    out valid = semver::is_valid(input.version)
+}

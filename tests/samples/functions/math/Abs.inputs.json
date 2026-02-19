@@ -1,0 +1,48 @@
+[
+  {
+    "input": {
+      "n": 1
+    },
+    "expected": {
+      "outputs": {
+        "abs": 1
+      }
+    }
+  },
+  {
+    "input": {
+      "n": -1
+    },
+    "expected": {
+      "outputs": {
+        "abs": 1
+      }
+    }
+  },
+  {
+    "input": {
+      "n": 1.2
+    },
+    "expected": {
+      "outputs": {
+        "abs": 1.2
+      }
+    }
+  },
+  {
+    "input": {
+      "n": -1.2
+    },
+    "expected": {
+      "outputs": {
+        "abs": 1.2
+      }
+    }
+  },
+  {
+    "input": {
+      "n": "1"
+    },
+    "err": true
+  }
+]

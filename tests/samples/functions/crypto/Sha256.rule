@@ -1,0 +1,3 @@
+rule Sha256Rule {
+    out hash = crypto::sha256(input.data)
+}

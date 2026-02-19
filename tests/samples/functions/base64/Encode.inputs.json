@@ -1,0 +1,32 @@
+[
+  {
+    "input": {
+      "str": "hello"
+    },
+    "expected": {
+      "outputs": {
+        "encoded": "aGVsbG8="
+      }
+    }
+  },
+  {
+    "input": {
+      "str": "Hello World!"
+    },
+    "expected": {
+      "outputs": {
+        "encoded": "SGVsbG8gV29ybGQh"
+      }
+    }
+  },
+  {
+    "input": {
+      "str": ""
+    },
+    "expected": {
+      "outputs": {
+        "encoded": ""
+      }
+    }
+  }
+]

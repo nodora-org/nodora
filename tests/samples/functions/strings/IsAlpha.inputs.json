@@ -1,0 +1,52 @@
+[
+  {
+    "input": {
+      "str": "abc"
+    },
+    "expected": {
+      "outputs": {
+        "isAlpha": true
+      }
+    }
+  },
+  {
+    "input": {
+      "str": "ABC"
+    },
+    "expected": {
+      "outputs": {
+        "isAlpha": true
+      }
+    }
+  },
+  {
+    "input": {
+      "str": "abc123"
+    },
+    "expected": {
+      "outputs": {
+        "isAlpha": false
+      }
+    }
+  },
+  {
+    "input": {
+      "str": "hello world"
+    },
+    "expected": {
+      "outputs": {
+        "isAlpha": false
+      }
+    }
+  },
+  {
+    "input": {
+      "str": ""
+    },
+    "expected": {
+      "outputs": {
+        "isAlpha": false
+      }
+    }
+  }
+]

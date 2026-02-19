@@ -1,0 +1,3 @@
+rule FloorRule {
+    out floor = math::floor(input.n)
+}

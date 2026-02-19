@@ -1,0 +1,42 @@
+[
+  {
+    "input": {
+      "v": "v1.0.1",
+      "w": "v1.0.0"
+    },
+    "expected": {
+      "outputs": {
+        "result": 1
+      }
+    }
+  },
+  {
+    "input": {
+      "v": "v1.0.0",
+      "w": "v1.0.0"
+    },
+    "expected": {
+      "outputs": {
+        "result": 0
+      }
+    }
+  },
+  {
+    "input": {
+      "v": "v1.0.0",
+      "w": "v1.0.1"
+    },
+    "expected": {
+      "outputs": {
+        "result": -1
+      }
+    }
+  },
+  {
+    "input": {
+      "v": 1,
+      "w": 2
+    },
+    "err": true
+  }
+]

@@ -3,6 +3,7 @@ package passes
 import (
 	"testing"
 
+	"nodora.org/nodora/pkg/core"
 	"nodora.org/nodora/pkg/nir"
 )
 
@@ -76,9 +77,9 @@ func TestDeadCodeElimination_UnusedSignals(t *testing.T) {
 						{
 							Kind: nir.OpCopy,
 							Args: []nir.RawExpr{
-								{Expr: &nir.ImmExpr{Value: nir.V(42)}},
+								{Expr: &nir.ImmExpr{Value: core.V(42)}},
 							},
-							Out: nir.IntPtr(0),
+							Out: core.IntPtr(0),
 						},
 					},
 				},
@@ -132,19 +133,19 @@ func TestDeadCodeElimination_DeadOperations(t *testing.T) {
 						// dead op - result not used
 						Kind: nir.OpAdd,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: nir.V(1)}},
-							{Expr: &nir.ImmExpr{Value: nir.V(2)}},
+							{Expr: &nir.ImmExpr{Value: core.V(1)}},
+							{Expr: &nir.ImmExpr{Value: core.V(2)}},
 						},
-						Out: nir.IntPtr(0),
+						Out: core.IntPtr(0),
 					},
 					{
 						// live op - output 2 is used
 						Kind: nir.OpAdd,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: nir.V(3)}},
-							{Expr: &nir.ImmExpr{Value: nir.V(4)}},
+							{Expr: &nir.ImmExpr{Value: core.V(3)}},
+							{Expr: &nir.ImmExpr{Value: core.V(4)}},
 						},
-						Out: nir.IntPtr(1),
+						Out: core.IntPtr(1),
 					},
 				},
 			},
@@ -181,19 +182,19 @@ func TestDeadCodeElimination_DeadOperations(t *testing.T) {
 						// slot 0 = 1 + 2
 						Kind: nir.OpAdd,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: nir.V(1)}},
-							{Expr: &nir.ImmExpr{Value: nir.V(2)}},
+							{Expr: &nir.ImmExpr{Value: core.V(1)}},
+							{Expr: &nir.ImmExpr{Value: core.V(2)}},
 						},
-						Out: nir.IntPtr(0),
+						Out: core.IntPtr(0),
 					},
 					{
 						// slot 1 = 3 + 4
 						Kind: nir.OpAdd,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: nir.V(3)}},
-							{Expr: &nir.ImmExpr{Value: nir.V(4)}},
+							{Expr: &nir.ImmExpr{Value: core.V(3)}},
+							{Expr: &nir.ImmExpr{Value: core.V(4)}},
 						},
-						Out: nir.IntPtr(1),
+						Out: core.IntPtr(1),
 					},
 					{
 						// slot 2 = slot 0 + slot 1
@@ -202,7 +203,7 @@ func TestDeadCodeElimination_DeadOperations(t *testing.T) {
 							{Expr: &nir.SymExpr{Index: 0}},
 							{Expr: &nir.SymExpr{Index: 1}},
 						},
-						Out: nir.IntPtr(2),
+						Out: core.IntPtr(2),
 					},
 				},
 			},
@@ -221,28 +222,28 @@ func TestDeadCodeElimination_DeadOperations(t *testing.T) {
 						// dead - slot 0 not used
 						Kind: nir.OpAdd,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: nir.V(1)}},
-							{Expr: &nir.ImmExpr{Value: nir.V(2)}},
+							{Expr: &nir.ImmExpr{Value: core.V(1)}},
+							{Expr: &nir.ImmExpr{Value: core.V(2)}},
 						},
-						Out: nir.IntPtr(0),
+						Out: core.IntPtr(0),
 					},
 					{
 						// slot 1 = 3 + 4
 						Kind: nir.OpAdd,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: nir.V(3)}},
-							{Expr: &nir.ImmExpr{Value: nir.V(4)}},
+							{Expr: &nir.ImmExpr{Value: core.V(3)}},
+							{Expr: &nir.ImmExpr{Value: core.V(4)}},
 						},
-						Out: nir.IntPtr(1),
+						Out: core.IntPtr(1),
 					},
 					{
 						// slot 2 = slot 1 + 5
 						Kind: nir.OpAdd,
 						Args: []nir.RawExpr{
 							{Expr: &nir.SymExpr{Index: 1}},
-							{Expr: &nir.ImmExpr{Value: nir.V(5)}},
+							{Expr: &nir.ImmExpr{Value: core.V(5)}},
 						},
-						Out: nir.IntPtr(2),
+						Out: core.IntPtr(2),
 					},
 				},
 			},
@@ -334,9 +335,9 @@ func TestDeadCodeElimination_ComplexExpressions(t *testing.T) {
 						// dead - result not used
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: nir.V(42)}},
+							{Expr: &nir.ImmExpr{Value: core.V(42)}},
 						},
-						Out: nir.IntPtr(0),
+						Out: core.IntPtr(0),
 					},
 					{
 						// live - slot 1 creates an array
@@ -345,12 +346,12 @@ func TestDeadCodeElimination_ComplexExpressions(t *testing.T) {
 							{
 								Expr: &nir.ArrExpr{
 									Value: []nir.RawExpr{
-										{Expr: &nir.ImmExpr{Value: nir.V(100)}},
+										{Expr: &nir.ImmExpr{Value: core.V(100)}},
 									},
 								},
 							},
 						},
-						Out: nir.IntPtr(1),
+						Out: core.IntPtr(1),
 					},
 					{
 						// live - reads from slot 1 through IdxExpr, writes to slot 2
@@ -359,11 +360,11 @@ func TestDeadCodeElimination_ComplexExpressions(t *testing.T) {
 							{
 								Expr: &nir.IdxExpr{
 									From:  nir.RawExpr{Expr: &nir.SymExpr{Index: 1}},
-									Index: nir.RawExpr{Expr: &nir.ImmExpr{Value: nir.V(0)}},
+									Index: nir.RawExpr{Expr: &nir.ImmExpr{Value: core.V(0)}},
 								},
 							},
 						},
-						Out: nir.IntPtr(2),
+						Out: core.IntPtr(2),
 					},
 					{
 						// live - reads from slot 2, writes to output slot 3
@@ -371,7 +372,7 @@ func TestDeadCodeElimination_ComplexExpressions(t *testing.T) {
 						Args: []nir.RawExpr{
 							{Expr: &nir.SymExpr{Index: 2}},
 						},
-						Out: nir.IntPtr(3),
+						Out: core.IntPtr(3),
 					},
 				},
 			},
@@ -389,17 +390,17 @@ func TestDeadCodeElimination_ComplexExpressions(t *testing.T) {
 						// dead
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: nir.V(42)}},
+							{Expr: &nir.ImmExpr{Value: core.V(42)}},
 						},
-						Out: nir.IntPtr(0),
+						Out: core.IntPtr(0),
 					},
 					{
 						// live - slot 1 is used in the array
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: nir.V(100)}},
+							{Expr: &nir.ImmExpr{Value: core.V(100)}},
 						},
-						Out: nir.IntPtr(1),
+						Out: core.IntPtr(1),
 					},
 					{
 						// live - creates array reading from slot 1, writes to output slot 2
@@ -413,7 +414,7 @@ func TestDeadCodeElimination_ComplexExpressions(t *testing.T) {
 								},
 							},
 						},
-						Out: nir.IntPtr(2),
+						Out: core.IntPtr(2),
 					},
 				},
 			},
@@ -431,17 +432,17 @@ func TestDeadCodeElimination_ComplexExpressions(t *testing.T) {
 						// dead
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: nir.V(42)}},
+							{Expr: &nir.ImmExpr{Value: core.V(42)}},
 						},
-						Out: nir.IntPtr(0),
+						Out: core.IntPtr(0),
 					},
 					{
 						// live - slot 1 is read in SelExpr
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: nir.V(100)}},
+							{Expr: &nir.ImmExpr{Value: core.V(100)}},
 						},
-						Out: nir.IntPtr(1),
+						Out: core.IntPtr(1),
 					},
 					{
 						// live - reads from slot 1 through SelExpr, writes to output slot 2
@@ -454,7 +455,7 @@ func TestDeadCodeElimination_ComplexExpressions(t *testing.T) {
 								},
 							},
 						},
-						Out: nir.IntPtr(2),
+						Out: core.IntPtr(2),
 					},
 				},
 			},
@@ -472,17 +473,17 @@ func TestDeadCodeElimination_ComplexExpressions(t *testing.T) {
 						// dead
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: nir.V(42)}},
+							{Expr: &nir.ImmExpr{Value: core.V(42)}},
 						},
-						Out: nir.IntPtr(0),
+						Out: core.IntPtr(0),
 					},
 					{
 						// live - slot 1 is read in SignalExpr When clause
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: nir.V(true)}},
+							{Expr: &nir.ImmExpr{Value: core.V(true)}},
 						},
-						Out: nir.IntPtr(1),
+						Out: core.IntPtr(1),
 					},
 					{
 						// live - SignalExpr reads from slot 1 in When, writes to output slot 2
@@ -495,7 +496,7 @@ func TestDeadCodeElimination_ComplexExpressions(t *testing.T) {
 								},
 							},
 						},
-						Out: nir.IntPtr(2),
+						Out: core.IntPtr(2),
 					},
 				},
 			},
@@ -549,9 +550,9 @@ func TestDeadCodeElimination_MultipleRules(t *testing.T) {
 					{
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: nir.V(42)}},
+							{Expr: &nir.ImmExpr{Value: core.V(42)}},
 						},
-						Out: nir.IntPtr(0),
+						Out: core.IntPtr(0),
 					},
 				},
 			},
@@ -570,9 +571,9 @@ func TestDeadCodeElimination_MultipleRules(t *testing.T) {
 					{
 						Kind: nir.OpCopy,
 						Args: []nir.RawExpr{
-							{Expr: &nir.ImmExpr{Value: nir.V(100)}},
+							{Expr: &nir.ImmExpr{Value: core.V(100)}},
 						},
-						Out: nir.IntPtr(0),
+						Out: core.IntPtr(0),
 					},
 				},
 			},

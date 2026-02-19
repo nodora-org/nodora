@@ -1,0 +1,3 @@
+rule IsAlphanumericRule {
+    out isAlphanumeric = strings::is_alnum(input.str)
+}

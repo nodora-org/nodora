@@ -25,7 +25,7 @@ import (
 
 %token <str> IDENT STRING NUMBER
 %token <span> TRUE FALSE SIGNAL RULE EMIT WHEN OUT IN IF THEN ELSE
-%token <span> LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET COLON COMMA QMARK DOT
+%token <span> LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET COLON COMMA QMARK DOT NAMESPACE
 %token <span> PLUS MINUS STAR SLASH MOD
 %token <span> GT LT GTE LTE EQ NEQ AND OR NOT ASSIGN
 
@@ -315,6 +315,18 @@ unary_expr
 postfix_expr
     : primary_expr
         { $$ = $1 }
+    | IDENT NAMESPACE IDENT LPAREN args_opt RPAREN
+        { 
+          c := &ast.CallExpr{Namespace: $1, Name: $3, Args: $5}
+          c.Span = $<span>1.Merge($6)
+          $$ = c
+        }
+    | IDENT LPAREN args_opt RPAREN
+        { 
+          c := &ast.CallExpr{Name: $1, Args: $3}
+          c.Span = $<span>1.Merge($4)
+          $$ = c
+        }
     | postfix_expr DOT IDENT
         { 
           s := &ast.SelectorExpr{Expr: $1, Field: $3}

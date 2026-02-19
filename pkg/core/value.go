@@ -1,4 +1,4 @@
-package nir
+package core
 
 import (
 	"encoding/json"
@@ -19,7 +19,7 @@ func (v *Value) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &raw); err != nil {
 		return err
 	}
-	v.Raw = raw
+	*v = NormalizeValue(raw)
 	return nil
 }
 
@@ -65,10 +65,12 @@ func (v *Value) Type() string {
 	if v.Undefined {
 		return "undefined"
 	}
-	switch v.Raw.(type) {
+	switch inner := v.Raw.(type) {
+	case Value:
+		return inner.Type()
 	case []Value:
 		return "array"
-	case map[string]Value:
+	case ValueMap:
 		return "object"
 	default:
 		return fmt.Sprintf("%T", v.Raw)
@@ -78,11 +80,27 @@ func (v *Value) Type() string {
 type ValueMap map[string]Value
 
 func NewValueMap(raw map[string]any) ValueMap {
-	result := make(map[string]Value, len(raw))
+	result := make(ValueMap, len(raw))
 	for k, v := range raw {
-		result[k] = normalizeValue(v)
+		result[k] = NormalizeValue(v)
 	}
 	return result
+}
+
+func NormalizeValue(v any) Value {
+	switch val := v.(type) {
+	case []any:
+		result := make([]Value, len(val))
+		for i, item := range val {
+			result[i] = NormalizeValue(item)
+		}
+		return V(result)
+	case map[string]any:
+		return V(NewValueMap(val))
+	default:
+		// primitives (string, float64, bool, nil) stay as-is
+		return V(val)
+	}
 }
 
 func (n *ValueMap) UnmarshalJSON(data []byte) error {
@@ -93,7 +111,7 @@ func (n *ValueMap) UnmarshalJSON(data []byte) error {
 
 	*n = make(map[string]Value, len(raw))
 	for k, v := range raw {
-		(*n)[k] = normalizeValue(v)
+		(*n)[k] = NormalizeValue(v)
 	}
 	return nil
 }

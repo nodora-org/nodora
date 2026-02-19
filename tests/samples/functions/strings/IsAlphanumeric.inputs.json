@@ -1,0 +1,72 @@
+[
+  {
+    "input": {
+      "str": "abc123"
+    },
+    "expected": {
+      "outputs": {
+        "isAlphanumeric": true
+      }
+    }
+  },
+  {
+    "input": {
+      "str": "ABCxyz789"
+    },
+    "expected": {
+      "outputs": {
+        "isAlphanumeric": true
+      }
+    }
+  },
+  {
+    "input": {
+      "str": "abc"
+    },
+    "expected": {
+      "outputs": {
+        "isAlphanumeric": true
+      }
+    }
+  },
+  {
+    "input": {
+      "str": "123"
+    },
+    "expected": {
+      "outputs": {
+        "isAlphanumeric": true
+      }
+    }
+  },
+  {
+    "input": {
+      "str": "abc 123"
+    },
+    "expected": {
+      "outputs": {
+        "isAlphanumeric": false
+      }
+    }
+  },
+  {
+    "input": {
+      "str": "hello!"
+    },
+    "expected": {
+      "outputs": {
+        "isAlphanumeric": false
+      }
+    }
+  },
+  {
+    "input": {
+      "str": ""
+    },
+    "expected": {
+      "outputs": {
+        "isAlphanumeric": false
+      }
+    }
+  }
+]

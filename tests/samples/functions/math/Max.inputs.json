@@ -1,0 +1,42 @@
+[
+  {
+    "input": {
+      "a": 1,
+      "b": 2
+    },
+    "expected": {
+      "outputs": {
+        "max": 2
+      }
+    }
+  },
+  {
+    "input": {
+      "a": 2,
+      "b": 2
+    },
+    "expected": {
+      "outputs": {
+        "max": 2
+      }
+    }
+  },
+  {
+    "input": {
+      "a": 2,
+      "b": 1
+    },
+    "expected": {
+      "outputs": {
+        "max": 2
+      }
+    }
+  },
+  {
+    "input": {
+      "a": "2",
+      "b": "1"
+    },
+    "err": true
+  }
+]

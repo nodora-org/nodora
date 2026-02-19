@@ -1,0 +1,12 @@
+[
+  {
+    "input": {
+      "version": "v1"
+    },
+    "expected": {
+      "outputs": {
+        "result": "v1.0.0"
+      }
+    }
+  }
+]

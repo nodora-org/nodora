@@ -1,0 +1,18 @@
+[
+  {
+    "input": {
+      "data": "123"
+    },
+    "expected": {
+      "outputs": {
+        "hash": "40bd001563085fc35165329ea1ff5c5ecbdbbeef"
+      }
+    }
+  },
+  {
+    "input": {
+      "data": 123
+    },
+    "err": true
+  }
+]

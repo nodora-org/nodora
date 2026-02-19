@@ -3,6 +3,7 @@ package evaluator
 import (
 	"fmt"
 
+	"nodora.org/nodora/pkg/core"
 	"nodora.org/nodora/pkg/nir"
 )
 
@@ -25,27 +26,25 @@ func (e *Evaluator) OnSignalFunc(signalName string, listener func([]any) error) 
 	e.signalListeners[signalName] = append(e.signalListeners[signalName], nir.SignalListenerFunc(listener))
 }
 
-func (e *Evaluator) EvaluateRule(ruleName string, input nir.ValueMap) (*EvaluationResult, error) {
+func (e *Evaluator) EvaluateRule(ruleName string, input core.ValueMap) (*EvaluationResult, error) {
 	rule, ok := e.program.Rules[ruleName]
 	if !ok {
 		return nil, fmt.Errorf("rule not found: %s", ruleName)
 	}
 
-	slots := make([]nir.Value, rule.Symslots)
-	slots[0] = nir.V(input)
+	slots := make([]core.Value, rule.Symslots)
+	slots[0] = core.V(input)
 
 	evalCtx := &nir.EvaluationContext{
 		Slots:     slots,
 		Emissions: []nir.EmittedSignal{},
 		Listeners: e.signalListeners,
-		Errors:    make([]error, 0),
 	}
 
 	// execute operations
 	for i, op := range rule.Ops {
-		evalCtx.OpIndex = &i
 		if err := op.Execute(evalCtx); err != nil {
-			return nil, fmt.Errorf("execution error: %v", err)
+			return nil, fmt.Errorf("execution error at op[%d]: %v", i, err)
 		}
 	}
 
@@ -87,7 +86,7 @@ func (e *Evaluator) GetSignalNames() []string {
 	return names
 }
 
-func debugRule(ruleName string, rule *nir.Rule, input nir.ValueMap, evalCtx *nir.EvaluationContext) {
+func debugRule(ruleName string, rule *nir.Rule, input core.ValueMap, evalCtx *nir.EvaluationContext) {
 	fmt.Printf("=== rule %s ===\n", ruleName)
 
 	fmt.Printf("\nInputs (len = %d)\n", len(input))
@@ -117,11 +116,6 @@ func debugRule(ruleName string, rule *nir.Rule, input nir.ValueMap, evalCtx *nir
 	fmt.Printf("\nSignals Emitted (len = %d)\n", len(evalCtx.Emissions))
 	for _, sig := range evalCtx.Emissions {
 		fmt.Printf("  %s: %v\n", sig.Name, sig.Args)
-	}
-
-	fmt.Printf("\nErrors (len = %d)\n", len(evalCtx.Errors))
-	for _, err := range evalCtx.Errors {
-		fmt.Printf("  %v\n", err)
 	}
 
 	fmt.Println("================================")

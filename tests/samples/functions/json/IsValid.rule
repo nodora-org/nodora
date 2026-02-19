@@ -1,0 +1,3 @@
+rule JsonIsValidRule {
+    out isValid = json::is_valid(input.str)
+}

@@ -1,0 +1,46 @@
+[
+  {
+    "input": {
+      "str": "a,b,c",
+      "delim": ","
+    },
+    "expected": {
+      "outputs": {
+        "result": ["a", "b", "c"]
+      }
+    }
+  },
+  {
+    "input": {
+      "str": "hello world",
+      "delim": " "
+    },
+    "expected": {
+      "outputs": {
+        "result": ["hello", "world"]
+      }
+    }
+  },
+  {
+    "input": {
+      "str": "hello",
+      "delim": ","
+    },
+    "expected": {
+      "outputs": {
+        "result": ["hello"]
+      }
+    }
+  },
+  {
+    "input": {
+      "str": "",
+      "delim": ","
+    },
+    "expected": {
+      "outputs": {
+        "result": [""]
+      }
+    }
+  }
+]

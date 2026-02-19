@@ -6,6 +6,7 @@ import (
 
 	version "nodora.org/nodora"
 	"nodora.org/nodora/internal/ast"
+	"nodora.org/nodora/pkg/core"
 )
 
 type exprResult struct {
@@ -15,7 +16,7 @@ type exprResult struct {
 }
 
 func immResult(val any) exprResult {
-	return exprResult{isImmediate: true, expr: &ImmExpr{Value: V(val)}}
+	return exprResult{isImmediate: true, expr: &ImmExpr{Value: core.V(val)}}
 }
 
 func arrResult(exprs []exprResult) exprResult {
@@ -259,9 +260,28 @@ func (b *Builder) buildExpr(expr ast.Expr) exprResult {
 	case *ast.ArrayLiteral:
 		return b.buildArrayLiteral(e)
 
+	case *ast.CallExpr:
+		return b.buildCallExpr(e)
+
 	default:
 		return exprResult{isImmediate: true, expr: nil}
 	}
+}
+
+func (b *Builder) buildCallExpr(e *ast.CallExpr) exprResult {
+	args := make([]RawExpr, len(e.Args))
+	for i, arg := range e.Args {
+		result := b.buildExpr(arg)
+		args[i] = result.toRawExpr()
+	}
+	callFunc := CallFunc{
+		Namespace: e.Namespace,
+		Name:      e.Name,
+	}
+	return exprResult{expr: &CallExpr{
+		Func: callFunc,
+		Args: args,
+	}}
 }
 
 func (b *Builder) buildUnaryExpr(expr *ast.UnaryExpr) exprResult {
@@ -270,7 +290,7 @@ func (b *Builder) buildUnaryExpr(expr *ast.UnaryExpr) exprResult {
 
 	switch expr.Op {
 	case "-":
-		b.addOp(OpSub, []RawExpr{{Expr: &ImmExpr{Value: V(0)}}, inner.toRawExpr()}, &out)
+		b.addOp(OpSub, []RawExpr{{Expr: &ImmExpr{Value: core.V(0)}}, inner.toRawExpr()}, &out)
 	case "!":
 		b.addOp(OpNot, []RawExpr{inner.toRawExpr()}, &out)
 	}

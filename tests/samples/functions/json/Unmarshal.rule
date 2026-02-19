@@ -1,0 +1,3 @@
+rule JsonUnmarshalRule {
+    out value = json::unmarshal(input.json)
+}

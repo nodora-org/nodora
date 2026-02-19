@@ -10,13 +10,16 @@ import (
 	"testing"
 
 	"nodora.org/nodora/pkg/compiler"
+	"nodora.org/nodora/pkg/core"
 	"nodora.org/nodora/pkg/evaluator"
 	"nodora.org/nodora/pkg/nir"
+	_ "nodora.org/nodora/pkg/registry/all"
 )
 
 type TestSample struct {
-	Input    nir.ValueMap               `json:"input"`
-	Expected evaluator.EvaluationResult `json:"expected"`
+	Input         core.ValueMap              `json:"input"`
+	Expected      evaluator.EvaluationResult `json:"expected"`
+	ExpectedError bool                       `json:"err"`
 }
 
 func TestE2E(t *testing.T) {
@@ -89,10 +92,12 @@ func runTest(t *testing.T, rulePath, inputsPath, testName string) {
 	for i, tc := range testSamples {
 		t.Run(fmt.Sprintf("sample_%d", i), func(t *testing.T) {
 			result, err := ev.EvaluateRule(ruleNames[0], tc.Input)
+			if tc.ExpectedError && err != nil {
+				return // return early as an error is expected
+			}
 			if err != nil {
 				t.Fatalf("Evaluation error in test %d: %v", i, err)
 			}
-
 			for key, expectedVal := range tc.Expected.Outputs {
 				actualVal, exists := result.Outputs[key]
 				if !exists {

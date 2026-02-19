@@ -1,0 +1,3 @@
+rule RoundRule {
+    out round = math::round(input.n)
+}

@@ -8,8 +8,10 @@ import (
 	"syscall/js"
 
 	"nodora.org/nodora/pkg/compiler"
+	"nodora.org/nodora/pkg/core"
 	"nodora.org/nodora/pkg/evaluator"
 	"nodora.org/nodora/pkg/nir"
+	_ "nodora.org/nodora/pkg/registry/all"
 )
 
 var (
@@ -132,13 +134,13 @@ func destroyEvaluator(this js.Value, args []js.Value) any {
 	return js.Undefined()
 }
 
-// converts a JS object to nir.ValueMap
-func jsToValueMap(v js.Value) nir.ValueMap {
+// converts a JS object to core.ValueMap
+func jsToValueMap(v js.Value) core.ValueMap {
 	if v.IsNull() || v.IsUndefined() {
-		return nir.ValueMap{}
+		return core.ValueMap{}
 	}
 
-	result := make(nir.ValueMap)
+	result := make(core.ValueMap)
 	keys := js.Global().Get("Object").Call("keys", v)
 	length := keys.Length()
 
@@ -151,31 +153,31 @@ func jsToValueMap(v js.Value) nir.ValueMap {
 	return result
 }
 
-// converts a JS value to nir.Value
-func jsToValue(v js.Value) nir.Value {
+// converts a JS value to core.Value
+func jsToValue(v js.Value) core.Value {
 	switch v.Type() {
 	case js.TypeNull:
-		return nir.V(nil)
+		return core.V(nil)
 	case js.TypeUndefined:
-		return nir.U()
+		return core.U()
 	case js.TypeBoolean:
-		return nir.V(v.Bool())
+		return core.V(v.Bool())
 	case js.TypeNumber:
-		return nir.V(v.Float())
+		return core.V(v.Float())
 	case js.TypeString:
-		return nir.V(v.String())
+		return core.V(v.String())
 	case js.TypeObject:
 		if v.InstanceOf(js.Global().Get("Array")) {
 			length := v.Length()
-			arr := make([]nir.Value, length)
+			arr := make([]core.Value, length)
 			for i := range length {
 				arr[i] = jsToValue(v.Index(i))
 			}
-			return nir.V(arr)
+			return core.V(arr)
 		}
-		return nir.V(jsToValueMap(v))
+		return core.V(jsToValueMap(v))
 	default:
-		return nir.V(v.String())
+		return core.V(v.String())
 	}
 }
 

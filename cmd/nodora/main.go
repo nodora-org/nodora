@@ -8,6 +8,7 @@ import (
 	"github.com/urfave/cli/v3"
 	version "nodora.org/nodora"
 	"nodora.org/nodora/cmd/nodora/actions"
+	_ "nodora.org/nodora/pkg/registry/all"
 )
 
 func main() {

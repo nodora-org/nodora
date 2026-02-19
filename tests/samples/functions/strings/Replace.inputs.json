@@ -1,0 +1,50 @@
+[
+  {
+    "input": {
+      "str": "hello world",
+      "old": "world",
+      "new": "universe"
+    },
+    "expected": {
+      "outputs": {
+        "result": "hello universe"
+      }
+    }
+  },
+  {
+    "input": {
+      "str": "hello world world",
+      "old": "world",
+      "new": "universe"
+    },
+    "expected": {
+      "outputs": {
+        "result": "hello universe universe"
+      }
+    }
+  },
+  {
+    "input": {
+      "str": "hello world",
+      "old": "foo",
+      "new": "bar"
+    },
+    "expected": {
+      "outputs": {
+        "result": "hello world"
+      }
+    }
+  },
+  {
+    "input": {
+      "str": "",
+      "old": "foo",
+      "new": "bar"
+    },
+    "expected": {
+      "outputs": {
+        "result": ""
+      }
+    }
+  }
+]

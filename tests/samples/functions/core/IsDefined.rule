@@ -1,0 +1,3 @@
+rule IsDefinedRule {
+    out isdef = is_defined(input.a)
+}

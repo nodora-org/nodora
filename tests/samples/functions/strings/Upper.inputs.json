@@ -1,0 +1,42 @@
+[
+  {
+    "input": {
+      "str": "hello world"
+    },
+    "expected": {
+      "outputs": {
+        "result": "HELLO WORLD"
+      }
+    }
+  },
+  {
+    "input": {
+      "str": "Hello World"
+    },
+    "expected": {
+      "outputs": {
+        "result": "HELLO WORLD"
+      }
+    }
+  },
+  {
+    "input": {
+      "str": "ALREADY UPPERCASE"
+    },
+    "expected": {
+      "outputs": {
+        "result": "ALREADY UPPERCASE"
+      }
+    }
+  },
+  {
+    "input": {
+      "str": ""
+    },
+    "expected": {
+      "outputs": {
+        "result": ""
+      }
+    }
+  }
+]

@@ -1,0 +1,3 @@
+rule ContainsRule {
+    out result = strings::contains(input.str, input.substr)
+}

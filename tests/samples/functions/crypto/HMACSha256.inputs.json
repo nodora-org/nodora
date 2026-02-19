@@ -1,0 +1,13 @@
+[
+  {
+    "input": {
+      "key": "123",
+      "message": "hello world"
+    },
+    "expected": {
+      "outputs": {
+        "hmac": "8de9bbe5596700556793559dd70e6486684f379d162f70a4a341b3ee383565d4"
+      }
+    }
+  }
+]

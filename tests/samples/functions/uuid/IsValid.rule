@@ -1,0 +1,3 @@
+rule UuidIsValidRule {
+    out isValid = uuid::is_valid(input.str)
+}

@@ -1,0 +1,3 @@
+rule SprintfRule {
+    out formatted = sprintf(input.fmt, input.args)
+}

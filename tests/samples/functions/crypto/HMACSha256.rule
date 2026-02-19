@@ -1,0 +1,3 @@
+rule HMACSha256Rule {
+    out hmac = crypto::hmac_sha256(input.key, input.message)
+}

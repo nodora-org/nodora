@@ -1,0 +1,3 @@
+rule MinRule {
+    out min = math::min(input.a, input.b)
+}

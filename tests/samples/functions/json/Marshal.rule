@@ -1,0 +1,3 @@
+rule JsonMarshalRule {
+    out json = json::marshal(input.value)
+}

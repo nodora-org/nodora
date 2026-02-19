@@ -1,0 +1,42 @@
+[
+  {
+    "input": {
+      "str": "aGVsbG8="
+    },
+    "expected": {
+      "outputs": {
+        "isValid": true
+      }
+    }
+  },
+  {
+    "input": {
+      "str": "SGVsbG8gV29ybGQh"
+    },
+    "expected": {
+      "outputs": {
+        "isValid": true
+      }
+    }
+  },
+  {
+    "input": {
+      "str": "invalid!!!"
+    },
+    "expected": {
+      "outputs": {
+        "isValid": false
+      }
+    }
+  },
+  {
+    "input": {
+      "str": ""
+    },
+    "expected": {
+      "outputs": {
+        "isValid": true
+      }
+    }
+  }
+]

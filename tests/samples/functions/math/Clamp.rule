@@ -1,0 +1,3 @@
+rule ClampRule {
+    out clamped = math::clamp(input.x, input.min, input.max)
+}

@@ -1,0 +1,3 @@
+rule CeilRule {
+    out ceil = math::ceil(input.n)
+}

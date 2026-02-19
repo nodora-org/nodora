@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"nodora.org/nodora/internal/ast"
+	"nodora.org/nodora/pkg/registry"
 )
 
 type scope struct {
@@ -170,6 +171,11 @@ func (sc *SemanticAnalyzer) inferType(expr ast.Expr) string {
 		return sc.inferType(e.Then)
 	case *ast.ArrayLiteral:
 		return "array"
+	case *ast.CallExpr:
+		if fn, ok := registry.Get(e.Namespace, e.Name); ok {
+			return fn.ReturnType
+		}
+		return "unknown"
 	default:
 		return "unknown"
 	}
@@ -491,5 +497,44 @@ func (sc *SemanticAnalyzer) VisitArrayLiteral(al *ast.ArrayLiteral) error {
 }
 
 func (sc *SemanticAnalyzer) VisitParam(p *ast.Param) error {
+	return nil
+}
+
+func (sc *SemanticAnalyzer) VisitCallExpr(ce *ast.CallExpr) error {
+	if !registry.Exists(ce.Namespace, ce.Name) {
+		return errorAt(ce, "undefined function '%s'", ce.FullPath())
+	}
+
+	fn, _ := registry.Get(ce.Namespace, ce.Name)
+	if len(ce.Args) != len(fn.Args) {
+		return errorAt(ce, "function '%s' expects %d arguments, got %d",
+			fn.FullPath(), len(fn.Args), len(ce.Args))
+	}
+
+	for i, arg := range ce.Args {
+		if err := arg.(ast.Node).Accept(sc); err != nil {
+			return err
+		}
+
+		argType := sc.inferType(arg)
+		fnArg := fn.Args[i]
+
+		// fn argument does not expect a strict type (any)
+		if fnArg.Types == nil {
+			continue
+		}
+
+		if !sc.requireType(argType, fnArg.Types...) {
+			return errorAt(
+				arg,
+				"%v requires '%v' to be of type: %v",
+				fn.CompactSignature(),
+				fnArg.Name,
+				strings.Join(fnArg.Types, " | "),
+			)
+		}
+	}
+
+	ce.Annotate(fn.ReturnType)
 	return nil
 }

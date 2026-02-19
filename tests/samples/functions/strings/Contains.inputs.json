@@ -1,0 +1,46 @@
+[
+  {
+    "input": {
+      "str": "hello world",
+      "substr": "world"
+    },
+    "expected": {
+      "outputs": {
+        "result": true
+      }
+    }
+  },
+  {
+    "input": {
+      "str": "hello world",
+      "substr": "foo"
+    },
+    "expected": {
+      "outputs": {
+        "result": false
+      }
+    }
+  },
+  {
+    "input": {
+      "str": "hello",
+      "substr": ""
+    },
+    "expected": {
+      "outputs": {
+        "result": true
+      }
+    }
+  },
+  {
+    "input": {
+      "str": "",
+      "substr": "hello"
+    },
+    "expected": {
+      "outputs": {
+        "result": false
+      }
+    }
+  }
+]

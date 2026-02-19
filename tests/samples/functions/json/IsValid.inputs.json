@@ -1,0 +1,52 @@
+[
+  {
+    "input": {
+      "str": "{\"name\":\"John\",\"age\":30}"
+    },
+    "expected": {
+      "outputs": {
+        "isValid": true
+      }
+    }
+  },
+  {
+    "input": {
+      "str": "[1,2,3]"
+    },
+    "expected": {
+      "outputs": {
+        "isValid": true
+      }
+    }
+  },
+  {
+    "input": {
+      "str": "\"hello\""
+    },
+    "expected": {
+      "outputs": {
+        "isValid": true
+      }
+    }
+  },
+  {
+    "input": {
+      "str": "invalid json"
+    },
+    "expected": {
+      "outputs": {
+        "isValid": false
+      }
+    }
+  },
+  {
+    "input": {
+      "str": "{name: \"John\"}"
+    },
+    "expected": {
+      "outputs": {
+        "isValid": false
+      }
+    }
+  }
+]

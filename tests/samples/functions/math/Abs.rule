@@ -1,0 +1,3 @@
+rule AbsRule {
+    out abs = math::abs(input.n)
+}

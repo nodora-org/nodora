@@ -114,6 +114,11 @@ func (l *lexer) Lex(lval *yySymType) int {
 			l.col += 2
 			setSpan()
 			return LTE
+		case "::":
+			l.pos += 2
+			l.col += 2
+			setSpan()
+			return NAMESPACE
 		}
 	}
 

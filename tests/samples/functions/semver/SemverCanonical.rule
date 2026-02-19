@@ -1,0 +1,3 @@
+rule SemverCanonicalRule {
+    out result = semver::canonical(input.version)
+}

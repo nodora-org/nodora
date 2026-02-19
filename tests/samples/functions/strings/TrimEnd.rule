@@ -1,0 +1,3 @@
+rule TrimEndRule {
+    out result = strings::trim_end(input.str, input.cutset)
+}

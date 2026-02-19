@@ -1,0 +1,3 @@
+rule Base64DecodeRule {
+    out decoded = base64::decode(input.str)
+}

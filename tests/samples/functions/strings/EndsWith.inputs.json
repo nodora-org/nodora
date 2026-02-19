@@ -1,0 +1,46 @@
+[
+  {
+    "input": {
+      "str": "hello world",
+      "suffix": "world"
+    },
+    "expected": {
+      "outputs": {
+        "result": true
+      }
+    }
+  },
+  {
+    "input": {
+      "str": "hello world",
+      "suffix": "hello"
+    },
+    "expected": {
+      "outputs": {
+        "result": false
+      }
+    }
+  },
+  {
+    "input": {
+      "str": "hello",
+      "suffix": ""
+    },
+    "expected": {
+      "outputs": {
+        "result": true
+      }
+    }
+  },
+  {
+    "input": {
+      "str": "",
+      "suffix": ""
+    },
+    "expected": {
+      "outputs": {
+        "result": true
+      }
+    }
+  }
+]

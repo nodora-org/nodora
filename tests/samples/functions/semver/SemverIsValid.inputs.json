@@ -1,0 +1,28 @@
+[
+  {
+    "input": {
+      "version": "v1.0.0"
+    },
+    "expected": {
+      "outputs": {
+        "valid": true
+      }
+    }
+  },
+  {
+    "input": {
+      "version": "1"
+    },
+    "expected": {
+      "outputs": {
+        "valid": false
+      }
+    }
+  },
+  {
+    "input": {
+      "version": 1
+    },
+    "err": true
+  }
+]

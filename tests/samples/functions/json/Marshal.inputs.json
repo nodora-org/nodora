@@ -1,0 +1,42 @@
+[
+  {
+    "input": {
+      "value": {"name": "John", "age": 30}
+    },
+    "expected": {
+      "outputs": {
+        "json": "{\"age\":30,\"name\":\"John\"}"
+      }
+    }
+  },
+  {
+    "input": {
+      "value": [1, 2, 3]
+    },
+    "expected": {
+      "outputs": {
+        "json": "[1,2,3]"
+      }
+    }
+  },
+  {
+    "input": {
+      "value": "hello"
+    },
+    "expected": {
+      "outputs": {
+        "json": "\"hello\""
+      }
+    }
+  },
+  {
+    "input": {
+      "value": 42
+    },
+    "expected": {
+      "outputs": {
+        "json": "42"
+      }
+    }
+  }
+]

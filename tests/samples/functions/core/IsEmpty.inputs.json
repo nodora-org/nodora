@@ -1,0 +1,32 @@
+[
+  {
+    "input": {
+      "arr": []
+    },
+    "expected": {
+      "outputs": {
+        "isEmpty": true
+      }
+    }
+  },
+  {
+    "input": {
+      "arr": [1, 2, 3]
+    },
+    "expected": {
+      "outputs": {
+        "isEmpty": false
+      }
+    }
+  },
+  {
+    "input": {
+      "arr": ["a"]
+    },
+    "expected": {
+      "outputs": {
+        "isEmpty": false
+      }
+    }
+  }
+]

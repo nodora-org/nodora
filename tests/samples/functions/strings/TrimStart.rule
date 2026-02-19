@@ -1,0 +1,3 @@
+rule TrimStartRule {
+    out result = strings::trim_start(input.str, input.cutset)
+}

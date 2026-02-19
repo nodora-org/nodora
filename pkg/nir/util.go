@@ -2,6 +2,8 @@ package nir
 
 import (
 	"fmt"
+
+	"nodora.org/nodora/pkg/core"
 )
 
 type Float interface {
@@ -20,122 +22,9 @@ type Numeric interface {
 	Signed | Unsigned | Float
 }
 
-func IntPtr(i int) *int {
-	return &i
-}
-
-func isFloat(v any) bool {
-	switch n := v.(type) {
-	case Value:
-		return isFloat(n.Raw)
-	case float32, float64:
-		return true
-	default:
-		return false
-	}
-}
-
-func toFloat64(v any) (float64, bool) {
-	switch n := v.(type) {
-	case Value:
-		return toFloat64(n.Raw)
-	case float64:
-		return n, true
-	case float32:
-		return float64(n), true
-	case int:
-		return float64(n), true
-	case int8:
-		return float64(n), true
-	case int16:
-		return float64(n), true
-	case int32:
-		return float64(n), true
-	case int64:
-		return float64(n), true
-	case uint:
-		return float64(n), true
-	case uint8:
-		return float64(n), true
-	case uint16:
-		return float64(n), true
-	case uint32:
-		return float64(n), true
-	case uint64:
-		return float64(n), true
-	default:
-		return 0, false
-	}
-}
-
-func toInt64(v any) (int64, bool) {
-	switch n := v.(type) {
-	case Value:
-		return toInt64(n.Raw)
-	case int:
-		return int64(n), true
-	case int8:
-		return int64(n), true
-	case int16:
-		return int64(n), true
-	case int32:
-		return int64(n), true
-	case int64:
-		return n, true
-	case uint:
-		return int64(n), true
-	case uint8:
-		return int64(n), true
-	case uint16:
-		return int64(n), true
-	case uint32:
-		return int64(n), true
-	case uint64:
-		return int64(n), true
-	default:
-		return 0, false
-	}
-}
-
-func toInt(v any) (int, bool) {
-	switch n := v.(type) {
-	case Value:
-		return toInt(n.Raw)
-	case int:
-		return n, true
-	case int64:
-		return int(n), true
-	case float32:
-		return int(n), true
-	case float64:
-		return int(n), true
-	}
-	return 0, false
-}
-
-func normalizeValue(v any) Value {
-	switch val := v.(type) {
-	case []any:
-		result := make([]Value, len(val))
-		for i, item := range val {
-			result[i] = normalizeValue(item)
-		}
-		return V(result)
-	case map[string]any:
-		result := make(ValueMap, len(val))
-		for k, item := range val {
-			result[k] = normalizeValue(item)
-		}
-		return V(result)
-	default:
-		// primitives (string, float64, bool, nil) stay as-is
-		return V(val)
-	}
-}
-
-func contains(arr []Value, el any) bool {
+func contains(arr []core.Value, el core.Value) bool {
 	for _, v := range arr {
-		if v.ToRaw() == el {
+		if v.ToRaw() == el.ToRaw() {
 			return true
 		}
 	}

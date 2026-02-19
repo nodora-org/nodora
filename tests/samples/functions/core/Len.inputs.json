@@ -1,0 +1,48 @@
+[
+  {
+    "input": {
+      "data": []
+    },
+    "expected": {
+      "outputs": {
+        "length": 0
+      }
+    }
+  },
+  {
+    "input": {
+      "data": [1, 2, 3]
+    },
+    "expected": {
+      "outputs": {
+        "length": 3
+      }
+    }
+  },
+  {
+    "input": {
+      "data": "abcdef"
+    },
+    "expected": {
+      "outputs": {
+        "length": 6
+      }
+    }
+  },
+  {
+    "input": {
+      "data": { "a": 1, "b": 2 }
+    },
+    "expected": {
+      "outputs": {
+        "length": 2
+      }
+    }
+  },
+  {
+    "input": {
+      "data": true
+    },
+    "err": true
+  }
+]

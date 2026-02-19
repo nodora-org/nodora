@@ -1,0 +1,46 @@
+[
+  {
+    "input": {
+      "delim": ",",
+      "arr": ["a", "b", "c"]
+    },
+    "expected": {
+      "outputs": {
+        "result": "a,b,c"
+      }
+    }
+  },
+  {
+    "input": {
+      "delim": "-",
+      "arr": ["hello", "world"]
+    },
+    "expected": {
+      "outputs": {
+        "result": "hello-world"
+      }
+    }
+  },
+  {
+    "input": {
+      "delim": "",
+      "arr": ["a", "b", "c"]
+    },
+    "expected": {
+      "outputs": {
+        "result": "abc"
+      }
+    }
+  },
+  {
+    "input": {
+      "delim": ",",
+      "arr": []
+    },
+    "expected": {
+      "outputs": {
+        "result": ""
+      }
+    }
+  }
+]

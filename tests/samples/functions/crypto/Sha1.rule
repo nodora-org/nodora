@@ -1,0 +1,3 @@
+rule Sha1Rule {
+    out hash = crypto::sha1(input.data)
+}

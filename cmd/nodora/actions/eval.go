@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/urfave/cli/v3"
+	"nodora.org/nodora/pkg/core"
 	"nodora.org/nodora/pkg/evaluator"
 	"nodora.org/nodora/pkg/nir"
 )
@@ -44,7 +45,7 @@ func Eval(ctx context.Context, cmd *cli.Command) error {
 		return err
 	}
 
-	var input nir.ValueMap
+	var input core.ValueMap
 
 	inputFile := cmd.String("input-file")
 	if inputFile != "" {
