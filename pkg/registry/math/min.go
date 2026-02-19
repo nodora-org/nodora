@@ -4,18 +4,18 @@ import (
 	"fmt"
 	"math"
 
+	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
-	"nodora.org/nodora/pkg/registry/types"
 )
 
-func min() types.Func {
+func minFunc() types.Func {
 	return types.Func{
 		Name: "min",
 		Args: []types.ArgSpec{
-			{Name: "x", Types: []string{"number"}, Required: true},
-			{Name: "y", Types: []string{"number"}, Required: true},
+			{Name: "x", Type: types.NumberType, Required: true},
+			{Name: "y", Type: types.NumberType, Required: true},
 		},
-		ReturnType: "number",
+		ReturnType: types.NumberType,
 		Fn:         minImpl,
 	}
 }

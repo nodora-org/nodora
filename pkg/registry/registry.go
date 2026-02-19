@@ -1,25 +1,61 @@
 package registry
 
 import (
+	"fmt"
+
+	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/registry/core"
-	"nodora.org/nodora/pkg/registry/types"
 )
 
-var registry types.Registry
+type Registry struct {
+	ns map[string]*types.Namespace
+}
+
+func newRegistry() Registry {
+	return Registry{
+		ns: make(map[string]*types.Namespace),
+	}
+}
+
+var registry Registry
 
 func init() {
-	registry = types.NewRegistry()
+	registry = newRegistry()
 	registry.Register("", core.GetFuncs()...)
 }
 
-func Exists(namespace, name string) bool {
-	return registry.Exists(namespace, name)
+func Global() *Registry {
+	return &registry
 }
 
-func Get(namespace, name string) (*types.Func, bool) {
-	return registry.Get(namespace, name)
+func (r *Registry) Exists(namespace, name string) bool {
+	if ns, ok := r.ns[namespace]; ok {
+		_, exists := ns.Funcs[name]
+		return exists
+	}
+	return false
 }
 
-func Register(namespace string, generators ...func() types.Func) error {
-	return registry.Register(namespace, generators...)
+func (r *Registry) Get(namespace, name string) (*types.Func, bool) {
+	if ns, ok := r.ns[namespace]; ok {
+		fn, exists := ns.Funcs[name]
+		return &fn, exists
+	}
+	return nil, false
+}
+
+func (r *Registry) Register(namespace string, generators ...func() types.Func) error {
+	if _, exists := r.ns[namespace]; exists {
+		return fmt.Errorf("namespace '%s' already exists", namespace)
+	}
+	r.ns[namespace] = &types.Namespace{Name: namespace, Funcs: map[string]types.Func{}}
+	for _, gen := range generators {
+		f := gen()
+		if r.Exists(namespace, f.Name) {
+			return fmt.Errorf("function '%s' already registered in namespace '%s'", f.Name, namespace)
+		}
+		f.Namespace = namespace
+		r.ns[namespace].Funcs[f.Name] = f
+	}
+	return nil
 }

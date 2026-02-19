@@ -3,15 +3,15 @@ package json
 import (
 	"encoding/json"
 
+	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
-	"nodora.org/nodora/pkg/registry/types"
 )
 
 func marshal() types.Func {
 	return types.Func{
 		Name:       "marshal",
-		Args:       []types.ArgSpec{{Name: "x", Types: nil, Required: true}},
-		ReturnType: "string",
+		Args:       []types.ArgSpec{{Name: "x", Type: types.AnyType, Required: true}},
+		ReturnType: types.StringType,
 		Fn:         marshalImpl,
 	}
 }

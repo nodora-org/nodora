@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
-	"nodora.org/nodora/pkg/registry/types"
 )
 
 func concat() types.Func {
@@ -14,16 +14,16 @@ func concat() types.Func {
 		Args: []types.ArgSpec{
 			{
 				Name:     "delim",
-				Types:    []string{"string"},
+				Type:     types.StringType,
 				Required: true,
 			},
 			{
 				Name:     "arr",
-				Types:    []string{"array"},
+				Type:     types.NewArrayType(types.AnyType),
 				Required: true,
 			},
 		},
-		ReturnType: "string",
+		ReturnType: types.StringType,
 		Fn:         concatImpl,
 	}
 }

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"unicode"
 
+	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
-	"nodora.org/nodora/pkg/registry/types"
 )
 
 func isAlpha() types.Func {
@@ -13,10 +13,10 @@ func isAlpha() types.Func {
 		Name: "is_alpha",
 		Args: []types.ArgSpec{{
 			Name:     "str",
-			Types:    []string{"string"},
+			Type:     types.StringType,
 			Required: true,
 		}},
-		ReturnType: "bool",
+		ReturnType: types.BoolType,
 		Fn:         isAlphaImpl,
 	}
 }

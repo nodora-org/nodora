@@ -5,5 +5,5 @@ import (
 )
 
 func init() {
-	registry.Register("math", abs, round, ceil, floor, max, min, clamp)
+	registry.Global().Register("math", abs, round, ceil, floor, maxFunc, minFunc, clamp)
 }

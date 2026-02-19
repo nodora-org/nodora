@@ -5,5 +5,5 @@ import (
 )
 
 func init() {
-	registry.Register("crypto", sha1, sha256, hmacSha256)
+	registry.Global().Register("crypto", sha1, sha256, hmacSha256)
 }

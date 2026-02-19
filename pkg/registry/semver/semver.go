@@ -5,5 +5,5 @@ import (
 )
 
 func init() {
-	registry.Register("semver", isValid, compare, canonical)
+	registry.Global().Register("semver", isValid, compare, canonical)
 }

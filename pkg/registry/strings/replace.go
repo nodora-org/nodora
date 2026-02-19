@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
-	"nodora.org/nodora/pkg/registry/types"
 )
 
 func replace() types.Func {
@@ -14,21 +14,21 @@ func replace() types.Func {
 		Args: []types.ArgSpec{
 			{
 				Name:     "str",
-				Types:    []string{"string"},
+				Type:     types.StringType,
 				Required: true,
 			},
 			{
 				Name:     "old",
-				Types:    []string{"string"},
+				Type:     types.StringType,
 				Required: true,
 			},
 			{
 				Name:     "new",
-				Types:    []string{"string"},
+				Type:     types.StringType,
 				Required: true,
 			},
 		},
-		ReturnType: "string",
+		ReturnType: types.StringType,
 		Fn:         replaceImpl,
 	}
 }

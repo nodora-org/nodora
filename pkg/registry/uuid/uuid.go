@@ -5,5 +5,5 @@ import (
 )
 
 func init() {
-	registry.Register("uuid", isValid)
+	registry.Global().Register("uuid", isValid)
 }

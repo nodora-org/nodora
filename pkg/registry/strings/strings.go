@@ -5,7 +5,7 @@ import (
 )
 
 func init() {
-	registry.Register("strings",
+	registry.Global().Register("strings",
 		isAlpha,
 		isAlphanumeric,
 		concat,

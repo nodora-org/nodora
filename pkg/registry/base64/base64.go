@@ -5,5 +5,5 @@ import (
 )
 
 func init() {
-	registry.Register("base64", encode, decode, isValid)
+	registry.Global().Register("base64", encode, decode, isValid)
 }

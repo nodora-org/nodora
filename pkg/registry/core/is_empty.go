@@ -3,8 +3,8 @@ package core
 import (
 	"fmt"
 
+	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
-	"nodora.org/nodora/pkg/registry/types"
 )
 
 func isEmpty() types.Func {
@@ -12,10 +12,10 @@ func isEmpty() types.Func {
 		Name: "is_empty",
 		Args: []types.ArgSpec{{
 			Name:     "arr",
-			Types:    []string{"array"},
+			Type:     types.NewArrayType(types.AnyType),
 			Required: true,
 		}},
-		ReturnType: "bool",
+		ReturnType: types.BoolType,
 		Fn:         isEmptyImpl,
 	}
 }

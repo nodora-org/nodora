@@ -4,15 +4,15 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
-	"nodora.org/nodora/pkg/registry/types"
 )
 
 func isValid() types.Func {
 	return types.Func{
 		Name:       "is_valid",
-		Args:       []types.ArgSpec{{Name: "str", Types: []string{"string"}, Required: true}},
-		ReturnType: "bool",
+		Args:       []types.ArgSpec{{Name: "str", Type: types.StringType, Required: true}},
+		ReturnType: types.BoolType,
 		Fn:         isValidImpl,
 	}
 }

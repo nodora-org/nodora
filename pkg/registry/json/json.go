@@ -5,5 +5,5 @@ import (
 )
 
 func init() {
-	registry.Register("json", isValid, marshal, unmarshal)
+	registry.Global().Register("json", isValid, marshal, unmarshal)
 }

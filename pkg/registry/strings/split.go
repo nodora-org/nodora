@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
-	"nodora.org/nodora/pkg/registry/types"
 )
 
 func split() types.Func {
@@ -14,16 +14,16 @@ func split() types.Func {
 		Args: []types.ArgSpec{
 			{
 				Name:     "str",
-				Types:    []string{"string"},
+				Type:     types.StringType,
 				Required: true,
 			},
 			{
 				Name:     "delim",
-				Types:    []string{"string"},
+				Type:     types.StringType,
 				Required: true,
 			},
 		},
-		ReturnType: "array",
+		ReturnType: types.NewArrayType(types.StringType),
 		Fn:         splitImpl,
 	}
 }

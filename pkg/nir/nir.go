@@ -259,7 +259,7 @@ func (c *CallExpr) Evaluate(ctx *EvaluationContext) (core.Value, error) {
 		}
 		args[i] = val
 	}
-	fn, ok := registry.Get(c.Func.Namespace, c.Func.Name)
+	fn, ok := registry.Global().Get(c.Func.Namespace, c.Func.Name)
 	if !ok {
 		return core.U(), fmt.Errorf("undefined function '%s'", fn.FullPath())
 	}

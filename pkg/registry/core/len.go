@@ -3,8 +3,8 @@ package core
 import (
 	"fmt"
 
+	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
-	"nodora.org/nodora/pkg/registry/types"
 )
 
 func length() types.Func {
@@ -12,10 +12,10 @@ func length() types.Func {
 		Name: "len",
 		Args: []types.ArgSpec{{
 			Name:     "value",
-			Types:    []string{"string", "array", "object"},
+			Type:     types.NewArrayType(types.AnyType),
 			Required: true,
 		}},
-		ReturnType: "number",
+		ReturnType: types.NumberType,
 		Fn:         lengthImpl,
 	}
 }

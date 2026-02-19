@@ -2,37 +2,17 @@ package types
 
 import (
 	"fmt"
-	"strings"
 
-	"nodora.org/nodora/pkg/core"
+	"nodora.org/nodora/internal/types"
 )
 
-type ArgSpec struct {
-	Name     string
-	Types    []string
-	Required bool
-}
-
-type Func struct {
-	Namespace  string
-	Name       string
-	Args       []ArgSpec
-	ReturnType string
-	Fn         func([]core.Value) (core.Value, error)
-}
-
-type Namespace struct {
-	Name  string
-	Funcs map[string]Func
-}
-
 type Registry struct {
-	ns map[string]*Namespace
+	ns map[string]*types.Namespace
 }
 
 func NewRegistry() Registry {
 	return Registry{
-		ns: make(map[string]*Namespace),
+		ns: make(map[string]*types.Namespace),
 	}
 }
 
@@ -44,7 +24,7 @@ func (r *Registry) Exists(namespace, name string) bool {
 	return false
 }
 
-func (r *Registry) Get(namespace, name string) (*Func, bool) {
+func (r *Registry) Get(namespace, name string) (*types.Func, bool) {
 	if ns, ok := r.ns[namespace]; ok {
 		fn, exists := ns.Funcs[name]
 		return &fn, exists
@@ -52,11 +32,11 @@ func (r *Registry) Get(namespace, name string) (*Func, bool) {
 	return nil, false
 }
 
-func (r *Registry) Register(namespace string, generators ...func() Func) error {
+func (r *Registry) Register(namespace string, generators ...func() types.Func) error {
 	if _, exists := r.ns[namespace]; exists {
 		return fmt.Errorf("namespace '%s' already exists", namespace)
 	}
-	r.ns[namespace] = &Namespace{Name: namespace, Funcs: map[string]Func{}}
+	r.ns[namespace] = &types.Namespace{Name: namespace, Funcs: map[string]types.Func{}}
 	for _, gen := range generators {
 		f := gen()
 		if r.Exists(namespace, f.Name) {
@@ -66,36 +46,4 @@ func (r *Registry) Register(namespace string, generators ...func() Func) error {
 		r.ns[namespace].Funcs[f.Name] = f
 	}
 	return nil
-}
-
-func (fn *Func) FullPath() string {
-	return fn.Namespace + "::" + fn.Name
-}
-
-func (fn *Func) Signature() string {
-	var args []string
-	for _, arg := range fn.Args {
-		suffix := ""
-		if !arg.Required {
-			suffix = "?"
-		}
-		types := ""
-		if len(arg.Types) > 0 {
-			types = ": " + strings.Join(arg.Types, "|")
-		}
-		args = append(args, arg.Name+types+suffix)
-	}
-	return fmt.Sprintf("%s(%s) -> %s", fn.FullPath(), strings.Join(args, ", "), fn.ReturnType)
-}
-
-func (fn *Func) CompactSignature() string {
-	var args []string
-	for _, arg := range fn.Args {
-		suffix := ""
-		if !arg.Required {
-			suffix = "?"
-		}
-		args = append(args, arg.Name+suffix)
-	}
-	return fmt.Sprintf("%s(%s)", fn.FullPath(), strings.Join(args, ", "))
 }

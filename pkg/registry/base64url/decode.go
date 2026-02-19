@@ -4,15 +4,15 @@ import (
 	"encoding/base64"
 	"fmt"
 
+	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
-	"nodora.org/nodora/pkg/registry/types"
 )
 
 func decode() types.Func {
 	return types.Func{
 		Name:       "decode",
-		Args:       []types.ArgSpec{{Name: "str", Types: []string{"string"}, Required: true}},
-		ReturnType: "string",
+		Args:       []types.ArgSpec{{Name: "str", Type: types.StringType, Required: true}},
+		ReturnType: types.StringType,
 		Fn:         decodeImpl,
 	}
 }

@@ -1,14 +1,16 @@
 package ast
 
+import "nodora.org/nodora/internal/types"
+
 type Node interface {
 	Accept(visitor Visitor) error
 }
 
 type Typed struct {
-	Type string
+	Type types.Type
 }
 
-func (t *Typed) Annotate(ty string) {
+func (t *Typed) Annotate(ty types.Type) {
 	t.Type = ty
 }
 

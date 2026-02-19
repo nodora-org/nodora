@@ -35,7 +35,7 @@ func Compile(ctx context.Context, cmd *cli.Command) error {
 			errCount := ce.Count()
 			if errCount > 0 {
 				var sb strings.Builder
-				fmt.Fprintf(&sb, "Found %v issues in %v\n\n", errCount, filePath)
+				fmt.Fprintf(&sb, "found %v issue(s) in %v\n\n", errCount, filePath)
 				for _, e := range ce.Errors {
 					fmt.Fprintf(&sb, "> %v:%v\n", filePath, e)
 				}

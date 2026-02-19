@@ -4,15 +4,15 @@ import (
 	"fmt"
 	"math"
 
+	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
-	"nodora.org/nodora/pkg/registry/types"
 )
 
 func floor() types.Func {
 	return types.Func{
 		Name:       "floor",
-		Args:       []types.ArgSpec{{Name: "x", Types: []string{"number"}, Required: true}},
-		ReturnType: "number",
+		Args:       []types.ArgSpec{{Name: "x", Type: types.NumberType, Required: true}},
+		ReturnType: types.NumberType,
 		Fn:         floorImpl,
 	}
 }

@@ -3,19 +3,19 @@ package math
 import (
 	"fmt"
 
+	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
-	"nodora.org/nodora/pkg/registry/types"
 )
 
 func clamp() types.Func {
 	return types.Func{
 		Name: "clamp",
 		Args: []types.ArgSpec{
-			{Name: "x", Types: []string{"number"}, Required: true},
-			{Name: "min", Types: []string{"number"}, Required: true},
-			{Name: "max", Types: []string{"number"}, Required: true},
+			{Name: "x", Type: types.NumberType, Required: true},
+			{Name: "min", Type: types.NumberType, Required: true},
+			{Name: "max", Type: types.NumberType, Required: true},
 		},
-		ReturnType: "number",
+		ReturnType: types.NumberType,
 		Fn:         clampImpl,
 	}
 }

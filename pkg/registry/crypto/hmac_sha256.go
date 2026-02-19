@@ -6,18 +6,18 @@ import (
 	"encoding/hex"
 	"fmt"
 
+	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
-	"nodora.org/nodora/pkg/registry/types"
 )
 
 func hmacSha256() types.Func {
 	return types.Func{
 		Name: "hmac_sha256",
 		Args: []types.ArgSpec{
-			{Name: "key", Types: []string{"string"}, Required: true},
-			{Name: "msg", Types: []string{"string"}, Required: true},
+			{Name: "key", Type: types.StringType, Required: true},
+			{Name: "msg", Type: types.StringType, Required: true},
 		},
-		ReturnType: "string",
+		ReturnType: types.StringType,
 		Fn:         hmacSha256Impl,
 	}
 }

@@ -4,15 +4,15 @@ import (
 	"fmt"
 
 	"golang.org/x/mod/semver"
+	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
-	"nodora.org/nodora/pkg/registry/types"
 )
 
 func canonical() types.Func {
 	return types.Func{
 		Name:       "canonical",
-		Args:       []types.ArgSpec{{Name: "version", Types: []string{"string"}, Required: true}},
-		ReturnType: "number",
+		Args:       []types.ArgSpec{{Name: "version", Type: types.StringType, Required: true}},
+		ReturnType: types.NumberType,
 		Fn:         canonicalImpl,
 	}
 }

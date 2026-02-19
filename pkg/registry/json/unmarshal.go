@@ -4,15 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
-	"nodora.org/nodora/pkg/registry/types"
 )
 
 func unmarshal() types.Func {
 	return types.Func{
 		Name:       "unmarshal",
-		Args:       []types.ArgSpec{{Name: "x", Types: []string{"string"}, Required: true}},
-		ReturnType: "any",
+		Args:       []types.ArgSpec{{Name: "x", Type: types.StringType, Required: true}},
+		ReturnType: types.AnyType,
 		Fn:         unmarshalImpl,
 	}
 }

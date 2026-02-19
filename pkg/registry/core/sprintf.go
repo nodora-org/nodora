@@ -4,18 +4,18 @@ import (
 	"fmt"
 	"math"
 
+	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
-	"nodora.org/nodora/pkg/registry/types"
 )
 
 func sprintf() types.Func {
 	return types.Func{
 		Name: "sprintf",
 		Args: []types.ArgSpec{
-			{Name: "fmt", Types: []string{"string"}, Required: true},
-			{Name: "args", Types: []string{"array"}, Required: true},
+			{Name: "fmt", Type: types.StringType, Required: true},
+			{Name: "args", Type: types.NewArrayType(types.AnyType), Required: true},
 		},
-		ReturnType: "string",
+		ReturnType: types.StringType,
 		Fn:         sprintfImpl,
 	}
 }

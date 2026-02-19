@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
-	"nodora.org/nodora/pkg/registry/types"
 )
 
 func endsWith() types.Func {
@@ -14,16 +14,16 @@ func endsWith() types.Func {
 		Args: []types.ArgSpec{
 			{
 				Name:     "str",
-				Types:    []string{"string"},
+				Type:     types.StringType,
 				Required: true,
 			},
 			{
 				Name:     "suffix",
-				Types:    []string{"string"},
+				Type:     types.StringType,
 				Required: true,
 			},
 		},
-		ReturnType: "bool",
+		ReturnType: types.BoolType,
 		Fn:         endsWithImpl,
 	}
 }

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"unicode"
 
+	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
-	"nodora.org/nodora/pkg/registry/types"
 )
 
 func isAlphanumeric() types.Func {
@@ -13,10 +13,10 @@ func isAlphanumeric() types.Func {
 		Name: "is_alnum",
 		Args: []types.ArgSpec{{
 			Name:     "str",
-			Types:    []string{"string"},
+			Type:     types.StringType,
 			Required: true,
 		}},
-		ReturnType: "bool",
+		ReturnType: types.BoolType,
 		Fn:         isAlphanumericImpl,
 	}
 }

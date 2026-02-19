@@ -4,18 +4,18 @@ import (
 	"fmt"
 
 	"golang.org/x/mod/semver"
+	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
-	"nodora.org/nodora/pkg/registry/types"
 )
 
 func compare() types.Func {
 	return types.Func{
 		Name: "compare",
 		Args: []types.ArgSpec{
-			{Name: "v", Types: []string{"string"}, Required: true},
-			{Name: "w", Types: []string{"string"}, Required: true},
+			{Name: "v", Type: types.StringType, Required: true},
+			{Name: "w", Type: types.StringType, Required: true},
 		},
-		ReturnType: "number",
+		ReturnType: types.NumberType,
 		Fn:         compareImpl,
 	}
 }
