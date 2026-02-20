@@ -111,7 +111,7 @@ func registerCallback(this js.Value, args []js.Value) any {
 		return errorObject("evaluator not found: " + strconv.Itoa(id))
 	}
 
-	ev.OnSignalFunc(signalName, func(args []any) error {
+	ev.OnSignal(signalName, func(args []any) error {
 		jsArgs := make([]any, len(args))
 		for i, arg := range args {
 			jsArgs[i] = js.ValueOf(arg)

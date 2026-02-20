@@ -43,6 +43,11 @@ func main() {
 					&cli.StringFlag{Name: "input-file", Aliases: []string{"i"}},
 					&cli.BoolFlag{Name: "stdin"},
 					&cli.BoolFlag{Name: "debug"},
+					&cli.StringSliceFlag{
+						Name:    "exec",
+						Aliases: []string{"e"},
+						Usage:   "Execute command on signal emission (format: signal_name=command)",
+					},
 				},
 				Action: actions.Eval,
 			},

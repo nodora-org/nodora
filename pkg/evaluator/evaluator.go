@@ -2,15 +2,31 @@ package evaluator
 
 import (
 	"fmt"
+	"maps"
+	"slices"
+	"strings"
+	"sync"
 
 	"nodora.org/nodora/pkg/core"
 	"nodora.org/nodora/pkg/nir"
 )
 
+type SignalListener interface {
+	Invoke(args []any) error
+}
+
+type SignalListenerFunc func(args []any) error
+
+func (f SignalListenerFunc) Invoke(args []any) error {
+	defer func() { recover() }() // silent recovery
+	return f(args)
+}
+
 type Evaluator struct {
 	program         *nir.Program
-	signalListeners map[string][]nir.SignalListener
+	signalListeners map[string][]SignalListener
 	Debug           bool
+	signalWG        *sync.WaitGroup
 }
 
 type EvaluationResult struct {
@@ -19,15 +35,43 @@ type EvaluationResult struct {
 }
 
 func NewEvaluator(program *nir.Program) *Evaluator {
-	return &Evaluator{program: program, signalListeners: make(map[string][]nir.SignalListener)}
+	return &Evaluator{program: program, signalListeners: make(map[string][]SignalListener)}
 }
 
-func (e *Evaluator) OnSignalFunc(signalName string, listener func([]any) error) {
-	e.signalListeners[signalName] = append(e.signalListeners[signalName], nir.SignalListenerFunc(listener))
+func (e *Evaluator) SetWaitGroup(wg *sync.WaitGroup) {
+	e.signalWG = wg
+}
+
+func (e *Evaluator) OnSignal(signalName string, listener func([]any) error) {
+	e.signalListeners[signalName] = append(e.signalListeners[signalName], SignalListenerFunc(listener))
+}
+
+func (e *Evaluator) OnSignalNamed(signalName string, listener func(map[string]any) error) error {
+	signal, ok := e.program.GetSignal(signalName)
+	if !ok {
+		keys := maps.Keys(e.program.Signals)
+		return fmt.Errorf("unknown signal %q (available signals: %s)",
+			signalName,
+			strings.Join(slices.Collect(keys), ", "),
+		)
+	}
+
+	gen := func(args []any) error {
+		argsMap := make(map[string]any, len(signal.Params))
+		for i, param := range signal.Params {
+			if i < len(args) {
+				argsMap[param.Name] = args[i]
+			}
+		}
+		return listener(argsMap)
+	}
+
+	e.OnSignal(signalName, gen)
+	return nil
 }
 
 func (e *Evaluator) EvaluateRule(ruleName string, input core.ValueMap) (*EvaluationResult, error) {
-	rule, ok := e.program.Rules[ruleName]
+	rule, ok := e.program.GetRule(ruleName)
 	if !ok {
 		return nil, fmt.Errorf("rule not found: %s", ruleName)
 	}
@@ -38,17 +82,14 @@ func (e *Evaluator) EvaluateRule(ruleName string, input core.ValueMap) (*Evaluat
 	evalCtx := &nir.EvaluationContext{
 		Slots:     slots,
 		Emissions: []nir.EmittedSignal{},
-		Listeners: e.signalListeners,
 	}
 
-	// execute operations
 	for i, op := range rule.Ops {
 		if err := op.Execute(evalCtx); err != nil {
 			return nil, fmt.Errorf("execution error at op[%d]: %v", i, err)
 		}
 	}
 
-	// collect outputs
 	outputs := make(map[string]any)
 	for name, output := range rule.Outputs {
 		if output.Sym >= len(evalCtx.Slots) {
@@ -60,14 +101,44 @@ func (e *Evaluator) EvaluateRule(ruleName string, input core.ValueMap) (*Evaluat
 		}
 	}
 
+	for i := range evalCtx.Emissions {
+		es := &evalCtx.Emissions[i]
+		e.invokeListeners(es.Name, es.Args, e.signalWG)
+	}
+
 	if e.Debug {
-		debugRule(ruleName, &rule, input, evalCtx)
+		debugRule(ruleName, rule, input, evalCtx)
 	}
 
 	return &EvaluationResult{
 		Outputs: outputs,
 		Signals: evalCtx.Emissions,
 	}, nil
+}
+
+func (e *Evaluator) invokeListeners(
+	signalName string,
+	args []any,
+	wg *sync.WaitGroup,
+) {
+	listeners, exists := e.signalListeners[signalName]
+	if !exists {
+		return
+	}
+	for _, listener := range listeners {
+		l := listener
+
+		if wg == nil {
+			l.Invoke(args)
+			continue
+		}
+
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			l.Invoke(args)
+		}()
+	}
 }
 
 func (e *Evaluator) GetRuleNames() []string {

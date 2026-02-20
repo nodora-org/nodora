@@ -17,6 +17,22 @@ type Program struct {
 	Rules    map[string]Rule   `json:"rules"`
 }
 
+func (p *Program) GetSignal(name string) (*Signal, bool) {
+	signal, exists := p.Signals[name]
+	if !exists {
+		return nil, false
+	}
+	return &signal, true
+}
+
+func (p *Program) GetRule(name string) (*Rule, bool) {
+	rule, exists := p.Rules[name]
+	if !exists {
+		return nil, false
+	}
+	return &rule, true
+}
+
 type Signal struct {
 	Params []Param `json:"params"`
 }
@@ -35,21 +51,9 @@ type Rule struct {
 	Ops      []Op              `json:"ops"`
 }
 
-type SignalListener interface {
-	Invoke(args []any) error
-}
-
-type SignalListenerFunc func(args []any) error
-
-func (f SignalListenerFunc) Invoke(args []any) error {
-	defer func() { recover() }() // silent recovery
-	return f(args)
-}
-
 type EvaluationContext struct {
 	Slots     []core.Value
 	Emissions []EmittedSignal
-	Listeners map[string][]SignalListener
 }
 
 type Expr interface {
@@ -222,16 +226,10 @@ func (s *SignalExpr) Evaluate(ctx *EvaluationContext) (core.Value, error) {
 		args[i] = val.ToRaw()
 	}
 
-	emittedSignal := EmittedSignal{
+	ctx.Emissions = append(ctx.Emissions, EmittedSignal{
 		Name: s.Name,
 		Args: args,
-	}
-
-	ctx.Emissions = append(ctx.Emissions, emittedSignal)
-	if listeners, exists := ctx.Listeners[s.Name]; exists {
-		s.invokeListeners(listeners, args)
-	}
-
+	})
 	return core.U(), nil
 }
 

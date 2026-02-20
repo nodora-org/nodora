@@ -6,6 +6,10 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
+	"runtime"
+	"strings"
+	"sync"
 	"time"
 
 	"github.com/urfave/cli/v3"
@@ -74,8 +78,42 @@ func Eval(ctx context.Context, cmd *cli.Command) error {
 		}
 	}
 
+	var wg sync.WaitGroup
 	evaluator := evaluator.NewEvaluator(&p)
 	evaluator.Debug = cmd.Bool("debug")
+
+	execFlags := cmd.StringSlice("exec")
+	if len(execFlags) > 0 {
+		evaluator.SetWaitGroup(&wg)
+	}
+
+	for _, execFlag := range execFlags {
+		parts := strings.SplitN(execFlag, "=", 2)
+		if len(parts) != 2 {
+			return fmt.Errorf("invalid exec format: %s (expected signal_name=command)", execFlag)
+		}
+		signalName := parts[0]
+		command := parts[1]
+
+		evaluator.OnSignal(signalName, func(args []any) error {
+			cmdStr := command
+			for i, arg := range args {
+				placeholder := fmt.Sprintf("{%d}", i+1)
+				cmdStr = strings.ReplaceAll(cmdStr, placeholder, fmt.Sprintf("%v", arg))
+			}
+
+			var shellCmd *exec.Cmd
+			if runtime.GOOS == "windows" {
+				shellCmd = exec.Command("cmd", "/c", cmdStr)
+			} else {
+				shellCmd = exec.Command("/bin/sh", "-c", cmdStr)
+			}
+
+			shellCmd.Stdout = os.Stdout
+			shellCmd.Stderr = os.Stderr
+			return shellCmd.Run()
+		})
+	}
 
 	ruleName := cmd.String("rule")
 	if ruleName == "" {
@@ -101,5 +139,6 @@ func Eval(ctx context.Context, cmd *cli.Command) error {
 		fmt.Println(string(encoded))
 	}
 
+	wg.Wait()
 	return nil
 }
