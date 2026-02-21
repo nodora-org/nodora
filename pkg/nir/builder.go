@@ -27,6 +27,14 @@ func arrResult(exprs []exprResult) exprResult {
 	return exprResult{expr: &ArrExpr{Value: raw}}
 }
 
+func objResult(obj map[string]exprResult) exprResult {
+	raw := make(map[string]RawExpr, len(obj))
+	for i, e := range obj {
+		raw[i] = e.toRawExpr()
+	}
+	return exprResult{expr: &ObjExpr{Value: raw}}
+}
+
 func symResult(index int) exprResult {
 	return exprResult{symIndex: index, expr: &SymExpr{Index: index}}
 }
@@ -206,6 +214,12 @@ func (b *Builder) buildExpr(expr ast.Expr) exprResult {
 	case *ast.StringLiteral:
 		return immResult(e.Value)
 
+	case *ast.ArrayLiteral:
+		return b.buildArrayLiteral(e)
+
+	case *ast.ObjectLiteral:
+		return b.buildObjectLiteral(e)
+
 	case *ast.BoolLiteral:
 		return immResult(e.Value)
 
@@ -256,9 +270,6 @@ func (b *Builder) buildExpr(expr ast.Expr) exprResult {
 
 	case *ast.ConditionalExpr:
 		return b.buildConditionalExpr(e)
-
-	case *ast.ArrayLiteral:
-		return b.buildArrayLiteral(e)
 
 	case *ast.CallExpr:
 		return b.buildCallExpr(e)
@@ -331,6 +342,15 @@ func (b *Builder) buildArrayLiteral(lit *ast.ArrayLiteral) exprResult {
 		elements[i] = result
 	}
 	return arrResult(elements)
+}
+
+func (b *Builder) buildObjectLiteral(lit *ast.ObjectLiteral) exprResult {
+	props := make(map[string]exprResult, len(lit.Properties))
+	for _, prop := range lit.Properties {
+		result := b.buildExpr(prop.Value)
+		props[prop.Key] = result
+	}
+	return objResult(props)
 }
 
 func (b *Builder) mapBinaryOp(op string) OpKind {

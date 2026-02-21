@@ -6,4 +6,12 @@ rule LiteralRule {
     out e = false
     out f = [1, 2, 3]
     out g = (a)
+    out h = { 
+        a: a, 
+        b: 2,
+        c: [1, 2, 3], 
+        d: "world", 
+        e: d == true,
+        f: { a: input.a }
+    }
 }

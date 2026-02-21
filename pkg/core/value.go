@@ -11,7 +11,7 @@ type Value struct {
 }
 
 func (v *Value) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.Raw)
+	return json.Marshal(v.ToRaw())
 }
 
 func (v *Value) UnmarshalJSON(data []byte) error {
@@ -109,7 +109,7 @@ func (n *ValueMap) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	*n = make(map[string]Value, len(raw))
+	*n = make(ValueMap, len(raw))
 	for k, v := range raw {
 		(*n)[k] = NormalizeValue(v)
 	}

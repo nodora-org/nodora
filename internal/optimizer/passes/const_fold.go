@@ -94,6 +94,13 @@ func (cf *ConstantFolding) isConstant(expr nir.RawExpr) bool {
 			}
 		}
 		return true
+	case *nir.ObjExpr:
+		for _, value := range e.Value {
+			if !cf.isConstant(value) {
+				return false
+			}
+		}
+		return true
 	case *nir.CallExpr:
 		for _, arg := range e.Args {
 			if !cf.isConstant(arg) {

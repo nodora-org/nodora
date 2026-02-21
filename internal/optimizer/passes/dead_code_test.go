@@ -379,6 +379,48 @@ func TestDeadCodeElimination_ComplexExpressions(t *testing.T) {
 			expectedOpCount: 3,
 		},
 		{
+			name: "tracks dependencies through ObjExpr",
+			rule: nir.Rule{
+				Symslots: 3,
+				Outputs: map[string]nir.Output{
+					"result": {Sym: 2},
+				},
+				Ops: []nir.Op{
+					{
+						// dead
+						Kind: nir.OpCopy,
+						Args: []nir.RawExpr{
+							{Expr: &nir.ImmExpr{Value: core.V(42)}},
+						},
+						Out: core.IntPtr(0),
+					},
+					{
+						// live - slot 1 is used in the object
+						Kind: nir.OpCopy,
+						Args: []nir.RawExpr{
+							{Expr: &nir.ImmExpr{Value: core.V(100)}},
+						},
+						Out: core.IntPtr(1),
+					},
+					{
+						// live - creates an object with a prop reading from slot 1, writes to output slot 2
+						Kind: nir.OpCopy,
+						Args: []nir.RawExpr{
+							{
+								Expr: &nir.ObjExpr{
+									Value: map[string]nir.RawExpr{
+										"a": {Expr: &nir.SymExpr{Index: 1}},
+									},
+								},
+							},
+						},
+						Out: core.IntPtr(2),
+					},
+				},
+			},
+			expectedOpCount: 2,
+		},
+		{
 			name: "tracks dependencies through ArrExpr",
 			rule: nir.Rule{
 				Symslots: 3,
@@ -420,7 +462,6 @@ func TestDeadCodeElimination_ComplexExpressions(t *testing.T) {
 			},
 			expectedOpCount: 2,
 		},
-
 		{
 			name: "tracks dependencies through CallExpr",
 			rule: nir.Rule{

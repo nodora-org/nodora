@@ -88,6 +88,25 @@ func (i *ArrExpr) Evaluate(ctx *EvaluationContext) (core.Value, error) {
 	return core.V(vals), nil
 }
 
+type ObjExpr struct {
+	Value map[string]RawExpr `json:"obj"`
+}
+
+func (i *ObjExpr) Evaluate(ctx *EvaluationContext) (core.Value, error) {
+	obj := make(core.ValueMap, len(i.Value))
+	for k, v := range i.Value {
+		ev, err := v.Evaluate(ctx)
+		if err != nil {
+			return core.U(), err
+		}
+		if ev.Undefined {
+			return core.U(), nil
+		}
+		obj[k] = ev
+	}
+	return core.V(obj), nil
+}
+
 type SymExpr struct {
 	Index int `json:"sym"`
 }
@@ -525,7 +544,7 @@ func executeBinaryOp(op *Op, ctx *EvaluationContext) error {
 	return performNumericOp(l, r, op, ctx)
 }
 
-func (w *RawExpr) MarshalJSON() ([]byte, error) {
+func (w RawExpr) MarshalJSON() ([]byte, error) {
 	return json.Marshal(w.Expr)
 }
 
@@ -549,6 +568,12 @@ func (w *RawExpr) UnmarshalJSON(data []byte) error {
 		w.Expr = &e
 	case probe["arr"] != nil:
 		var e ArrExpr
+		if err := json.Unmarshal(data, &e); err != nil {
+			return err
+		}
+		w.Expr = &e
+	case probe["obj"] != nil:
+		var e ObjExpr
 		if err := json.Unmarshal(data, &e); err != nil {
 			return err
 		}

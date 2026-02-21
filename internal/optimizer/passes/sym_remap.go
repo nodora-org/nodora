@@ -71,6 +71,10 @@ func (sr *SymbolRemap) remapSymExpr(arg *nir.RawExpr, slotMap map[int]int) {
 		for i := range e.Value {
 			sr.remapSymExpr(&e.Value[i], slotMap)
 		}
+	case *nir.ObjExpr:
+		for _, prop := range e.Value {
+			sr.remapSymExpr(&prop, slotMap)
+		}
 	case *nir.SignalExpr:
 		for i := range e.Args {
 			sr.remapSymExpr(&e.Args[i], slotMap)

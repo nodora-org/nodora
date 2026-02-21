@@ -285,6 +285,10 @@ func (sr *SymbolRemap) checkSymExpr(t *testing.T, expr *nir.RawExpr, expectedSym
 		for _, v := range e.Value {
 			sr.checkSymExpr(t, &v, expectedSymslots)
 		}
+	case *nir.ObjExpr:
+		for _, v := range e.Value {
+			sr.checkSymExpr(t, &v, expectedSymslots)
+		}
 	case *nir.SignalExpr:
 		for _, arg := range e.Args {
 			sr.checkSymExpr(t, &arg, expectedSymslots)
@@ -418,6 +422,45 @@ func TestSymbolRemap_ComplexExpressions(t *testing.T) {
 				op := rule.Ops[1]
 				arrExpr := op.Args[0].Expr.(*nir.ArrExpr)
 				symExpr := arrExpr.Value[0].Expr.(*nir.SymExpr)
+				if symExpr.Index != 1 {
+					t.Errorf("Expected SymExpr index 1, got %d", symExpr.Index)
+				}
+			},
+		},
+		{
+			name: "remaps SymExpr in ObjExpr",
+			rule: nir.Rule{
+				Outputs: map[string]nir.Output{
+					"result": {Sym: 2},
+				},
+				Ops: []nir.Op{
+					{
+						Kind: nir.OpCopy,
+						Args: []nir.RawExpr{
+							{Expr: &nir.ImmExpr{Value: core.V(100)}},
+						},
+						Out: core.IntPtr(5),
+					},
+					{
+						Kind: nir.OpCopy,
+						Args: []nir.RawExpr{
+							{
+								Expr: &nir.ObjExpr{
+									Value: map[string]nir.RawExpr{
+										"a": {Expr: &nir.SymExpr{Index: 5}},
+									},
+								},
+							},
+						},
+						Out: core.IntPtr(2),
+					},
+				},
+			},
+			check: func(t *testing.T, rule nir.Rule) {
+				// Check that SymExpr inside ObjExpr was remapped
+				op := rule.Ops[1]
+				objExpr := op.Args[0].Expr.(*nir.ObjExpr)
+				symExpr := objExpr.Value["a"].Expr.(*nir.SymExpr)
 				if symExpr.Index != 1 {
 					t.Errorf("Expected SymExpr index 1, got %d", symExpr.Index)
 				}

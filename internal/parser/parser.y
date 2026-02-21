@@ -21,6 +21,8 @@ import (
     expr    ast.Expr
     exprs   []ast.Expr
     span    ast.Span
+    prop    ast.ObjectProperty
+    props   []ast.ObjectProperty
 }
 
 %token <str> IDENT STRING NUMBER
@@ -40,6 +42,8 @@ import (
 %type <expr> expr conditional_expr
 %type <expr> logical_or_expr logical_and_expr equality_expr relational_expr membership_expr additive_expr multiplicative_expr unary_expr postfix_expr primary_expr
 %type <exprs> arg_list args_opt
+%type <prop> obj_prop
+%type <props> obj_prop_list
 
 %right QMARK
 %left OR
@@ -378,6 +382,11 @@ primary_expr
           a.Span = $1.Merge($3)
           $$ = a
         }
+    | LBRACE obj_prop_list RBRACE
+        { ol := &ast.ObjectLiteral{Properties: $2}
+          ol.Span = $1.Merge($3)
+          $$ = ol
+        }
     | LPAREN expr RPAREN
         { $$ = $2 }
     ;
@@ -393,6 +402,28 @@ arg_list
     : expr
         { $$ = []ast.Expr{$1} }
     | arg_list COMMA expr
+        { $$ = append($1, $3) }
+    ;
+
+obj_prop
+    : IDENT COLON expr
+        { 
+          p := ast.ObjectProperty{Key: $1, Value: $3}
+          p.Span = $<span>1.Merge($3.GetSpan())
+          $$ = p
+        }
+    | STRING COLON expr
+        {
+          p := ast.ObjectProperty{Key: $1, Value: $3}
+          p.Span = $<span>1.Merge($3.GetSpan())
+          $$ = p
+        }
+    ;
+
+obj_prop_list
+    : obj_prop
+        { $$ = []ast.ObjectProperty{$1} }
+    | obj_prop_list COMMA obj_prop
         { $$ = append($1, $3) }
     ;
 

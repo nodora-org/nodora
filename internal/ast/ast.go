@@ -204,6 +204,21 @@ func (al *ArrayLiteral) Accept(visitor Visitor) error {
 	return visitor.VisitArrayLiteral(al)
 }
 
+type ObjectLiteral struct {
+	Span
+	Properties []ObjectProperty
+}
+
+type ObjectProperty struct {
+	Span
+	Key   string
+	Value Expr
+}
+
+func (ol *ObjectLiteral) Accept(visitor Visitor) error {
+	return visitor.VisitObjectLiteral(ol)
+}
+
 type CallExpr struct {
 	Typed
 	Span

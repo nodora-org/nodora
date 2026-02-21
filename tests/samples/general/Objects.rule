@@ -1,0 +1,6 @@
+rule ObjectsRule {
+    obj = { a: input.a, b: { c: input.c } }
+    out a = obj.a
+    out b = obj.b
+    out c = b.c[a]
+}

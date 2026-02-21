@@ -16,6 +16,7 @@ type Visitor interface {
 	VisitBoolLiteral(bl *BoolLiteral) error
 	VisitConditionalExpr(ce *ConditionalExpr) error
 	VisitArrayLiteral(al *ArrayLiteral) error
+	VisitObjectLiteral(ol *ObjectLiteral) error
 	VisitCallExpr(ce *CallExpr) error
 	VisitParam(p *Param) error
 }
@@ -111,6 +112,15 @@ func (bv *BaseVisitor) VisitConditionalExpr(ce *ConditionalExpr) error {
 func (bv *BaseVisitor) VisitArrayLiteral(al *ArrayLiteral) error {
 	for _, elem := range al.Elements {
 		if err := elem.(Node).Accept(bv); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (bv *BaseVisitor) VisitObjectLiteral(ol *ObjectLiteral) error {
+	for _, prop := range ol.Properties {
+		if err := prop.Value.(Node).Accept(bv); err != nil {
 			return err
 		}
 	}

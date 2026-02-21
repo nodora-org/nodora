@@ -9,5 +9,13 @@
         "abc": "abc"
       }
     }
+  },
+  {
+    "input": {},
+    "expected": {
+      "outputs": {
+        "ab": "ab"
+      }
+    }
   }
 ]

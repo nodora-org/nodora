@@ -134,6 +134,10 @@ func (sc *SemanticAnalyzer) inferType(expr ast.Expr) types.Type {
 		return types.StringType
 	case *ast.BoolLiteral:
 		return types.BoolType
+	case *ast.ArrayLiteral:
+		return sc.inferArrayType(e)
+	case *ast.ObjectLiteral:
+		return types.ObjectType
 	case *ast.Identifier:
 		if sym, err := sc.lookupSymbol(e.Name, expr.GetSpan()); err == nil {
 			return sym.Type
@@ -176,8 +180,6 @@ func (sc *SemanticAnalyzer) inferType(expr ast.Expr) types.Type {
 		}
 		// then and else should have the same type
 		return sc.inferType(e.Then)
-	case *ast.ArrayLiteral:
-		return sc.inferArrayType(e)
 	case *ast.CallExpr:
 		if fn, ok := registry.Global().Get(e.Namespace, e.Name); ok {
 			return fn.ReturnType
@@ -270,7 +272,7 @@ func (sc *SemanticAnalyzer) VisitRule(r *ast.Rule) error {
 
 	sc.pushScope()
 	for _, stmt := range r.Statements {
-		if err := stmt.(ast.Node).Accept(sc); err != nil {
+		if err := stmt.Accept(sc); err != nil {
 			return err
 		}
 	}
@@ -280,7 +282,7 @@ func (sc *SemanticAnalyzer) VisitRule(r *ast.Rule) error {
 }
 
 func (sc *SemanticAnalyzer) VisitAssignment(a *ast.Assignment) error {
-	if err := a.Expr.(ast.Node).Accept(sc); err != nil {
+	if err := a.Expr.Accept(sc); err != nil {
 		return err
 	}
 
@@ -294,13 +296,13 @@ func (sc *SemanticAnalyzer) VisitAssignment(a *ast.Assignment) error {
 
 func (sc *SemanticAnalyzer) VisitEmitStatement(es *ast.EmitStatement) error {
 	for _, arg := range es.Args {
-		if err := arg.(ast.Node).Accept(sc); err != nil {
+		if err := arg.Accept(sc); err != nil {
 			sc.addError(err)
 		}
 	}
 
 	if es.Condition != nil {
-		if err := es.Condition.(ast.Node).Accept(sc); err != nil {
+		if err := es.Condition.Accept(sc); err != nil {
 			sc.addError(err)
 		}
 	}
@@ -334,10 +336,10 @@ func (sc *SemanticAnalyzer) VisitEmitStatement(es *ast.EmitStatement) error {
 }
 
 func (sc *SemanticAnalyzer) VisitBinaryExpr(be *ast.BinaryExpr) error {
-	if err := be.Left.(ast.Node).Accept(sc); err != nil {
+	if err := be.Left.Accept(sc); err != nil {
 		return err
 	}
-	if err := be.Right.(ast.Node).Accept(sc); err != nil {
+	if err := be.Right.Accept(sc); err != nil {
 		return err
 	}
 
@@ -393,7 +395,7 @@ func (sc *SemanticAnalyzer) VisitBinaryExpr(be *ast.BinaryExpr) error {
 }
 
 func (sc *SemanticAnalyzer) VisitUnaryExpr(ue *ast.UnaryExpr) error {
-	if err := ue.Expr.(ast.Node).Accept(sc); err != nil {
+	if err := ue.Expr.Accept(sc); err != nil {
 		return err
 	}
 
@@ -453,7 +455,7 @@ func (sc *SemanticAnalyzer) VisitBoolLiteral(bl *ast.BoolLiteral) error {
 }
 
 func (sc *SemanticAnalyzer) VisitConditionalExpr(ce *ast.ConditionalExpr) error {
-	if err := ce.Cond.(ast.Node).Accept(sc); err != nil {
+	if err := ce.Cond.Accept(sc); err != nil {
 		return err
 	}
 	condType := sc.inferType(ce.Cond)
@@ -461,10 +463,10 @@ func (sc *SemanticAnalyzer) VisitConditionalExpr(ce *ast.ConditionalExpr) error 
 		sc.addError(errorAt(ce, "condition in conditional expression must be boolean, got '%s'", condType.String()))
 	}
 
-	if err := ce.Then.(ast.Node).Accept(sc); err != nil {
+	if err := ce.Then.Accept(sc); err != nil {
 		return err
 	}
-	if err := ce.Else.(ast.Node).Accept(sc); err != nil {
+	if err := ce.Else.Accept(sc); err != nil {
 		return err
 	}
 
@@ -493,11 +495,11 @@ func (sc *SemanticAnalyzer) VisitSelectorExpr(se *ast.SelectorExpr) error {
 			return errorAt(se, "cannot access property '%s' on type %s", se.Field, baseType.String())
 		}
 	case *ast.IndexExpr:
-		if err := se.Expr.(ast.Node).Accept(sc); err != nil {
+		if err := se.Expr.Accept(sc); err != nil {
 			return err
 		}
 	case *ast.SelectorExpr:
-		if err := se.Expr.(ast.Node).Accept(sc); err != nil {
+		if err := se.Expr.Accept(sc); err != nil {
 			return err
 		}
 	default:
@@ -507,10 +509,10 @@ func (sc *SemanticAnalyzer) VisitSelectorExpr(se *ast.SelectorExpr) error {
 }
 
 func (sc *SemanticAnalyzer) VisitIndexExpr(ie *ast.IndexExpr) error {
-	if err := ie.Expr.(ast.Node).Accept(sc); err != nil {
+	if err := ie.Expr.Accept(sc); err != nil {
 		return err
 	}
-	if err := ie.Index.(ast.Node).Accept(sc); err != nil {
+	if err := ie.Index.Accept(sc); err != nil {
 		return err
 	}
 
@@ -551,12 +553,27 @@ func (sc *SemanticAnalyzer) VisitIndexExpr(ie *ast.IndexExpr) error {
 
 func (sc *SemanticAnalyzer) VisitArrayLiteral(al *ast.ArrayLiteral) error {
 	for _, elem := range al.Elements {
-		if err := elem.(ast.Node).Accept(sc); err != nil {
+		if err := elem.Accept(sc); err != nil {
 			sc.addError(err)
 		}
 	}
 	return nil
 }
+
+func (sc *SemanticAnalyzer) VisitObjectLiteral(al *ast.ObjectLiteral) error {
+	seen := make(map[string]bool)
+	for _, prop := range al.Properties {
+		if seen[prop.Key] {
+			return errorAt(prop, "duplicate object property key '%s'", prop.Key)
+		}
+		seen[prop.Key] = true
+		if err := prop.Value.Accept(sc); err != nil {
+			sc.addError(err)
+		}
+	}
+	return nil
+}
+
 
 func (sc *SemanticAnalyzer) VisitParam(p *ast.Param) error {
 	return nil
@@ -574,7 +591,7 @@ func (sc *SemanticAnalyzer) VisitCallExpr(ce *ast.CallExpr) error {
 	}
 
 	for i, arg := range ce.Args {
-		if err := arg.(ast.Node).Accept(sc); err != nil {
+		if err := arg.Accept(sc); err != nil {
 			return err
 		}
 

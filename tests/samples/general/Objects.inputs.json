@@ -1,0 +1,36 @@
+[
+  {
+    "input": {
+      "a": 1,
+      "c": [1, 2, 3]
+    },
+    "expected": {
+      "outputs": {
+        "a": 1,
+        "b": { "c": [1, 2, 3] },
+        "c": 2
+      }
+    }
+  },
+  {
+    "input": {
+      "a": 1
+    },
+    "expected": {
+      "outputs": {}
+    }
+  },
+  {
+    "input": {
+      "a": null,
+      "c": [1, 2, 3]
+    },
+    "err": true
+  },
+  {
+    "input": {},
+    "expected": {
+      "outputs": {}
+    }
+  }
+]
