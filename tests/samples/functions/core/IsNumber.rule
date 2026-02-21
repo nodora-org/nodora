@@ -1,0 +1,3 @@
+rule IsNumberRule {
+    out result = is_number(input.data)
+}

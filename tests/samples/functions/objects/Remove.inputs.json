@@ -1,0 +1,32 @@
+[
+  {
+    "input": {
+      "data": { "a": 1, "b": 2, "c": 3 }
+    },
+    "expected": {
+      "outputs": {
+        "obj": { "c": 3 }
+      }
+    }
+  },
+  {
+    "input": {
+      "data": { "a": 1, "b": 2 }
+    },
+    "expected": {
+      "outputs": {
+        "obj": {}
+      }
+    }
+  },
+  {
+    "input": {
+      "data": { "a": 1, "c": 2 }
+    },
+    "expected": {
+      "outputs": {
+        "obj": { "c": 2 }
+      }
+    }
+  }
+]

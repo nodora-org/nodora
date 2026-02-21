@@ -1,0 +1,52 @@
+[
+  {
+    "input": {
+      "data": []
+    },
+    "expected": {
+      "outputs": {
+        "result": true
+      }
+    }
+  },
+  {
+    "input": {
+      "data": [1, 2, 3]
+    },
+    "expected": {
+      "outputs": {
+        "result": true
+      }
+    }
+  },
+  {
+    "input": {
+      "data": { "a": 1 }
+    },
+    "expected": {
+      "outputs": {
+        "result": false
+      }
+    }
+  },
+  {
+    "input": {
+      "data": "a"
+    },
+    "expected": {
+      "outputs": {
+        "result": false
+      }
+    }
+  },
+  {
+    "input": {
+      "data": 1
+    },
+    "expected": {
+      "outputs": {
+        "result": false
+      }
+    }
+  }
+]

@@ -1,0 +1,3 @@
+rule GetRule {
+    out result = objects::get(input.data, "a", 0)
+}

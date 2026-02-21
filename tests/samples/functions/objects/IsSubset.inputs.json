@@ -1,0 +1,57 @@
+[
+  {
+    "input": {
+      "super": { "a": 1, "b": 2 },
+      "sub": { "b": 2 }
+    },
+    "expected": {
+      "outputs": {
+        "result": true
+      }
+    }
+  },
+  {
+    "input": {
+      "super": { "a": 1, "b": 2 },
+      "sub": { "b": 3 }
+    },
+    "expected": {
+      "outputs": {
+        "result": false
+      }
+    }
+  },
+  {
+    "input": {
+      "super": { "a": 1, "b": 2 },
+      "sub": {}
+    },
+    "expected": {
+      "outputs": {
+        "result": true
+      }
+    }
+  },
+  {
+    "input": {
+      "super": { "a": 1, "b": 2, "c": { "d": 1 } },
+      "sub": { "c": { "d": 1 } }
+    },
+    "expected": {
+      "outputs": {
+        "result": true
+      }
+    }
+  },
+  {
+    "input": {
+      "super": { "a": 1, "b": 2, "c": { "d": 3 } },
+      "sub": { "c": { "d": 1 } }
+    },
+    "expected": {
+      "outputs": {
+        "result": false
+      }
+    }
+  }
+]

@@ -1,0 +1,3 @@
+rule ValuesRule {
+    out values = objects::values(input.data)
+}

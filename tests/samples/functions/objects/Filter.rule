@@ -1,0 +1,3 @@
+rule FilterRule {
+    out obj = objects::filter(input.data, ["a", "b"])
+}

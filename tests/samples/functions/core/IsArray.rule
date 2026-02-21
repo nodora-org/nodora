@@ -1,0 +1,3 @@
+rule IsArrayRule {
+    out result = is_array(input.data)
+}

@@ -1,0 +1,3 @@
+rule IsStringRule {
+    out result = is_string(input.data)
+}

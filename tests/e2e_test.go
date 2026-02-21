@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -105,7 +106,8 @@ func runTest(t *testing.T, rulePath, inputsPath, testName string) {
 					continue
 				}
 
-				if !compareValues(expectedVal, actualVal) {
+				isEqual := compareValues(expectedVal, actualVal)
+				if !isEqual {
 					t.Errorf("Test %d: output '%s' mismatch:\n  expected: %v (%T)\n  actual:   %v (%T)",
 						i, key, expectedVal, expectedVal, actualVal, actualVal)
 				}
@@ -123,7 +125,8 @@ func runTest(t *testing.T, rulePath, inputsPath, testName string) {
 			}
 
 			if !compareValues(result.Signals, expectedSignals) {
-				t.Errorf("Test %d: mismatch in emitted signals (result: %v, expected: %v)", i, result.Signals, expectedSignals)
+				t.Errorf("Test %d: mismatch in emitted signals (result: %v, expected: %v)",
+					i, result.Signals, expectedSignals)
 			}
 		})
 	}
@@ -134,6 +137,7 @@ const EPSILON = 1e-6
 func floatEquals(a, b, epsilon float64) bool {
 	return math.Abs(a-b) < epsilon
 }
+
 func compareValues(expected, actual any) bool {
 	switch exp := expected.(type) {
 	case float64:
@@ -141,10 +145,13 @@ func compareValues(expected, actual any) bool {
 			return floatEquals(exp, act, EPSILON)
 		}
 	}
+
 	expectedJSON, err1 := json.Marshal(expected)
 	actualJSON, err2 := json.Marshal(actual)
+
 	if err1 != nil || err2 != nil {
 		return false
 	}
-	return string(expectedJSON) == string(actualJSON)
+
+	return bytes.Equal(actualJSON, expectedJSON)
 }

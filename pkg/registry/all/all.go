@@ -9,6 +9,7 @@ import (
 	_ "nodora.org/nodora/pkg/registry/crypto"
 	_ "nodora.org/nodora/pkg/registry/json"
 	_ "nodora.org/nodora/pkg/registry/math"
+	_ "nodora.org/nodora/pkg/registry/objects"
 	_ "nodora.org/nodora/pkg/registry/semver"
 	_ "nodora.org/nodora/pkg/registry/strings"
 	_ "nodora.org/nodora/pkg/registry/uuid"

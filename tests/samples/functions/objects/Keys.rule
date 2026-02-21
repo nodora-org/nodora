@@ -1,0 +1,3 @@
+rule KeysRule {
+    out keys = objects::keys(input.data)
+}

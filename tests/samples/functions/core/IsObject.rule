@@ -1,0 +1,3 @@
+rule IsObjectRule {
+    out result = is_object(input.data)
+}

@@ -4,6 +4,6 @@ import "nodora.org/nodora/internal/types"
 
 func GetFuncs() []func() types.Func {
 	return []func() types.Func{
-		isDefined, length, isEmpty, sprintf,
+		length, isDefined, isEmpty, isNumber, isString, isBool, isArray, isObject, sprintf,
 	}
 }

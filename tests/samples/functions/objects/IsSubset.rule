@@ -1,0 +1,3 @@
+rule IsSubsetRule {
+    out result = objects::is_subset(input.super, input.sub)
+}
