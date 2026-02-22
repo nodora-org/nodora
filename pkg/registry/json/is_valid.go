@@ -11,18 +11,19 @@ import (
 func isValid() types.Func {
 	return types.Func{
 		Name:       "is_valid",
-		Args:       []types.ArgSpec{{Name: "x", Type: types.StringType, Required: true}},
+		Args:       []types.ArgSpec{{Name: "str", Type: types.StringType, Required: true}},
 		ReturnType: types.BoolType,
 		Fn:         isValidImpl,
 	}
 }
 
 func isValidImpl(args []core.Value) (core.Value, error) {
-	str, ok := args[0].Raw.(string)
+	str := args[0]
+	strVal, ok := args[0].Raw.(string)
 	if !ok {
-		return core.U(), fmt.Errorf("invalid x type")
+		return core.U(), fmt.Errorf("expected string for 'str' argument, got %v", str.Type())
 	}
 	var tmp any
-	err := json.Unmarshal([]byte(str), &tmp)
+	err := json.Unmarshal([]byte(strVal), &tmp)
 	return core.V(err == nil), nil
 }

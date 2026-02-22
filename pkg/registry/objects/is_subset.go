@@ -29,7 +29,7 @@ func isSubsetImpl(args []core.Value) (core.Value, error) {
 
 	superVal, ok := super.Raw.(core.ValueMap)
 	if !ok {
-		return core.U(), fmt.Errorf("expected object for 'super' argument, got %T", super.Type())
+		return core.U(), fmt.Errorf("expected object for 'super' argument, got %v", super.Type())
 	}
 
 	sub := args[1]
@@ -39,7 +39,7 @@ func isSubsetImpl(args []core.Value) (core.Value, error) {
 
 	subVal, ok := sub.Raw.(core.ValueMap)
 	if !ok {
-		return core.U(), fmt.Errorf("expected object for 'sub' argument, got %T", sub.Type())
+		return core.U(), fmt.Errorf("expected object for 'sub' argument, got %v", sub.Type())
 	}
 
 	for key, subValue := range subVal {

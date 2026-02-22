@@ -18,10 +18,11 @@ func isValid() types.Func {
 }
 
 func isValidImpl(args []core.Value) (core.Value, error) {
-	str, ok := args[0].Raw.(string)
+	str := args[0]
+	strVal, ok := str.Raw.(string)
 	if !ok {
-		return core.U(), fmt.Errorf("invalid str type")
+		return core.U(), fmt.Errorf("expected string for 'str' argument, got %v", str.Type())
 	}
-	_, err := uuid.Parse(str)
+	_, err := uuid.Parse(strVal)
 	return core.V(err == nil), nil
 }

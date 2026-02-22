@@ -27,7 +27,11 @@ func isEmptyImpl(args []core.Value) (core.Value, error) {
 	}
 	arr, ok := value.Raw.([]core.Value)
 	if !ok {
-		return core.U(), fmt.Errorf("type %v not supported", value.Type())
+		return core.U(), fmt.Errorf(
+			"expected %s for 'arr' argument, got %v",
+			types.NewArrayType(types.AnyType),
+			value.Type(),
+		)
 	}
 	return core.V(len(arr) == 0), nil
 }

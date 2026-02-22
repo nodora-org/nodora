@@ -34,23 +34,23 @@ func replace() types.Func {
 }
 
 func replaceImpl(args []core.Value) (core.Value, error) {
-	strValue := args[0]
-	oldValue := args[1]
-	newValue := args[2]
-	if strValue.Undefined || oldValue.Undefined || newValue.Undefined {
+	str := args[0]
+	old := args[1]
+	new := args[2]
+	if str.Undefined || old.Undefined || new.Undefined {
 		return core.U(), nil
 	}
-	str, ok := strValue.Raw.(string)
+	strVal, ok := str.Raw.(string)
 	if !ok {
-		return core.U(), fmt.Errorf("type %v not supported for str", strValue.Type())
+		return core.U(), fmt.Errorf("expected string for 'str' argument, got %v", str.Type())
 	}
-	old, ok := oldValue.Raw.(string)
+	oldVal, ok := old.Raw.(string)
 	if !ok {
-		return core.U(), fmt.Errorf("type %v not supported for old", oldValue.Type())
+		return core.U(), fmt.Errorf("expected string for 'old' argument, got %v", old.Type())
 	}
-	new, ok := newValue.Raw.(string)
+	newVal, ok := new.Raw.(string)
 	if !ok {
-		return core.U(), fmt.Errorf("type %v not supported for new", newValue.Type())
+		return core.U(), fmt.Errorf("expected string for 'new' argument, got %v", new.Type())
 	}
-	return core.V(strings.ReplaceAll(str, old, new)), nil
+	return core.V(strings.ReplaceAll(strVal, oldVal, newVal)), nil
 }

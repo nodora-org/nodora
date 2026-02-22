@@ -29,18 +29,18 @@ func contains() types.Func {
 }
 
 func containsImpl(args []core.Value) (core.Value, error) {
-	strValue := args[0]
-	substrValue := args[1]
-	if strValue.Undefined || substrValue.Undefined {
+	str := args[0]
+	substr := args[1]
+	if str.Undefined || substr.Undefined {
 		return core.U(), nil
 	}
-	str, ok := strValue.Raw.(string)
+	strVal, ok := str.Raw.(string)
 	if !ok {
-		return core.U(), fmt.Errorf("type %v not supported for str", strValue.Type())
+		return core.U(), fmt.Errorf("expected string for 'str' argument, got %v", str.Type())
 	}
-	substr, ok := substrValue.Raw.(string)
+	substrVal, ok := substr.Raw.(string)
 	if !ok {
-		return core.U(), fmt.Errorf("type %v not supported for substr", substrValue.Type())
+		return core.U(), fmt.Errorf("expected string for 'substr' argument, got %v", substr.Type())
 	}
-	return core.V(strings.Contains(str, substr)), nil
+	return core.V(strings.Contains(strVal, substrVal)), nil
 }

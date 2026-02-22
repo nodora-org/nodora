@@ -21,13 +21,15 @@ func compare() types.Func {
 }
 
 func compareImpl(args []core.Value) (core.Value, error) {
-	v, ok := args[0].Raw.(string)
+	v := args[0]
+	vv, ok := args[0].Raw.(string)
 	if !ok {
-		return core.U(), fmt.Errorf("invalid v type")
+		return core.U(), fmt.Errorf("expected string for 'v' argument, got %v", v.Type())
 	}
-	w, ok := args[1].Raw.(string)
+	w := args[1]
+	ww, ok := args[1].Raw.(string)
 	if !ok {
-		return core.U(), fmt.Errorf("invalid w type")
+		return core.U(), fmt.Errorf("expected string for 'w' argument, got %v", w.Type())
 	}
-	return core.V(semver.Compare(v, w)), nil
+	return core.V(semver.Compare(vv, ww)), nil
 }

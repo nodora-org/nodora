@@ -28,11 +28,11 @@ func maxImpl(args []core.Value) (core.Value, error) {
 	}
 	xx, ok := core.ToFloat64(x.Raw)
 	if !ok {
-		return core.U(), fmt.Errorf("invalid x type")
+		return core.U(), fmt.Errorf("expected number for 'x' argument, got %v", x.Type())
 	}
 	yy, ok := core.ToFloat64(y.Raw)
 	if !ok {
-		return core.U(), fmt.Errorf("invalid y type")
+		return core.U(), fmt.Errorf("expected number for 'y' argument, got %v", y.Type())
 	}
 	return core.V(math.Max(xx, yy)), nil
 }

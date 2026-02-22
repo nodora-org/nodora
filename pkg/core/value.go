@@ -10,6 +10,13 @@ type Value struct {
 	Undefined bool
 }
 
+func (v Value) String() string {
+	if v.Undefined {
+		return "undefined"
+	}
+	return fmt.Sprintf("%v", v.Raw)
+}
+
 func (v *Value) MarshalJSON() ([]byte, error) {
 	return json.Marshal(v.ToRaw())
 }
@@ -19,12 +26,21 @@ func (v *Value) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &raw); err != nil {
 		return err
 	}
-	*v = NormalizeValue(raw)
+	nv, err := NormalizeValue(raw)
+	if err != nil {
+		return err
+	}
+	*v = nv
 	return nil
 }
 
-func V(raw any) Value {
+func fromRaw(raw any) Value {
 	return Value{Raw: raw}
+}
+
+func V(raw any) Value {
+	v, _ := NormalizeValue(raw)
+	return v
 }
 
 func VP(raw any) *Value {
@@ -44,6 +60,8 @@ func (v *Value) ToRaw() any {
 		return nil
 	}
 	switch n := v.Raw.(type) {
+	case Value:
+		return n.ToRaw()
 	case []Value:
 		arr := make([]any, len(n))
 		for i, v := range n {
@@ -79,28 +97,16 @@ func (v *Value) Type() string {
 
 type ValueMap map[string]Value
 
-func NewValueMap(raw map[string]any) ValueMap {
+func NewValueMap(raw map[string]any) (ValueMap, error) {
 	result := make(ValueMap, len(raw))
 	for k, v := range raw {
-		result[k] = NormalizeValue(v)
-	}
-	return result
-}
-
-func NormalizeValue(v any) Value {
-	switch val := v.(type) {
-	case []any:
-		result := make([]Value, len(val))
-		for i, item := range val {
-			result[i] = NormalizeValue(item)
+		nv, err := NormalizeValue(v)
+		if err != nil {
+			return nil, err
 		}
-		return V(result)
-	case map[string]any:
-		return V(NewValueMap(val))
-	default:
-		// primitives (string, float64, bool, nil) stay as-is
-		return V(val)
+		result[k] = nv
 	}
+	return result, nil
 }
 
 func (n *ValueMap) UnmarshalJSON(data []byte) error {
@@ -111,7 +117,112 @@ func (n *ValueMap) UnmarshalJSON(data []byte) error {
 
 	*n = make(ValueMap, len(raw))
 	for k, v := range raw {
-		(*n)[k] = NormalizeValue(v)
+		nv, err := NormalizeValue(v)
+		if err != nil {
+			return err
+		}
+		(*n)[k] = nv
 	}
 	return nil
+}
+
+func NormalizeValue(v any) (Value, error) {
+	switch val := v.(type) {
+	case nil:
+		return fromRaw(nil), nil
+	case Value:
+		return val, nil
+	case []Value:
+		return fromRaw(val), nil
+	case ValueMap:
+		return fromRaw(val), nil
+
+	// primitives that can be stored as-is
+	case string, bool, float64:
+		return fromRaw(val), nil
+
+	// numeric types -> convert to float64
+	case float32:
+		return fromRaw(float64(val)), nil
+	case int:
+		return fromRaw(float64(val)), nil
+	case int8:
+		return fromRaw(float64(val)), nil
+	case int16:
+		return fromRaw(float64(val)), nil
+	case int32:
+		return fromRaw(float64(val)), nil
+	case int64:
+		return fromRaw(float64(val)), nil
+	case uint:
+		return fromRaw(float64(val)), nil
+	case uint8:
+		return fromRaw(float64(val)), nil
+	case uint16:
+		return fromRaw(float64(val)), nil
+	case uint32:
+		return fromRaw(float64(val)), nil
+	case uint64:
+		return fromRaw(float64(val)), nil
+
+	// mixed maps
+	case map[string]any:
+		nm, err := NewValueMap(val)
+		if err != nil {
+			return U(), err
+		}
+		return fromRaw(nm), nil
+
+	// slices
+	case []any:
+		return normalizeSlice(val)
+	case []string:
+		return normalizeSlice(val)
+	case []bool:
+		return normalizeSlice(val)
+	case []float64:
+		return normalizeSlice(val)
+
+	// other numeric slices - convert to []float64
+	case []float32:
+		return normalizeSlice(val)
+	case []int:
+		return normalizeSlice(val)
+	case []int64:
+		return normalizeSlice(val)
+	case []int32:
+		return normalizeSlice(val)
+	case []int16:
+		return normalizeSlice(val)
+	case []int8:
+		return normalizeSlice(val)
+	case []uint:
+		return normalizeSlice(val)
+	case []uint64:
+		return normalizeSlice(val)
+	case []uint32:
+		return normalizeSlice(val)
+	case []uint16:
+		return normalizeSlice(val)
+	case []uint8:
+		return normalizeSlice(val)
+
+	default:
+		return U(), fmt.Errorf("conversion failed on value %v of type %T", val, val)
+	}
+}
+
+func normalizeSlice[T any](arr []T) (Value, error) {
+	if len(arr) == 0 {
+		return fromRaw([]Value{}), nil
+	}
+	result := make([]Value, len(arr))
+	for i, item := range arr {
+		nv, err := NormalizeValue(item)
+		if err != nil {
+			return U(), err
+		}
+		result[i] = nv
+	}
+	return fromRaw(result), nil
 }

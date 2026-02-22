@@ -30,11 +30,11 @@ func hmacSha256Impl(args []core.Value) (core.Value, error) {
 	}
 	key, ok := keyv.Raw.(string)
 	if !ok {
-		return core.U(), fmt.Errorf("invalid key type")
+		return core.U(), fmt.Errorf("expected string for 'key' argument, got %v", keyv.Type())
 	}
 	msg, ok := msgv.Raw.(string)
 	if !ok {
-		return core.U(), fmt.Errorf("invalid msg type")
+		return core.U(), fmt.Errorf("expected string for 'msg' argument, got %v", msgv.Type())
 	}
 	mac := hmac.New(_sha256.New, []byte(key))
 	_, err := mac.Write([]byte(msg))

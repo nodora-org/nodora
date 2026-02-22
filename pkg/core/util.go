@@ -1,18 +1,27 @@
 package core
 
-func IntPtr(i int) *int {
-	return &i
+import (
+	"math"
+)
+
+type Float interface {
+	~float32 | ~float64
 }
 
-func IsFloat(v any) bool {
-	switch n := v.(type) {
-	case Value:
-		return IsFloat(n.Raw)
-	case float32, float64:
-		return true
-	default:
-		return false
-	}
+type Signed interface {
+	~int | ~int8 | ~int16 | ~int32 | ~int64
+}
+
+type Unsigned interface {
+	~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64
+}
+
+type Numeric interface {
+	Signed | Unsigned | Float
+}
+
+func IntPtr(i int) *int {
+	return &i
 }
 
 func ToFloat64(v any) (float64, bool) {
@@ -48,35 +57,6 @@ func ToFloat64(v any) (float64, bool) {
 	}
 }
 
-func ToInt64(v any) (int64, bool) {
-	switch n := v.(type) {
-	case Value:
-		return ToInt64(n.Raw)
-	case int:
-		return int64(n), true
-	case int8:
-		return int64(n), true
-	case int16:
-		return int64(n), true
-	case int32:
-		return int64(n), true
-	case int64:
-		return n, true
-	case uint:
-		return int64(n), true
-	case uint8:
-		return int64(n), true
-	case uint16:
-		return int64(n), true
-	case uint32:
-		return int64(n), true
-	case uint64:
-		return int64(n), true
-	default:
-		return 0, false
-	}
-}
-
 func ToInt(v any) (int, bool) {
 	switch n := v.(type) {
 	case Value:
@@ -91,4 +71,66 @@ func ToInt(v any) (int, bool) {
 		return int(n), true
 	}
 	return 0, false
+}
+
+const epsilon = 1e-9
+
+func floatEquals(a, b float64) bool {
+	diff := math.Abs(a - b)
+	if diff <= epsilon {
+		return true
+	}
+	return diff <= epsilon*math.Max(math.Abs(a), math.Abs(b))
+}
+
+func SafeEquals(a, b Value) bool {
+	switch av := a.Raw.(type) {
+	case nil:
+		return b.Raw == nil
+	case string:
+		bv, ok := b.Raw.(string)
+		return ok && av == bv
+	case bool:
+		bv, ok := b.Raw.(bool)
+		return ok && av == bv
+	case float64:
+		bv, ok := b.Raw.(float64)
+		return ok && floatEquals(av, bv)
+	case Value:
+		bv, ok := b.Raw.(Value)
+		return ok && SafeEquals(av, bv)
+	case []Value:
+		bv, ok := b.Raw.([]Value)
+		if !ok {
+			return false
+		}
+		if &av == &bv {
+			return true
+		}
+		if len(av) != len(bv) {
+			return false
+		}
+		for i := range av {
+			if !SafeEquals(av[i], bv[i]) {
+				return false
+			}
+		}
+		return true
+	case ValueMap:
+		bv, ok := b.Raw.(ValueMap)
+		if !ok {
+			return false
+		}
+		if &av == &bv {
+			return true
+		}
+		for k, v := range av {
+			bvv, exists := bv[k]
+			if !exists || !SafeEquals(v, bvv) {
+				return false
+			}
+		}
+		return true
+	}
+	return false
 }

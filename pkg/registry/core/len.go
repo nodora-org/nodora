@@ -25,6 +25,7 @@ func lengthImpl(args []core.Value) (core.Value, error) {
 	if value.Undefined {
 		return core.U(), nil
 	}
+
 	switch v := value.Raw.(type) {
 	case string:
 		return core.V(len(v)), nil
@@ -33,6 +34,10 @@ func lengthImpl(args []core.Value) (core.Value, error) {
 	case core.ValueMap:
 		return core.V(len(v)), nil
 	default:
-		return core.U(), fmt.Errorf("type %v not supported", value.Type())
+		return core.U(), fmt.Errorf(
+			"expected %s for 'value' argument, got %v",
+			types.NewArrayType(types.AnyType),
+			value.Type(),
+		)
 	}
 }

@@ -19,9 +19,10 @@ func sha1() types.Func {
 }
 
 func sha1Impl(args []core.Value) (core.Value, error) {
-	data, ok := args[0].Raw.(string)
+	str := args[0]
+	data, ok := str.Raw.(string)
 	if !ok {
-		return core.U(), fmt.Errorf("invalid str type")
+		return core.U(), fmt.Errorf("expected string for 'str' argument, got %v", str.Type())
 	}
 	hash := _sha1.Sum([]byte(data))
 	return core.V(hex.EncodeToString(hash[:])), nil

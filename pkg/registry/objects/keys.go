@@ -25,7 +25,7 @@ func keysImpl(args []core.Value) (core.Value, error) {
 
 	objVal, ok := obj.Raw.(core.ValueMap)
 	if !ok {
-		return core.U(), fmt.Errorf("expected object for 'obj' argument, got %T", obj.Type())
+		return core.U(), fmt.Errorf("expected object for 'obj' argument, got %v", obj.Type())
 	}
 
 	keys := make([]string, 0, len(objVal))

@@ -22,18 +22,18 @@ func isAlphanumeric() types.Func {
 }
 
 func isAlphanumericImpl(args []core.Value) (core.Value, error) {
-	value := args[0]
-	if value.Undefined {
+	str := args[0]
+	if str.Undefined {
 		return core.U(), nil
 	}
-	str, ok := value.Raw.(string)
+	strVal, ok := str.Raw.(string)
 	if !ok {
-		return core.U(), fmt.Errorf("type %v not supported", value.Type())
+		return core.U(), fmt.Errorf("expected string for 'str' argument, got %v", str.Type())
 	}
-	for _, r := range str {
+	for _, r := range strVal {
 		if !unicode.IsLetter(r) && !unicode.IsNumber(r) {
 			return core.V(false), nil
 		}
 	}
-	return core.V(len(str) > 0), nil
+	return core.V(len(strVal) > 0), nil
 }

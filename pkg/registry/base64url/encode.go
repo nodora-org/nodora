@@ -18,10 +18,11 @@ func encode() types.Func {
 }
 
 func encodeImpl(args []core.Value) (core.Value, error) {
-	str, ok := args[0].Raw.(string)
+	str := args[0]
+	strVal, ok := str.Raw.(string)
 	if !ok {
-		return core.U(), fmt.Errorf("invalid str type")
+		return core.U(), fmt.Errorf("expected string for 'str' argument, got %v", str.Type())
 	}
-	encoded := base64.URLEncoding.EncodeToString([]byte(str))
+	encoded := base64.URLEncoding.EncodeToString([]byte(strVal))
 	return core.V(encoded), nil
 }

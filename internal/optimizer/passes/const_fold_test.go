@@ -14,31 +14,27 @@ type testCase struct {
 	expected core.Value
 }
 
-func valuesEqual(a, b core.Value) bool {
-	return a == b
-}
-
 func TestConstantFolding(t *testing.T) {
 	testCases := []testCase{
-		{"add ints", nir.OpAdd, []core.Value{core.V(5), core.V(3)}, core.V(int64(8))},
-		{"sub ints", nir.OpSub, []core.Value{core.V(10), core.V(4)}, core.V(int64(6))},
-		{"mul ints", nir.OpMul, []core.Value{core.V(7), core.V(3)}, core.V(int64(21))},
-		{"div ints", nir.OpDiv, []core.Value{core.V(20), core.V(4)}, core.V(int64(5))},
-		{"mod ints", nir.OpMod, []core.Value{core.V(17), core.V(5)}, core.V(int64(2))},
-		{"add floats", nir.OpAdd, []core.Value{core.V(5.5), core.V(3.5)}, core.V(9.0)},
-		{"mul floats", nir.OpMul, []core.Value{core.V(2.5), core.V(4.0)}, core.V(10.0)},
+		{"add", nir.OpAdd, []core.Value{core.V(5), core.V(3)}, core.V(8)},
+		{"sub", nir.OpSub, []core.Value{core.V(10), core.V(4)}, core.V(6)},
+		{"mul", nir.OpMul, []core.Value{core.V(7), core.V(3)}, core.V(21)},
+		{"div", nir.OpDiv, []core.Value{core.V(20), core.V(4)}, core.V(5)},
+		{"mod", nir.OpMod, []core.Value{core.V(17), core.V(5)}, core.V(2)},
+		{"add", nir.OpAdd, []core.Value{core.V(5.5), core.V(3.5)}, core.V(9.0)},
+		{"mul", nir.OpMul, []core.Value{core.V(2.5), core.V(4.0)}, core.V(10.0)},
 		{"concat strings", nir.OpAdd, []core.Value{core.V("hello"), core.V(" world")}, core.V("hello world")},
-		{"and bools", nir.OpAnd, []core.Value{core.V(true), core.V(false)}, core.V(false)},
-		{"or bools", nir.OpOr, []core.Value{core.V(true), core.V(false)}, core.V(true)},
+		{"and", nir.OpAnd, []core.Value{core.V(true), core.V(false)}, core.V(false)},
+		{"or", nir.OpOr, []core.Value{core.V(true), core.V(false)}, core.V(true)},
 		{"not true", nir.OpNot, []core.Value{core.V(true)}, core.V(false)},
 		{"not false", nir.OpNot, []core.Value{core.V(false)}, core.V(true)},
-		{"eq ints true", nir.OpEq, []core.Value{core.V(5), core.V(5)}, core.V(true)},
-		{"eq ints false", nir.OpEq, []core.Value{core.V(5), core.V(3)}, core.V(false)},
-		{"neq ints", nir.OpNeq, []core.Value{core.V(5), core.V(3)}, core.V(true)},
-		{"lt ints", nir.OpLt, []core.Value{core.V(3), core.V(5)}, core.V(true)},
-		{"gt ints", nir.OpGt, []core.Value{core.V(5), core.V(3)}, core.V(true)},
-		{"lte ints equal", nir.OpLte, []core.Value{core.V(5), core.V(5)}, core.V(true)},
-		{"gte ints", nir.OpGte, []core.Value{core.V(5), core.V(3)}, core.V(true)},
+		{"eq true", nir.OpEq, []core.Value{core.V(5), core.V(5)}, core.V(true)},
+		{"eq false", nir.OpEq, []core.Value{core.V(5), core.V(3)}, core.V(false)},
+		{"neq", nir.OpNeq, []core.Value{core.V(5), core.V(3)}, core.V(true)},
+		{"lt", nir.OpLt, []core.Value{core.V(3), core.V(5)}, core.V(true)},
+		{"gt", nir.OpGt, []core.Value{core.V(5), core.V(3)}, core.V(true)},
+		{"lte equal", nir.OpLte, []core.Value{core.V(5), core.V(5)}, core.V(true)},
+		{"gte", nir.OpGte, []core.Value{core.V(5), core.V(3)}, core.V(true)},
 		{"select true", nir.OpSelect, []core.Value{core.V(true), core.V(10), core.V(20)}, core.V(10)},
 		{"select false", nir.OpSelect, []core.Value{core.V(false), core.V(10), core.V(20)}, core.V(20)},
 	}
@@ -86,7 +82,7 @@ func TestConstantFolding(t *testing.T) {
 				t.Fatalf("Expected ImmExpr, got %T", op.Args[0].Expr)
 			}
 
-			if !valuesEqual(imm.Value, tt.expected) {
+			if !core.SafeEquals(imm.Value, tt.expected) {
 				t.Errorf("Expected %v (%T), got %v (%T)", tt.expected, tt.expected, imm.Value, imm.Value)
 			}
 		})

@@ -27,13 +27,13 @@ func getImpl(args []core.Value) (core.Value, error) {
 
 	objVal, ok := obj.Raw.(core.ValueMap)
 	if !ok {
-		return core.U(), fmt.Errorf("expected object for 'obj' argument, got %T", obj.Type())
+		return core.U(), fmt.Errorf("expected object for 'obj' argument, got %v", obj.Type())
 	}
 
 	key := args[1]
 	keyVal, ok := key.Raw.(string)
 	if !ok {
-		return core.U(), fmt.Errorf("expected string for 'key' argument, got %T", key.Type())
+		return core.U(), fmt.Errorf("expected string for 'key' argument, got %v", key.Type())
 	}
 
 	defaultVal := args[2]

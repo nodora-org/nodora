@@ -24,7 +24,7 @@ func ceilImpl(args []core.Value) (core.Value, error) {
 	}
 	xx, ok := core.ToFloat64(x.Raw)
 	if !ok {
-		return core.U(), fmt.Errorf("invalid x type")
+		return core.U(), fmt.Errorf("expected number for 'x' argument, got %v", x.Type())
 	}
 	return core.V(math.Ceil(xx)), nil
 }

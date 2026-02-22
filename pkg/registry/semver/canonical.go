@@ -18,9 +18,10 @@ func canonical() types.Func {
 }
 
 func canonicalImpl(args []core.Value) (core.Value, error) {
-	version, ok := args[0].Raw.(string)
+	version := args[0]
+	v, ok := version.Raw.(string)
 	if !ok {
-		return core.U(), fmt.Errorf("invalid version type")
+		return core.U(), fmt.Errorf("expected string for 'version' argument, got %v", version.Type())
 	}
-	return core.V(semver.Canonical(version)), nil
+	return core.V(semver.Canonical(v)), nil
 }

@@ -29,18 +29,18 @@ func endsWith() types.Func {
 }
 
 func endsWithImpl(args []core.Value) (core.Value, error) {
-	strValue := args[0]
-	suffixValue := args[1]
-	if strValue.Undefined || suffixValue.Undefined {
+	str := args[0]
+	suffix := args[1]
+	if str.Undefined || suffix.Undefined {
 		return core.U(), nil
 	}
-	str, ok := strValue.Raw.(string)
+	strVal, ok := str.Raw.(string)
 	if !ok {
-		return core.U(), fmt.Errorf("type %v not supported for str", strValue.Type())
+		return core.U(), fmt.Errorf("expected string for 'str' argument, got %v", str.Type())
 	}
-	suffix, ok := suffixValue.Raw.(string)
+	suffixVal, ok := suffix.Raw.(string)
 	if !ok {
-		return core.U(), fmt.Errorf("type %v not supported for suffix", suffixValue.Type())
+		return core.U(), fmt.Errorf("expected string for 'suffix' argument, got %v", suffix.Type())
 	}
-	return core.V(strings.HasSuffix(str, suffix)), nil
+	return core.V(strings.HasSuffix(strVal, suffixVal)), nil
 }

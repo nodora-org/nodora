@@ -29,20 +29,20 @@ func split() types.Func {
 }
 
 func splitImpl(args []core.Value) (core.Value, error) {
-	strValue := args[0]
-	delimValue := args[1]
-	if strValue.Undefined || delimValue.Undefined {
+	str := args[0]
+	delim := args[1]
+	if str.Undefined || delim.Undefined {
 		return core.U(), nil
 	}
-	str, ok := strValue.Raw.(string)
+	strVal, ok := str.Raw.(string)
 	if !ok {
-		return core.U(), fmt.Errorf("type %v not supported for str", strValue.Type())
+		return core.U(), fmt.Errorf("expected string for 'str' argument, got %v", str.Type())
 	}
-	delim, ok := delimValue.Raw.(string)
+	delimVal, ok := delim.Raw.(string)
 	if !ok {
-		return core.U(), fmt.Errorf("type %v not supported for delim", delimValue.Type())
+		return core.U(), fmt.Errorf("expected string for 'delim' argument, got %v", delim.Type())
 	}
-	parts := strings.Split(str, delim)
+	parts := strings.Split(strVal, delimVal)
 	result := make([]core.Value, len(parts))
 	for i, part := range parts {
 		result[i] = core.V(part)

@@ -292,7 +292,7 @@ func (c *CallExpr) Evaluate(ctx *EvaluationContext) (core.Value, error) {
 
 	val, err := fn.Fn(args)
 	if err != nil {
-		return core.U(), fmt.Errorf("%v failed: %v", fn.FullPath(), err)
+		return core.U(), fmt.Errorf("%v: %v", fn.FullPath(), err)
 	}
 
 	return val, nil
@@ -410,7 +410,7 @@ func executeUnaryOp(op *Op, ctx *EvaluationContext) error {
 	}
 }
 
-func performNumericOp[T Numeric](l T, r T, op *Op, ctx *EvaluationContext) error {
+func performFloatOp(l, r float64, op *Op, ctx *EvaluationContext) error {
 	switch op.Kind {
 	case OpAdd:
 		ctx.Slots[*op.Out] = core.V(l + r)
@@ -429,7 +429,7 @@ func performNumericOp[T Numeric](l T, r T, op *Op, ctx *EvaluationContext) error
 			ctx.Slots[*op.Out] = core.U() // mod (div) by zero is undefined
 			return nil
 		}
-		ctx.Slots[*op.Out] = core.V(T(int64(l) % int64(r)))
+		ctx.Slots[*op.Out] = core.V(float64(int64(l) % int64(r)))
 	case OpLt:
 		ctx.Slots[*op.Out] = core.V(l < r)
 	case OpGt:
@@ -439,7 +439,7 @@ func performNumericOp[T Numeric](l T, r T, op *Op, ctx *EvaluationContext) error
 	case OpGte:
 		ctx.Slots[*op.Out] = core.V(l >= r)
 	default:
-		return fmt.Errorf("invalid numeric operation: %v %s %v", l, op.Kind, r)
+		return fmt.Errorf("invalid operation: %v %s %v", l, op.Kind, r)
 	}
 	return nil
 }
@@ -463,10 +463,10 @@ func executeBinaryOp(op *Op, ctx *EvaluationContext) error {
 	// handle operations that work on any type
 	switch op.Kind {
 	case OpEq:
-		ctx.Slots[*op.Out] = core.V(lval.Raw == rval.Raw)
+		ctx.Slots[*op.Out] = core.V(core.SafeEquals(lval, rval))
 		return nil
 	case OpNeq:
-		ctx.Slots[*op.Out] = core.V(lval.Raw != rval.Raw)
+		ctx.Slots[*op.Out] = core.V(!core.SafeEquals(lval, rval))
 		return nil
 	case OpIn:
 		arr, ok := rval.Raw.([]core.Value)
@@ -520,28 +520,15 @@ func executeBinaryOp(op *Op, ctx *EvaluationContext) error {
 		}
 	}
 
-	if core.IsFloat(lval) || core.IsFloat(rval) {
-		l, lok := core.ToFloat64(lval)
-		if !lok {
-			return fmt.Errorf("operator '%s' cannot convert left operand to float64: %v", op.Kind, lval.Type())
-		}
-		r, rok := core.ToFloat64(rval)
-		if !rok {
-			return fmt.Errorf("operator '%s' cannot convert right operand to float64: %v", op.Kind, rval.Type())
-		}
-		return performNumericOp(l, r, op, ctx)
-	}
-
-	l, lok := core.ToInt64(lval)
+	l, lok := core.ToFloat64(lval)
 	if !lok {
-		return fmt.Errorf("operator '%s' cannot convert left operand to int64: %v", op.Kind, lval.Type())
+		return fmt.Errorf("operator '%s' cannot convert left operand to float64: %v", op.Kind, lval.Type())
 	}
-	r, rok := core.ToInt64(rval)
+	r, rok := core.ToFloat64(rval)
 	if !rok {
-		return fmt.Errorf("operator '%s' cannot convert right operand to int64: %v", op.Kind, rval.Type())
+		return fmt.Errorf("operator '%s' cannot convert right operand to float64: %v", op.Kind, rval.Type())
 	}
-
-	return performNumericOp(l, r, op, ctx)
+	return performFloatOp(l, r, op, ctx)
 }
 
 func (w RawExpr) MarshalJSON() ([]byte, error) {

@@ -18,11 +18,12 @@ func decode() types.Func {
 }
 
 func decodeImpl(args []core.Value) (core.Value, error) {
-	str, ok := args[0].Raw.(string)
+	str := args[0]
+	strVal, ok := str.Raw.(string)
 	if !ok {
-		return core.U(), fmt.Errorf("invalid str type")
+		return core.U(), fmt.Errorf("expected string for 'str' argument, got %v", str.Type())
 	}
-	decoded, err := base64.StdEncoding.DecodeString(str)
+	decoded, err := base64.StdEncoding.DecodeString(strVal)
 	if err != nil {
 		return core.U(), err
 	}

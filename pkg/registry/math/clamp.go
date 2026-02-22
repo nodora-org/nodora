@@ -22,22 +22,22 @@ func clamp() types.Func {
 
 func clampImpl(args []core.Value) (core.Value, error) {
 	x := args[0]
-	minVal := args[1]
-	maxVal := args[2]
-	if x.Undefined || minVal.Undefined || maxVal.Undefined {
+	min := args[1]
+	max := args[2]
+	if x.Undefined || min.Undefined || max.Undefined {
 		return core.U(), nil
 	}
 	xx, ok := core.ToFloat64(x.Raw)
 	if !ok {
-		return core.U(), fmt.Errorf("invalid x type")
+		return core.U(), fmt.Errorf("expected number for 'x' argument, got %v", x.Type())
 	}
-	minV, ok := core.ToFloat64(minVal.Raw)
+	minV, ok := core.ToFloat64(min.Raw)
 	if !ok {
-		return core.U(), fmt.Errorf("invalid min type")
+		return core.U(), fmt.Errorf("expected number for 'min' argument, got %v", min.Type())
 	}
-	maxV, ok := core.ToFloat64(maxVal.Raw)
+	maxV, ok := core.ToFloat64(max.Raw)
 	if !ok {
-		return core.U(), fmt.Errorf("invalid max type")
+		return core.U(), fmt.Errorf("expected number for 'max' argument, got %v", max.Type())
 	}
 	if xx < minV {
 		return core.V(minV), nil

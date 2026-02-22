@@ -19,7 +19,7 @@ func concat() types.Func {
 			},
 			{
 				Name:     "arr",
-				Type:     types.NewArrayType(types.AnyType),
+				Type:     types.NewArrayType(types.StringType),
 				Required: true,
 			},
 		},
@@ -29,26 +29,30 @@ func concat() types.Func {
 }
 
 func concatImpl(args []core.Value) (core.Value, error) {
-	delimValue := args[0]
-	arrValue := args[1]
-	if delimValue.Undefined || arrValue.Undefined {
+	delim := args[0]
+	arr := args[1]
+	if delim.Undefined || arr.Undefined {
 		return core.U(), nil
 	}
-	delim, ok := delimValue.Raw.(string)
+	delimVal, ok := delim.Raw.(string)
 	if !ok {
-		return core.U(), fmt.Errorf("type %v not supported for delim", delimValue.Type())
+		return core.U(), fmt.Errorf("expected string for 'delim' argument, got %v", delim.Type())
 	}
-	arr, ok := arrValue.Raw.([]core.Value)
+	arrVal, ok := arr.Raw.([]core.Value)
 	if !ok {
-		return core.U(), fmt.Errorf("type %v not supported for arr", arrValue.Type())
+		return core.U(), fmt.Errorf(
+			"expected %v for 'arr' argument, got %v",
+			types.NewArrayType(types.AnyType),
+			arr.Type(),
+		)
 	}
 	var parts []string
-	for _, v := range arr {
+	for _, v := range arrVal {
 		if str, ok := v.Raw.(string); ok {
 			parts = append(parts, str)
 		} else {
-			return core.U(), fmt.Errorf("array element type %v not supported", v.Type())
+			return core.U(), fmt.Errorf("expected string in 'arr', got %v", v.Type())
 		}
 	}
-	return core.V(strings.Join(parts, delim)), nil
+	return core.V(strings.Join(parts, delimVal)), nil
 }

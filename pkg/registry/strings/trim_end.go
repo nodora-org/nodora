@@ -29,18 +29,18 @@ func trimEnd() types.Func {
 }
 
 func trimEndImpl(args []core.Value) (core.Value, error) {
-	strValue := args[0]
-	cutsetValue := args[1]
-	if strValue.Undefined || cutsetValue.Undefined {
+	str := args[0]
+	cutset := args[1]
+	if str.Undefined || cutset.Undefined {
 		return core.U(), nil
 	}
-	str, ok := strValue.Raw.(string)
+	strVal, ok := str.Raw.(string)
 	if !ok {
-		return core.U(), fmt.Errorf("type %v not supported for str", strValue.Type())
+		return core.U(), fmt.Errorf("expected string for 'str' argument, got %v", str.Type())
 	}
-	cutset, ok := cutsetValue.Raw.(string)
+	cutsetVal, ok := cutset.Raw.(string)
 	if !ok {
-		return core.U(), fmt.Errorf("type %v not supported for cutset", cutsetValue.Type())
+		return core.U(), fmt.Errorf("expected string for 'cutset' argument, got %v", cutset.Type())
 	}
-	return core.V(strings.TrimRight(str, cutset)), nil
+	return core.V(strings.TrimRight(strVal, cutsetVal)), nil
 }

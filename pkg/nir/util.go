@@ -6,25 +6,9 @@ import (
 	"nodora.org/nodora/pkg/core"
 )
 
-type Float interface {
-	~float32 | ~float64
-}
-
-type Signed interface {
-	~int | ~int8 | ~int16 | ~int32 | ~int64
-}
-
-type Unsigned interface {
-	~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64
-}
-
-type Numeric interface {
-	Signed | Unsigned | Float
-}
-
 func contains(arr []core.Value, el core.Value) bool {
 	for _, v := range arr {
-		if v.ToRaw() == el.ToRaw() {
+		if core.SafeEquals(v, el) {
 			return true
 		}
 	}

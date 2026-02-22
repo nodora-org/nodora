@@ -29,18 +29,18 @@ func startsWith() types.Func {
 }
 
 func startsWithImpl(args []core.Value) (core.Value, error) {
-	strValue := args[0]
-	prefixValue := args[1]
-	if strValue.Undefined || prefixValue.Undefined {
+	str := args[0]
+	prefix := args[1]
+	if str.Undefined || prefix.Undefined {
 		return core.U(), nil
 	}
-	str, ok := strValue.Raw.(string)
+	strVal, ok := str.Raw.(string)
 	if !ok {
-		return core.U(), fmt.Errorf("type %v not supported for str", strValue.Type())
+		return core.U(), fmt.Errorf("expected string for 'str' argument, got %v", str.Type())
 	}
-	prefix, ok := prefixValue.Raw.(string)
+	prefixVal, ok := prefix.Raw.(string)
 	if !ok {
-		return core.U(), fmt.Errorf("type %v not supported for prefix", prefixValue.Type())
+		return core.U(), fmt.Errorf("expected string for 'prefix' argument, got %v", prefix.Type())
 	}
-	return core.V(strings.HasPrefix(str, prefix)), nil
+	return core.V(strings.HasPrefix(strVal, prefixVal)), nil
 }

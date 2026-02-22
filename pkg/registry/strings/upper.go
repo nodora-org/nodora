@@ -24,13 +24,13 @@ func upper() types.Func {
 }
 
 func upperImpl(args []core.Value) (core.Value, error) {
-	value := args[0]
-	if value.Undefined {
+	str := args[0]
+	if str.Undefined {
 		return core.U(), nil
 	}
-	str, ok := value.Raw.(string)
+	strVal, ok := str.Raw.(string)
 	if !ok {
-		return core.U(), fmt.Errorf("type %v not supported", value.Type())
+		return core.U(), fmt.Errorf("expected string for 'str' argument, got %v", str.Type())
 	}
-	return core.V(strings.ToUpper(str)), nil
+	return core.V(strings.ToUpper(strVal)), nil
 }
