@@ -35,7 +35,7 @@ func lengthImpl(args []core.Value) (core.Value, error) {
 		return core.V(len(v)), nil
 	default:
 		return core.U(), fmt.Errorf(
-			"expected %s for 'value' argument, got %v",
+			"expected %v for 'value' argument, got %v",
 			types.NewArrayType(types.AnyType),
 			value.Type(),
 		)

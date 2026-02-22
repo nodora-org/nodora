@@ -1,0 +1,35 @@
+[
+  {
+    "input": {
+      "data": [1, 2, 3],
+      "start": 1
+    },
+    "expected": {
+      "outputs": {
+        "arr": [2, 3]
+      }
+    }
+  },
+  {
+    "input": {
+      "data": [1, 2, 3],
+      "start": 2
+    },
+    "expected": {
+      "outputs": {
+        "arr": [3]
+      }
+    }
+  },
+  {
+    "input": {
+      "data": [1, 2, 3],
+      "start": 3
+    },
+    "expected": {
+      "outputs": {
+        "arr": []
+      }
+    }
+  }
+]

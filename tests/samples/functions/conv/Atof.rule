@@ -1,0 +1,3 @@
+rule AtofRule {
+    out result = conv::atof(input.data)
+}

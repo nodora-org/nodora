@@ -1,0 +1,3 @@
+rule SliceRule {
+    out arr = arrays::slice(input.data, input.start)
+}

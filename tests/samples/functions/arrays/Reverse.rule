@@ -1,0 +1,3 @@
+rule ReverseRule {
+    out arr = arrays::reverse(input.data)
+}

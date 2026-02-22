@@ -1,0 +1,3 @@
+rule FlattenRule {
+    out arr = arrays::flatten(input.data)
+}

@@ -21,6 +21,15 @@ type Func struct {
 	Fn         func([]core.Value) (core.Value, error)
 }
 
+func (f *Func) RequiredArgCount() (n int) {
+	for _, a := range f.Args {
+		if a.Required {
+			n++
+		}
+	}
+	return
+}
+
 type Namespace struct {
 	Name  string
 	Funcs map[string]Func

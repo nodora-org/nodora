@@ -13,7 +13,7 @@ func sprintf() types.Func {
 		Name: "sprintf",
 		Args: []types.ArgSpec{
 			{Name: "fmt", Type: types.StringType, Required: true},
-			{Name: "args", Type: types.NewArrayType(types.AnyType), Required: true},
+			{Name: "args", Type: types.NewArrayType(types.AnyType), Required: false},
 		},
 		ReturnType: types.StringType,
 		Fn:         sprintfImpl,
@@ -21,17 +21,30 @@ func sprintf() types.Func {
 }
 
 func sprintfImpl(args []core.Value) (core.Value, error) {
-	fmtStr, ok := args[0].Raw.(string)
+	fmt_ := args[0]
+	fmtVal, ok := fmt_.Raw.(string)
 	if !ok {
-		return core.U(), fmt.Errorf("invalid fmt type")
-	}
-	arr, ok := args[1].Raw.([]core.Value)
-	if !ok {
-		return core.U(), fmt.Errorf("invalid args type")
+		return core.U(), fmt.Errorf(
+			"expected string for 'fmt' argument, got %v",
+			fmt_.Type(),
+		)
 	}
 
-	interfaceArgs := make([]any, len(arr))
-	for i, v := range arr {
+	arrVal := make([]core.Value, 0)
+	if len(args) > 1 {
+		args := args[1]
+		arrVal, ok = args.Raw.([]core.Value)
+		if !ok {
+			return core.U(), fmt.Errorf(
+				"expected %v for 'args' argument, got %v",
+				types.NewArrayType(types.AnyType),
+				args.Type(),
+			)
+		}
+	}
+
+	interfaceArgs := make([]any, len(arrVal))
+	for i, v := range arrVal {
 		// format compatibility
 		if f, ok := v.Raw.(float64); ok && f == math.Trunc(f) && !math.IsInf(f, 0) {
 			interfaceArgs[i] = int64(f)
@@ -40,6 +53,6 @@ func sprintfImpl(args []core.Value) (core.Value, error) {
 		}
 	}
 
-	result := fmt.Sprintf(fmtStr, interfaceArgs...)
+	result := fmt.Sprintf(fmtVal, interfaceArgs...)
 	return core.V(result), nil
 }

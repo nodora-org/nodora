@@ -281,11 +281,12 @@ func (c *CallExpr) Evaluate(ctx *EvaluationContext) (core.Value, error) {
 		return core.U(), fmt.Errorf("undefined function '%s'", fn.FullPath())
 	}
 
-	if len(args) != len(fn.Args) {
+	reqArgCount := fn.RequiredArgCount()
+	if len(args) < reqArgCount {
 		return core.U(), fmt.Errorf(
 			"function '%s' expects %d argument(s), got %d",
 			fn.FullPath(),
-			len(fn.Args),
+			reqArgCount,
 			len(args),
 		)
 	}

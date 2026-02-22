@@ -4,8 +4,10 @@ package all
 // Usage: import _ "nodora.org/nodora/pkg/registry/all"
 
 import (
+	_ "nodora.org/nodora/pkg/registry/arrays"
 	_ "nodora.org/nodora/pkg/registry/base64"
 	_ "nodora.org/nodora/pkg/registry/base64url"
+	_ "nodora.org/nodora/pkg/registry/conv"
 	_ "nodora.org/nodora/pkg/registry/crypto"
 	_ "nodora.org/nodora/pkg/registry/json"
 	_ "nodora.org/nodora/pkg/registry/math"

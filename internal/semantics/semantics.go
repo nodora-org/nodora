@@ -620,9 +620,13 @@ func (sc *SemanticAnalyzer) VisitCallExpr(ce *ast.CallExpr) error {
 	}
 
 	fn, _ := registry.Global().Get(ce.Namespace, ce.Name)
-	if len(ce.Args) != len(fn.Args) {
+	reqArgCount := fn.RequiredArgCount()
+	if len(ce.Args) < reqArgCount {
 		sc.addError(sc.errorAt(ce, "function '%s' expects %d arguments, got %d",
-			fn.FullPath(), len(fn.Args), len(ce.Args)))
+			fn.FullPath(),
+			reqArgCount,
+			len(ce.Args),
+		))
 	}
 
 	for i, arg := range ce.Args {
