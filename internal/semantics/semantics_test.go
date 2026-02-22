@@ -20,7 +20,7 @@ rule test {
     x = undefined_var + 1
 }
 `,
-			expectedErrMsg: "3:9: undefined symbol 'undefined_var'",
+			expectedErrMsg: "3:9: undefined symbol 'undefined_var'\n    x = undefined_var + 1\n        ^",
 		},
 		{
 			name: "type mismatch",
@@ -29,7 +29,7 @@ rule test {
     x = "hello" + 5
 }
 `,
-			expectedErrMsg: "3:9: operator '+' cannot be applied to 'string' and 'number'",
+			expectedErrMsg: "3:9: operator '+' cannot be applied to 'string' and 'number'\n    x = \"hello\" + 5\n        ^",
 		},
 		{
 			name: "undefined signal",
@@ -38,7 +38,7 @@ rule test {
     emit undefined_signal()
 }
 `,
-			expectedErrMsg: "3:5: undefined signal 'undefined_signal'",
+			expectedErrMsg: "3:5: undefined signal 'undefined_signal'\n    emit undefined_signal()\n    ^",
 		},
 	}
 
@@ -49,7 +49,7 @@ rule test {
 				t.Fatalf("Failed to parse: %v", err)
 			}
 
-			analyzer := NewSemanticAnalyzer()
+			analyzer := NewSemanticAnalyzer(tt.input)
 			err = analyzer.Analyze(program)
 
 			if semErrs, ok := err.(*SemanticErrors); ok {
@@ -149,7 +149,7 @@ rule test {
 				t.Fatalf("Failed to parse: %v", err)
 			}
 
-			analyzer := NewSemanticAnalyzer()
+			analyzer := NewSemanticAnalyzer(tt.input)
 			err = analyzer.Analyze(program)
 
 			if tt.shouldError {
@@ -200,7 +200,7 @@ rule test {
 				t.Fatalf("Failed to parse: %v", err)
 			}
 
-			analyzer := NewSemanticAnalyzer()
+			analyzer := NewSemanticAnalyzer(tt.input)
 			err = analyzer.Analyze(program)
 
 			if tt.shouldError {
@@ -312,7 +312,7 @@ rule test {
 				t.Fatalf("Failed to parse: %v", err)
 			}
 
-			analyzer := NewSemanticAnalyzer()
+			analyzer := NewSemanticAnalyzer(tt.input)
 			err = analyzer.Analyze(program)
 
 			if tt.shouldError {

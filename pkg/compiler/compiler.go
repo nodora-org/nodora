@@ -20,7 +20,7 @@ func (c *Compiler) Compile(src string) (*nir.Program, error) {
 		return nil, err
 	}
 
-	analyzer := semantics.NewSemanticAnalyzer()
+	analyzer := semantics.NewSemanticAnalyzer(src)
 	if err := analyzer.Analyze(p); err != nil {
 		return nil, err
 	}

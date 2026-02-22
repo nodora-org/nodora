@@ -29,6 +29,22 @@ type symbol struct {
 	Value any
 }
 
+type SourceError struct {
+	Span    ast.Span
+	Message string
+	srcLine string
+}
+
+func (e *SourceError) Error() string {
+	pos := e.Span.Start
+	header := fmt.Sprintf("%d:%d: %s", pos.Line, pos.Col+1, e.Message)
+	if e.srcLine == "" {
+		return header
+	}
+	caret := strings.Repeat(" ", pos.Col) + "^"
+	return fmt.Sprintf("%s\n%s\n%s", header, e.srcLine, caret)
+}
+
 type SemanticErrors struct {
 	Errors []error
 }
@@ -54,12 +70,14 @@ func (se *SemanticErrors) Error() string {
 type SemanticAnalyzer struct {
 	scopes []*scope
 	errors SemanticErrors
+	lines  []string
 }
 
-func NewSemanticAnalyzer() *SemanticAnalyzer {
+func NewSemanticAnalyzer(src string) *SemanticAnalyzer {
 	return &SemanticAnalyzer{
 		scopes: []*scope{newScope(nil)}, // global scope
 		errors: SemanticErrors{},
+		lines:  strings.Split(src, "\n"),
 	}
 }
 
@@ -98,11 +116,11 @@ func (sc *SemanticAnalyzer) isReservedName(name string) bool {
 
 func (sc *SemanticAnalyzer) declareSymbol(name string, typ types.Type, kind string, value any, span ast.Span) error {
 	if sc.isReservedName(name) {
-		return errorAt(span, "cannot declare symbol '%s': reserved for rule inputs", name)
+		return sc.errorAt(span, "cannot declare symbol '%s': reserved for rule inputs", name)
 	}
 	scope := sc.currentScope()
 	if sym, exists := scope.symbols[name]; exists {
-		return errorAt(span, "symbol '%s' already declared in this scope (%s)", name, sym.Kind)
+		return sc.errorAt(span, "symbol '%s' already declared in this scope (%s)", name, sym.Kind)
 	}
 	scope.symbols[name] = &symbol{Name: name, Type: typ, Kind: kind, Value: value}
 	return nil
@@ -114,16 +132,22 @@ func (sc *SemanticAnalyzer) lookupSymbol(name string, span ast.Span) (*symbol, e
 			return sym, nil
 		}
 	}
-	return nil, errorAt(span, "undefined symbol '%s'", name)
+	return nil, sc.errorAt(span, "undefined symbol '%s'", name)
 }
 
 func (sc *SemanticAnalyzer) addError(err error) {
 	sc.errors.Add(err)
 }
 
-func errorAt(span ast.WithSpan, format string, args ...any) error {
-	pos := span.GetSpan().Start
-	return fmt.Errorf("%d:%d: %s", pos.Line, pos.Col+1, fmt.Sprintf(format, args...))
+// errorAt creates a SourceError with the source line and caret embedded.
+func (sc *SemanticAnalyzer) errorAt(span ast.WithSpan, format string, args ...any) error {
+	s := span.GetSpan()
+	msg := fmt.Sprintf(format, args...)
+	srcLine := ""
+	if lineNum := s.Start.Line; lineNum >= 1 && lineNum <= len(sc.lines) {
+		srcLine = sc.lines[lineNum-1]
+	}
+	return &SourceError{Span: s, Message: msg, srcLine: srcLine}
 }
 
 func (sc *SemanticAnalyzer) inferType(expr ast.Expr) types.Type {
@@ -311,18 +335,18 @@ func (sc *SemanticAnalyzer) VisitEmitStatement(es *ast.EmitStatement) error {
 
 	signalSym, err := sc.lookupSymbol(es.Signal, es.GetSpan())
 	if err != nil {
-		sc.addError(errorAt(es.Span, "undefined signal '%s'", es.Signal))
+		sc.addError(sc.errorAt(es.Span, "undefined signal '%s'", es.Signal))
 		return nil
 	}
 
 	if signalSym.Kind != "signal" {
-		sc.addError(errorAt(es.Span, "'%s' is not a signal", es.Signal))
+		sc.addError(sc.errorAt(es.Span, "'%s' is not a signal", es.Signal))
 		return nil
 	}
 
 	signal := signalSym.Value.(*ast.Signal)
 	if len(es.Args) != len(signal.Params) {
-		sc.addError(errorAt(es.Span, "signal '%s' expects %d arguments, got %d", es.Signal, len(signal.Params), len(es.Args)))
+		sc.addError(sc.errorAt(es.Span, "signal '%s' expects %d arguments, got %d", es.Signal, len(signal.Params), len(es.Args)))
 		return nil
 	}
 
@@ -355,42 +379,42 @@ func (sc *SemanticAnalyzer) VisitBinaryExpr(be *ast.BinaryExpr) error {
 			sc.typesCompatible(leftType, rightType)
 
 		if !valid {
-			sc.addError(errorAt(be, "operator '%s' cannot be applied to '%s' and '%s'", be.Op, leftType.String(), rightType.String()))
+			sc.addError(sc.errorAt(be, "operator '%s' cannot be applied to '%s' and '%s'", be.Op, leftType.String(), rightType.String()))
 		}
 		be.Annotate(leftType)
 	case "-", "*", "/", "%":
 		lok := sc.requireType(leftType, types.NumberType)
 		rok := sc.requireType(rightType, types.NumberType)
 		if !(lok && rok) {
-			sc.addError(errorAt(be, "operator '%s' cannot be applied to '%s' and '%s'", be.Op, leftType.String(), rightType.String()))
+			sc.addError(sc.errorAt(be, "operator '%s' cannot be applied to '%s' and '%s'", be.Op, leftType.String(), rightType.String()))
 		}
 		be.Annotate(types.NumberType)
 	case "==", "!=":
 		if !sc.typesCompatible(leftType, rightType) {
-			sc.addError(errorAt(be, "cannot compare '%s' with '%s' using '%s'", leftType.String(), rightType.String(), be.Op))
+			sc.addError(sc.errorAt(be, "cannot compare '%s' with '%s' using '%s'", leftType.String(), rightType.String(), be.Op))
 		}
 		be.Annotate(types.BoolType)
 	case "<", "<=", ">", ">=":
 		lok := sc.requireType(leftType, types.NumberType)
 		rok := sc.requireType(rightType, types.NumberType)
 		if !(lok && rok) {
-			sc.addError(errorAt(be, "operator '%s' cannot be applied to '%s' and '%s'", be.Op, leftType.String(), rightType.String()))
+			sc.addError(sc.errorAt(be, "operator '%s' cannot be applied to '%s' and '%s'", be.Op, leftType.String(), rightType.String()))
 		}
 		be.Annotate(types.BoolType)
 	case "&&", "||":
 		lok := sc.requireType(leftType, types.BoolType)
 		rok := sc.requireType(rightType, types.BoolType)
 		if !(lok && rok) {
-			sc.addError(errorAt(be, "operator '%s' cannot be applied to '%s' and '%s'", be.Op, leftType.String(), rightType.String()))
+			sc.addError(sc.errorAt(be, "operator '%s' cannot be applied to '%s' and '%s'", be.Op, leftType.String(), rightType.String()))
 		}
 		be.Annotate(types.BoolType)
 	case "in":
 		if !sc.requireType(rightType, types.NewArrayType(types.AnyType)) {
-			sc.addError(errorAt(be, "operator '%s' cannot be applied to type '%s'", be.Op, rightType.String()))
+			sc.addError(sc.errorAt(be, "operator '%s' cannot be applied to type '%s'", be.Op, rightType.String()))
 		}
 		be.Annotate(types.BoolType)
 	default:
-		sc.addError(errorAt(be, "invalid binary operator '%s'", be.Op))
+		sc.addError(sc.errorAt(be, "invalid binary operator '%s'", be.Op))
 	}
 
 	return nil
@@ -405,16 +429,16 @@ func (sc *SemanticAnalyzer) VisitUnaryExpr(ue *ast.UnaryExpr) error {
 	switch ue.Op {
 	case "!":
 		if !sc.requireType(ty, types.BoolType) {
-			sc.addError(errorAt(ue, "operand of '!' must be a '%s', got %s", types.BoolType.String(), ty.String()))
+			sc.addError(sc.errorAt(ue, "operand of '!' must be a '%s', got %s", types.BoolType.String(), ty.String()))
 		}
 		ue.Annotate(types.BoolType)
 	case "-":
 		if !sc.requireType(ty, types.NumberType) {
-			sc.addError(errorAt(ue, "operand of '-' must be a '%s', got %s", types.NumberType.String(), ty.String()))
+			sc.addError(sc.errorAt(ue, "operand of '-' must be a '%s', got %s", types.NumberType.String(), ty.String()))
 		}
 		ue.Annotate(types.NumberType)
 	default:
-		sc.addError(errorAt(ue, "invalid unary operator '%s'", ue.Op))
+		sc.addError(sc.errorAt(ue, "invalid unary operator '%s'", ue.Op))
 	}
 
 	return nil
@@ -462,7 +486,7 @@ func (sc *SemanticAnalyzer) VisitConditionalExpr(ce *ast.ConditionalExpr) error 
 	}
 	condType := sc.inferType(ce.Cond)
 	if !sc.requireType(condType, types.BoolType) {
-		sc.addError(errorAt(ce, "condition in conditional expression must be boolean, got '%s'", condType.String()))
+		sc.addError(sc.errorAt(ce, "condition in conditional expression must be boolean, got '%s'", condType.String()))
 	}
 
 	if err := ce.Then.Accept(sc); err != nil {
@@ -476,7 +500,7 @@ func (sc *SemanticAnalyzer) VisitConditionalExpr(ce *ast.ConditionalExpr) error 
 	elseType := sc.inferType(ce.Else)
 
 	if !sc.typesCompatible(thenType, elseType) {
-		sc.addError(errorAt(ce, "then and else branches of conditional expression must have compatible types, got '%s' and '%s'", thenType.String(), elseType.String()))
+		sc.addError(sc.errorAt(ce, "then and else branches of conditional expression must have compatible types, got '%s' and '%s'", thenType.String(), elseType.String()))
 	}
 
 	ce.Annotate(thenType)
@@ -495,7 +519,7 @@ func (sc *SemanticAnalyzer) VisitSelectorExpr(se *ast.SelectorExpr) error {
 			return nil
 		}
 		if !sc.requireType(baseType, types.ObjectType) {
-			sc.addError(errorAt(se, "cannot access property '%s' on type %s", se.Field, baseType.String()))
+			sc.addError(sc.errorAt(se, "cannot access property '%s' on type %s", se.Field, baseType.String()))
 		}
 	case *ast.IndexExpr:
 		if err := se.Expr.Accept(sc); err != nil {
@@ -506,7 +530,7 @@ func (sc *SemanticAnalyzer) VisitSelectorExpr(se *ast.SelectorExpr) error {
 			sc.addError(err)
 		}
 	default:
-		sc.addError(errorAt(se, "cannot access property '%s' on type %s", se.Field, sc.inferType(se.Expr).String()))
+		sc.addError(sc.errorAt(se, "cannot access property '%s' on type %s", se.Field, sc.inferType(se.Expr).String()))
 	}
 	return nil
 }
@@ -528,7 +552,7 @@ func (sc *SemanticAnalyzer) VisitIndexExpr(ie *ast.IndexExpr) error {
 
 	if sc.requireType(baseType, types.NewArrayType(types.AnyType)) {
 		if !sc.requireType(indexType, types.NumberType) {
-			sc.addError(errorAt(
+			sc.addError(sc.errorAt(
 				ie,
 				"cannot index with type '%s' for '%s' (expected '%s')",
 				indexType.String(),
@@ -541,7 +565,7 @@ func (sc *SemanticAnalyzer) VisitIndexExpr(ie *ast.IndexExpr) error {
 
 	if sc.requireType(baseType, types.ObjectType) {
 		if !sc.requireType(indexType, types.StringType) {
-			sc.addError(errorAt(
+			sc.addError(sc.errorAt(
 				ie,
 				"cannot index with type '%s' for '%s' (expected '%s')",
 				indexType.String(),
@@ -567,7 +591,7 @@ func (sc *SemanticAnalyzer) VisitObjectLiteral(al *ast.ObjectLiteral) error {
 	seen := make(map[string]bool)
 	for _, prop := range al.Properties {
 		if seen[prop.Key] {
-			sc.addError(errorAt(prop, "duplicate object property key '%s'", prop.Key))
+			sc.addError(sc.errorAt(prop, "duplicate object property key '%s'", prop.Key))
 		} else {
 			seen[prop.Key] = true
 		}
@@ -584,7 +608,8 @@ func (sc *SemanticAnalyzer) VisitParam(p *ast.Param) error {
 
 func (sc *SemanticAnalyzer) VisitCallExpr(ce *ast.CallExpr) error {
 	if !registry.Global().Exists(ce.Namespace, ce.Name) {
-		sc.addError(errorAt(ce, "undefined function '%s'", ce.FullPath()))
+		sc.addError(sc.errorAt(ce, "undefined function '%s'", ce.FullPath()))
+
 		// still visit args to surface any errors within them
 		for _, arg := range ce.Args {
 			if err := arg.Accept(sc); err != nil {
@@ -596,7 +621,7 @@ func (sc *SemanticAnalyzer) VisitCallExpr(ce *ast.CallExpr) error {
 
 	fn, _ := registry.Global().Get(ce.Namespace, ce.Name)
 	if len(ce.Args) != len(fn.Args) {
-		sc.addError(errorAt(ce, "function '%s' expects %d arguments, got %d",
+		sc.addError(sc.errorAt(ce, "function '%s' expects %d arguments, got %d",
 			fn.FullPath(), len(fn.Args), len(ce.Args)))
 	}
 
@@ -610,7 +635,7 @@ func (sc *SemanticAnalyzer) VisitCallExpr(ce *ast.CallExpr) error {
 			argType := sc.inferType(arg)
 			fnArg := fn.Args[i]
 			if !sc.requireType(argType, fnArg.Type) {
-				sc.addError(errorAt(
+				sc.addError(sc.errorAt(
 					arg,
 					"%v requires '%v' to be of type: %v",
 					fn.CompactSignature(),
