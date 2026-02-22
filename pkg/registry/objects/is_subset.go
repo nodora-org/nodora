@@ -1,8 +1,6 @@
 package objects
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 
 	"nodora.org/nodora/internal/types"
@@ -50,19 +48,10 @@ func isSubsetImpl(args []core.Value) (core.Value, error) {
 		if !exists {
 			return core.V(false), nil
 		}
-		if !valuesEqual(val, subValue) {
+		if !core.SafeEquals(val, subValue) {
 			return core.V(false), nil
 		}
 	}
 
 	return core.V(true), nil
-}
-
-func valuesEqual(v1, v2 core.Value) bool {
-	json1, err1 := json.Marshal(v1.ToRaw())
-	json2, err2 := json.Marshal(v2.ToRaw())
-	if err1 != nil || err2 != nil {
-		return false
-	}
-	return bytes.Equal(json1, json2)
 }
