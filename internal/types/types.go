@@ -218,3 +218,62 @@ func NewLambdaType(params []Type, retType Type) *LambdaType {
 		ReturnType: retType,
 	}
 }
+
+type UnionType struct {
+	Types []Type
+}
+
+func (t *UnionType) String() string {
+	parts := make([]string, len(t.Types))
+	for i, ty := range t.Types {
+		parts[i] = ty.String()
+	}
+	return "union<" + strings.Join(parts, "|") + ">"
+}
+
+func (t *UnionType) Equals(other Type) bool {
+	if other == nil {
+		return false
+	}
+	ou, ok := other.(*UnionType)
+	if !ok {
+		return false
+	}
+	if len(t.Types) != len(ou.Types) {
+		return false
+	}
+	for i, ty := range t.Types {
+		if !ty.Equals(ou.Types[i]) {
+			return false
+		}
+	}
+	return true
+}
+
+func (t *UnionType) IsAssignableFrom(other Type) bool {
+	if other == nil {
+		return false
+	}
+	if simple, ok := other.(*SimpleType); ok && simple.kind == UnknownKind {
+		return true
+	}
+	for _, ty := range t.Types {
+		if ty.IsAssignableFrom(other) {
+			return true
+		}
+	}
+	return false
+}
+
+func (t *UnionType) Kind() TypeKind {
+	return AnyKind
+}
+
+func NewUnionType(types ...Type) *UnionType {
+	return &UnionType{Types: types}
+}
+
+func IsUnion(t Type) bool {
+	_, ok := t.(*UnionType)
+	return ok
+}

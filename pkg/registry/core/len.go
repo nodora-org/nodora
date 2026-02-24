@@ -12,7 +12,7 @@ func length() types.Func {
 		Name: "len",
 		Args: []types.ArgSpec{{
 			Name:     "value",
-			Type:     types.NewArrayType(types.AnyType),
+			Type:     types.NewUnionType(types.StringType, types.NewArrayType(types.AnyType), types.ObjectType),
 			Required: true,
 		}},
 		ReturnType: types.NumberType,
@@ -36,7 +36,7 @@ func lengthImpl(args []core.Value) (core.Value, error) {
 	default:
 		return core.U(), fmt.Errorf(
 			"expected %v for 'value' argument, got %v",
-			types.NewArrayType(types.AnyType),
+			types.NewUnionType(types.StringType, types.NewArrayType(types.AnyType), types.ObjectType),
 			value.Type(),
 		)
 	}
