@@ -581,7 +581,9 @@ func (sc *SemanticAnalyzer) getPropertyType(expr ast.Expr, field string) types.T
 		return types.UnknownType
 	}
 
-	return sc.inferType(resolved)
+	// dynamic object (e.g. result of a function call)
+	// can't statically determine property types
+	return types.UnknownType
 }
 
 func (sc *SemanticAnalyzer) resolveExpr(expr ast.Expr) (ast.Expr, string) {
@@ -856,10 +858,11 @@ func (sc *SemanticAnalyzer) VisitCallExpr(ce *ast.CallExpr) error {
 			if !sc.requireType(argType, fnArg.Type) {
 				sc.addError(sc.errorAt(
 					arg,
-					"%v requires '%v' to be of type: %v",
+					"%v requires '%v' to be of type %v, got %v",
 					fn.CompactSignature(),
 					fnArg.Name,
 					fnArg.Type,
+					argType,
 				))
 			}
 		}
