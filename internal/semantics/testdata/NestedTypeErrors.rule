@@ -1,0 +1,23 @@
+rule NestedTypeErrors {
+    obj = {
+        num: 42,
+        str: "hello",
+        bool: true,
+        nested: {
+            value: 100
+        }
+    }
+    
+    // trying to access properties on primitives
+    err1 = obj.num.invalid   // ERROR: cannot access property 'invalid' on type number
+    err2 = obj.str.field     // ERROR: cannot access property 'field' on type string
+    err3 = obj.bool.property // ERROR: cannot access property 'property' on type bool
+    
+    // correct access, then wrong operation
+    err4 = obj.nested.value.something // ERROR: cannot access property 'something' on type number
+    
+    // indexing primitives
+    err5 = obj.num[0]      // ERROR: cannot index type 'number'
+    err6 = obj.str[0]      // ERROR: cannot index type 'string'
+    err7 = obj.bool["key"] // ERROR: cannot index type 'bool'
+}

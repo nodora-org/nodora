@@ -1,0 +1,11 @@
+rule ConditionalTypes {
+    // branches should have the same type
+    err1 = true ? 42 : "hello"        // ERROR: incompatible types in conditional expression, got 'number' and 'string'
+    err2 = false ? {a: 1} : [1, 2, 3] // ERROR: incompatible types in conditional expression, got 'object' and 'array<number>'
+    err3 = true ? true : 123          // ERROR: incompatible types in conditional expression, got 'bool' and 'number
+    
+    // non-boolean conditions
+    err4 = 42 ? "yes" : "no"      // ERROR: condition must be of type bool, got 'number'
+    err5 = "hello" ? 1 : 2        // ERROR: condition must be of type bool, got 'string'
+    err6 = {a: 1} ? true : false  // ERROR: condition must be of type bool, got 'object'
+}

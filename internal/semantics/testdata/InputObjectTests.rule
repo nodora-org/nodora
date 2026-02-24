@@ -1,0 +1,18 @@
+rule InputObjectTests {
+    // these should work semantically
+    x1 = input.userId
+    x2 = input.data.items[0].id
+    x3 = input.settings.theme.color
+    
+    // mixed with local variables
+    config = {
+        defaultTheme: input.settings.theme,
+        user: {
+            id: input.userId,
+            name: input.userName
+        }
+    }
+    
+    x4 = config.defaultTheme.color
+    x5 = config.user.id
+}

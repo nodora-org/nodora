@@ -1,4 +1,4 @@
-rule Test {
+rule LargeObjectTest {
     company = {
         name: "TechCorp",
         departments: {
@@ -126,9 +126,9 @@ rule Test {
     x28 = input.data.items[0].properties.tags[2].name
 
     // error cases to test
-    err1 = company.departments.nonexistent.test
-    err2 = company.locations[0].offices[5].floor
-    err3 = company.name.invalid
-    err4 = users[0].missing.field
-    err5 = data.matrix[0][0].wrongField
+    err1 = company.departments.nonexistent.test   // ERROR: unknown property 'nonexistent' on object 'company.departments'
+    err2 = company.locations[0].offices[5].floor  // ERROR: array index 5 out of bounds (length 2)
+    err3 = company.name.invalid                   // ERROR: cannot access property 'invalid' on type string
+    err4 = users[0].missing.field                 // ERROR: undefined symbol 'users'
+    err5 = data.matrix[0][0].wrongField           // ERROR: unknown property 'wrongField' on object 'data.matrix[0][0]'
 }

@@ -1,0 +1,10 @@
+rule UndefinedVars {
+    err1 = undefinedVar              // ERROR: undefined symbol 'undefinedVar'
+    err2 = someVar.property          // ERROR: undefined symbol 'someVar'
+    err3 = missing[0]                // ERROR: undefined symbol 'missing'
+    err4 = notDefined.chain.of.props // ERROR: undefined symbol 'notDefined'
+    
+    // reference before definition
+    err5 = futureVar // ERROR: undefined symbol 'futureVar'
+    futureVar = 42
+}

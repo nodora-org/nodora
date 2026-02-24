@@ -1,0 +1,18 @@
+rule ArrayElementTypes {
+    // homogeneous arrays
+    numbers = [1, 2, 3, 4, 5]
+    strings = ["a", "b", "c"]
+    
+    // heterogeneous arrays
+    mixed = [1, "hello", true, {key: "value"}, [1, 2]]
+    
+    x1 = mixed[0]     // number
+    x2 = mixed[1]     // string
+    x3 = mixed[2]     // bool
+    x4 = mixed[3].key // object property
+    x5 = mixed[4][0]  // nested array element
+    
+    // type errors
+    err1 = mixed[0].property  // ERROR: cannot access property 'property' on type number
+    err2 = mixed[1][0]        // ERROR: cannot index type 'string'
+}

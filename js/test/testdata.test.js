@@ -6,7 +6,7 @@ import { fileURLToPath } from "url";
 const { compile, createEvaluator } = require("../lib/index.js");
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const testRoot = join(__dirname, "../../tests/samples");
+const testRoot = join(__dirname, "../../tests/testdata");
 
 function* walkDir(dir) {
   const entries = readdirSync(dir, { withFileTypes: true });
@@ -24,9 +24,9 @@ function getTestFiles() {
   const tests = [];
   for (const filePath of walkDir(testRoot)) {
     if (filePath.endsWith(".rule")) {
-      const testName = basename(filePath, ".rule");
+      const fileName = basename(filePath, ".rule");
       const testDir = dirname(filePath);
-      const inputsPath = join(testDir, `${testName}.inputs.json`);
+      const inputsPath = join(testDir, `${fileName}.inputs.json`);
 
       if (!existsSync(inputsPath)) {
         console.log(
@@ -36,7 +36,7 @@ function getTestFiles() {
       }
 
       tests.push({
-        testName,
+        testName: `${basename(testDir)}/${fileName}`,
         rulePath: filePath,
         inputsPath,
       });

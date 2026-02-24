@@ -24,7 +24,7 @@ type TestSample struct {
 }
 
 func TestE2E(t *testing.T) {
-	testRoot := "./samples"
+	testRoot := "./testdata"
 
 	// Find all test directories
 	err := filepath.Walk(testRoot, func(path string, info os.FileInfo, err error) error {
@@ -40,9 +40,10 @@ func TestE2E(t *testing.T) {
 			return nil
 		}
 
-		testName := strings.TrimSuffix(filepath.Base(path), ".rule")
+		fileName := strings.TrimSuffix(filepath.Base(path), ".rule")
 		testDir := filepath.Dir(path)
-		inputsPath := filepath.Join(testDir, testName+".inputs.json")
+		inputsPath := filepath.Join(testDir, fileName+".inputs.json")
+		testName := filepath.Base(testDir) + "/" + fileName
 
 		if _, err := os.Stat(inputsPath); os.IsNotExist(err) {
 			t.Logf("Skipping %s: no inputs file found at %s", testName, inputsPath)

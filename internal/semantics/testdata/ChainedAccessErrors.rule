@@ -1,0 +1,37 @@
+rule ChainedAccessErrors {
+    data = {
+        users: [
+            {
+                name: "Alice",
+                posts: [
+                    {title: "First", likes: 10},
+                    {title: "Second", likes: 20}
+                ]
+            },
+            {
+                name: "Bob",
+                posts: [
+                    {title: "Hello", likes: 5}
+                ]
+            }
+        ]
+    }
+    
+    // valid accesses
+    ok1 = data.users[0].name
+    ok2 = data.users[0].posts[0].title
+    ok3 = data.users[1].posts[0].likes
+    
+    // error: wrong property names
+    err1 = data.users[0].age              // ERROR: unknown property 'age' on object 'data.users[0]'
+    err2 = data.users[0].posts[0].content // ERROR: unknown property 'content' on object 'data.users[0].posts[0]'
+    err3 = data.members[0].name           // ERROR: unknown property 'members' on object 'data'
+    
+    // error: out of bounds
+    err4 = data.users[5].name             // ERROR: array index 5 out of bounds (length 2)
+    err5 = data.users[0].posts[10].title  // ERROR: array index 10 out of bounds (length 2)
+    
+    // error: chaining after primitive
+    err6 = data.users[0].name.uppercase        // ERROR: cannot access property 'uppercase' on type string
+    err7 = data.users[0].posts[0].likes.double // ERROR: cannot access property 'double' on type number
+}

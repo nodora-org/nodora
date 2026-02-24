@@ -1,329 +1,116 @@
 package semantics
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
 	"nodora.org/nodora/internal/parser"
 )
 
-func TestSemanticErrorsWithSpan(t *testing.T) {
-	tests := []struct {
-		name           string
-		input          string
-		expectedErrMsg string
-	}{
-		{
-			name: "undefined variable",
-			input: `
-rule test {
-    x = undefined_var + 1
-}
-`,
-			expectedErrMsg: "3:9: undefined symbol 'undefined_var'\n    x = undefined_var + 1\n        ^",
-		},
-		{
-			name: "type mismatch",
-			input: `
-rule test {
-    x = "hello" + 5
-}
-`,
-			expectedErrMsg: "3:9: operator '+' cannot be applied to 'string' and 'number'\n    x = \"hello\" + 5\n        ^",
-		},
-		{
-			name: "undefined signal",
-			input: `
-rule test {
-    emit undefined_signal()
-}
-`,
-			expectedErrMsg: "3:5: undefined signal 'undefined_signal'\n    emit undefined_signal()\n    ^",
-		},
-	}
+func TestSemantics(t *testing.T) {
+	files, _ := filepath.Glob("testdata/*.rule")
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			program, err := parser.Parse(tt.input)
+	for _, file := range files {
+		testName := strings.TrimSuffix(filepath.Base(file), ".rule")
+		t.Run(testName, func(t *testing.T) {
+			srcBytes, err := os.ReadFile(file)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			src := string(srcBytes)
+			expected := extractExpectedErrors(src)
+			src = stripErrorComments(src)
+
+			program, err := parser.Parse(src)
 			if err != nil {
 				t.Fatalf("Failed to parse: %v", err)
 			}
 
-			analyzer := NewSemanticAnalyzer(tt.input)
+			analyzer := NewSemanticAnalyzer(src)
 			err = analyzer.Analyze(program)
 
-			if semErrs, ok := err.(*SemanticErrors); ok {
-				if semErrs.Count() == 0 {
-					t.Errorf("Expected error for %s", tt.name)
-					return
-				}
-
-				errMsg := semErrs.Errors[0].Error()
-				if !strings.Contains(errMsg, ":") {
-					t.Error("Expected error to contain position information (line:col)")
-				}
-
-				if errMsg != tt.expectedErrMsg {
-					t.Errorf("Expected error to be '%s', but got '%s'", tt.expectedErrMsg, errMsg)
-				}
-			} else {
-				t.Errorf("Unexpected error %s", err)
-			}
-		})
-	}
-}
-
-func TestArrayTypeInference(t *testing.T) {
-	tests := []struct {
-		name         string
-		input        string
-		expectedType string
-		shouldError  bool
-	}{
-		{
-			name: "homogeneous number array",
-			input: `
-rule test {
-    x = [1, 2, 3]
-}
-`,
-			expectedType: "array<number>",
-			shouldError:  false,
-		},
-		{
-			name: "homogeneous string array",
-			input: `
-rule test {
-    x = ["a", "b", "c"]
-}
-`,
-			expectedType: "array<string>",
-			shouldError:  false,
-		},
-		{
-			name: "homogeneous bool array",
-			input: `
-rule test {
-    x = [true, false]
-}
-`,
-			expectedType: "array<bool>",
-			shouldError:  false,
-		},
-		{
-			name: "mixed array falls back to any",
-			input: `
-rule test {
-    x = [1, "hello"]
-}
-`,
-			expectedType: "array<any>",
-			shouldError:  false,
-		},
-		{
-			name: "empty array is array<any>",
-			input: `
-rule test {
-    x = []
-}
-`,
-			expectedType: "array<any>",
-			shouldError:  false,
-		},
-		{
-			name: "in operator requires array",
-			input: `
-rule test {
-    x = 1 in "not an array"
-}
-`,
-			expectedType: "",
-			shouldError:  true,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			program, err := parser.Parse(tt.input)
-			if err != nil {
-				t.Fatalf("Failed to parse: %v", err)
-			}
-
-			analyzer := NewSemanticAnalyzer(tt.input)
-			err = analyzer.Analyze(program)
-
-			if tt.shouldError {
-				if err == nil {
-					t.Errorf("Expected error for %s", tt.name)
-				}
-				return
+			if err == nil && len(expected) > 0 {
+				t.Fatalf("Expected %d error(s) but got none", len(expected))
 			}
 
 			if err != nil {
-				t.Errorf("Unexpected error: %v", err)
-				return
-			}
-		})
-	}
-}
-
-func TestInputObjectType(t *testing.T) {
-	tests := []struct {
-		name        string
-		input       string
-		shouldError bool
-	}{
-		{
-			name: "input access returns unknown",
-			input: `
-rule test {
-    x = input.someField
-}
-`,
-			shouldError: false,
-		},
-		{
-			name: "cannot access property on non-object",
-			input: `
-rule test {
-    x = "string".field
-}
-`,
-			shouldError: true,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			program, err := parser.Parse(tt.input)
-			if err != nil {
-				t.Fatalf("Failed to parse: %v", err)
-			}
-
-			analyzer := NewSemanticAnalyzer(tt.input)
-			err = analyzer.Analyze(program)
-
-			if tt.shouldError {
-				if err == nil {
-					t.Errorf("Expected error for %s", tt.name)
-				}
-			} else {
-				if err != nil {
-					t.Errorf("Unexpected error: %v", err)
+				if semErrs, ok := err.(*SemanticErrors); ok {
+					compareErrors(t, expected, semErrs)
 				}
 			}
 		})
 	}
 }
 
-func TestTypeCompatibility(t *testing.T) {
-	tests := []struct {
-		name        string
-		input       string
-		shouldError bool
-	}{
-		{
-			name: "unknown is compatible with any type",
-			input: `
-rule test {
-    x = input.a + 5
+type ExpectedError struct {
+	Line    int
+	Message string
 }
-`,
-			shouldError: false,
-		},
-		{
-			name: "string concatenation",
-			input: `
-rule test {
-    x = "hello" + " world"
-}
-`,
-			shouldError: false,
-		},
-		{
-			name: "number arithmetic",
-			input: `
-rule test {
-    x = 5 + 3 * 2
-}
-`,
-			shouldError: false,
-		},
-		{
-			name: "bool operations",
-			input: `
-rule test {
-    x = true && false || true
-}
-`,
-			shouldError: false,
-		},
-		{
-			name: "comparison requires compatible types",
-			input: `
-rule test {
-    x = "hello" == 5
-}
-`,
-			shouldError: true,
-		},
-		{
-			name: "arithmetic requires numbers",
-			input: `
-rule test {
-    x = "hello" - 5
-}
-`,
-			shouldError: true,
-		},
-		{
-			name: "logical requires bools",
-			input: `
-rule test {
-    x = true && 5
-}
-`,
-			shouldError: true,
-		},
-		{
-			name: "conditional requires bool condition",
-			input: `
-rule test {
-    x = if "hello" then 1 else 2
-}
-`,
-			shouldError: true,
-		},
-		{
-			name: "conditional requires compatible branches",
-			input: `
-rule test {
-    x = if true then 1 else "hello"
-}
-`,
-			shouldError: true,
-		},
+
+func extractExpectedErrors(src string) []ExpectedError {
+	var expected []ExpectedError
+
+	lines := strings.Split(src, "\n")
+	for i, line := range lines {
+		_, after, ok := strings.Cut(line, "// ERROR:")
+		if !ok {
+			continue
+		}
+
+		msg := strings.TrimSpace(after)
+		expected = append(expected, ExpectedError{
+			Line:    i + 1,
+			Message: msg,
+		})
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			program, err := parser.Parse(tt.input)
-			if err != nil {
-				t.Fatalf("Failed to parse: %v", err)
-			}
+	return expected
+}
 
-			analyzer := NewSemanticAnalyzer(tt.input)
-			err = analyzer.Analyze(program)
+func stripErrorComments(src string) string {
+	var cleaned []string
 
-			if tt.shouldError {
-				if err == nil {
-					t.Errorf("Expected error for %s", tt.name)
-				}
-			} else {
-				if err != nil {
-					t.Errorf("Unexpected error: %v", err)
-				}
+	lines := strings.Split(src, "\n")
+	for _, line := range lines {
+		if idx := strings.Index(line, "// ERROR:"); idx != -1 {
+			line = line[:idx]
+		}
+		cleaned = append(cleaned, line)
+	}
+
+	return strings.Join(cleaned, "\n")
+}
+
+func compareErrors(t *testing.T, expected []ExpectedError, actual *SemanticErrors) {
+	if len(expected) != actual.Count() {
+		t.Fatalf("Expected %d error(s), got %d:\n%s",
+			len(expected),
+			actual.Count(),
+			actual.Error(),
+		)
+	}
+
+	unmatched := make([]string, 0, len(actual.Errors))
+	for _, e := range actual.Errors {
+		unmatched = append(unmatched, e.Error())
+	}
+
+	for _, exp := range expected {
+		found := false
+
+		for i, msg := range unmatched {
+			if strings.Contains(msg, exp.Message) {
+				unmatched = append(unmatched[:i], unmatched[i+1:]...)
+				found = true
+				break
 			}
-		})
+		}
+
+		if !found {
+			t.Errorf("Expected error on line %d: %q", exp.Line, exp.Message)
+		}
 	}
 }

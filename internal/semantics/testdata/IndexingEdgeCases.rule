@@ -1,0 +1,16 @@
+rule IndexingEdgeCases {
+    obj = {
+        "normal-key": 1,
+        "key.with.dots": 2,
+        "key[with]brackets": 3
+    }
+    
+    x1 = obj["normal-key"]
+    x2 = obj["key.with.dots"]
+    x3 = obj["key[with]brackets"]
+    
+    // wrong index type on object
+    err1 = obj[123]       // ERROR: cannot index with type 'number' for 'object' (expected 'string')
+    err2 = obj[true]      // ERROR: cannot index with type 'bool' for 'object' (expected 'string')
+    err3 = obj[[1, 2, 3]] // ERROR: cannot index with type 'array<number>' for 'object' (expected 'string')
+}

@@ -1,0 +1,21 @@
+rule ArrayTypeChecking {
+    numbers = [1, 2, 3, 4, 5]
+    objects = [{id: 1}, {id: 2}, {id: 3}]
+    nested = [[1, 2], [3, 4], [5, 6]]
+    
+    // wrong index types
+    err1 = numbers["string"]       // ERROR: cannot index with type 'string' for 'array<number>' (expected 'number')
+    err2 = numbers[true]           // ERROR: cannot index with type 'bool' for 'array<number>' (expected 'number') 
+    err3 = numbers[{key: "value"}] // ERROR: cannot index with type 'object' for 'array<number>' (expected 'number')
+    
+    // out of bounds (compile-time detectable)
+    err4 = numbers[10]   // ERROR: array index 10 out of bounds (length 5)
+    err5 = numbers[-1]   // ERROR: array index -1 out of bounds (length 5)
+    err6 = objects[5].id // ERROR: array index 5 out of bounds (length 3)
+    err7 = nested[0][5]  // ERROR: array index 5 out of bounds (length 2)
+    err8 = nested[10][0] // ERROR: array index 10 out of bounds (length 3)
+    
+    // correct indexing but wrong property
+    err9 = objects[0].missing             // ERROR: unknown property 'missing' on object 'objects[0]'
+    err10 = objects[1].nonexistent.field  // ERROR: unknown property 'nonexistent' on object 'objects[1]'
+}

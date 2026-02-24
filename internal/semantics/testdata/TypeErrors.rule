@@ -1,0 +1,12 @@
+rule TypeErrors {
+    // binary operations with wrong types
+    err1 = "hello" - 5   // ERROR: operator '-' cannot be applied to 'string' and 'number'
+    err2 = true + false  // ERROR: operator '+' cannot be applied to 'bool' and 'bool
+    err3 = {a: 1} * 2    // ERROR: operator '*' cannot be applied to 'object' and 'number'
+    err4 = [1, 2] / 3    // ERROR: operator '/' cannot be applied to 'array<number>' and 'number'
+    err5 = 1 in 123      // ERROR: operator 'in' cannot be applied to type 'number'
+
+    // unary operations on wrong types
+    err6 = -"hello" // ERROR: operand of '-' must be a 'number', got string
+    err7 = !42      // ERROR: operand of '!' must be a 'bool', got number
+}

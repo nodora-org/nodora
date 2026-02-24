@@ -1,0 +1,11 @@
+rule ScopeTests {
+    x = 10
+    y = x + 5  // x is in scope
+    
+    obj = {
+        x: 20,  // different x (property)
+        y: x    // outer x
+    }
+    
+    z = obj.x
+}
