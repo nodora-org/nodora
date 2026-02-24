@@ -159,13 +159,17 @@ func (b *Builder) buildAssignment(assign *ast.Assignment) error {
 		// reuse the existing symbol
 		targetSym = symExpr.Index
 	} else {
-		// allocate a new symbol for other expressions
-		targetSym = b.allocSymbol()
-		b.addOp(OpCopy, []RawExpr{result.toRawExpr()}, &targetSym)
+		targetSym = b.materialize(result)
 	}
 
 	b.symbols[assign.Name] = targetSym
 	return nil
+}
+
+func (b *Builder) materialize(expr exprResult) int {
+	newSym := b.allocSymbol()
+	b.addOp(OpCopy, []RawExpr{expr.toRawExpr()}, &newSym)
+	return newSym
 }
 
 func (b *Builder) buildEmitStatement(emit *ast.EmitStatement) error {
@@ -274,6 +278,9 @@ func (b *Builder) buildExpr(expr ast.Expr) exprResult {
 	case *ast.CallExpr:
 		return b.buildCallExpr(e)
 
+	case *ast.LambdaExpr:
+		return b.buildLambdaExpr(e)
+
 	default:
 		return exprResult{isImmediate: true, expr: nil}
 	}
@@ -333,6 +340,30 @@ func (b *Builder) buildConditionalExpr(expr *ast.ConditionalExpr) exprResult {
 
 	b.addOp(OpSelect, []RawExpr{cond.toRawExpr(), thenBranch.toRawExpr(), elseBranch.toRawExpr()}, &out)
 	return symResult(out)
+}
+
+func (b *Builder) buildLambdaExpr(le *ast.LambdaExpr) exprResult {
+	cb := NewBuilder()
+	cb.symIndex = b.symIndex
+	cb.symbols = b.symbols
+
+	params := make([]LambdaParams, len(le.Params))
+	for i, param := range le.Params {
+		sym := cb.allocSymbol()
+		cb.symbols[param.Name] = sym
+		params[i] = LambdaParams{SymIndex: sym}
+	}
+
+	bodyExpr := cb.buildExpr(le.Body)
+	_ = cb.materialize(bodyExpr)
+
+	// restore symbol index in parent builder
+	b.symIndex = cb.symIndex
+
+	return exprResult{expr: &LambdaExpr{
+		Params: params,
+		Ops:    cb.ops,
+	}}
 }
 
 func (b *Builder) buildArrayLiteral(lit *ast.ArrayLiteral) exprResult {

@@ -1,6 +1,9 @@
 package types
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type TypeKind int
 
@@ -10,6 +13,7 @@ const (
 	BoolKind
 	ObjectKind
 	AnyKind
+	LambdaKind
 	UnknownKind
 )
 
@@ -19,6 +23,7 @@ var typeKindNames = map[TypeKind]string{
 	BoolKind:    "bool",
 	ObjectKind:  "object",
 	AnyKind:     "any",
+	LambdaKind:  "lambda",
 	UnknownKind: "?",
 }
 
@@ -44,8 +49,8 @@ func (t *SimpleType) Equals(other Type) bool {
 	if other == nil {
 		return false
 	}
-	if otherSimple, ok := other.(*SimpleType); ok {
-		return t.kind == otherSimple.kind
+	if simple, ok := other.(*SimpleType); ok {
+		return t.kind == simple.kind
 	}
 	return false
 }
@@ -54,15 +59,12 @@ func (t *SimpleType) IsAssignableFrom(other Type) bool {
 	if other == nil {
 		return false
 	}
-	// unknown is assignable to any type
-	if otherUnknown, ok := other.(*SimpleType); ok && otherUnknown.kind == UnknownKind {
+	if simple, ok := other.(*SimpleType); ok && simple.kind == UnknownKind {
 		return true
 	}
-	// any type can accept any value
 	if t.kind == AnyKind {
 		return true
 	}
-	// check exact match
 	return t.Equals(other)
 }
 
@@ -94,8 +96,8 @@ func (t *ArrayType) Equals(other Type) bool {
 	if other == nil {
 		return false
 	}
-	if otherArray, ok := other.(*ArrayType); ok {
-		return t.Element.Equals(otherArray.Element)
+	if arr, ok := other.(*ArrayType); ok {
+		return t.Element.Equals(arr.Element)
 	}
 	return false
 }
@@ -104,12 +106,11 @@ func (t *ArrayType) IsAssignableFrom(other Type) bool {
 	if other == nil {
 		return false
 	}
-	// unknown is assignable to any type
-	if otherSimple, ok := other.(*SimpleType); ok && otherSimple.kind == UnknownKind {
+	if simple, ok := other.(*SimpleType); ok && simple.kind == UnknownKind {
 		return true
 	}
-	if otherArray, ok := other.(*ArrayType); ok {
-		return t.Element.IsAssignableFrom(otherArray.Element)
+	if arr, ok := other.(*ArrayType); ok {
+		return t.Element.IsAssignableFrom(arr.Element)
 	}
 	return false
 }
@@ -137,4 +138,83 @@ func GetArrayElement(t Type) Type {
 		return arr.Element
 	}
 	return nil
+}
+
+type LambdaType struct {
+	Params     []Type
+	ReturnType Type
+}
+
+func (t *LambdaType) String() string {
+	params := make([]string, len(t.Params))
+	for i, p := range t.Params {
+		params[i] = p.String()
+	}
+	ret := "?"
+	if t.ReturnType != nil {
+		ret = t.ReturnType.String()
+	}
+	return fmt.Sprintf("|%s| -> %s", strings.Join(params, ", "), ret)
+}
+
+func (t *LambdaType) Equals(other Type) bool {
+	if other == nil {
+		return false
+	}
+	if ol, ok := other.(*LambdaType); ok {
+		if len(t.Params) != len(ol.Params) {
+			return false
+		}
+		for i, p := range t.Params {
+			if !p.Equals(ol.Params[i]) {
+				return false
+			}
+		}
+		if t.ReturnType == nil && ol.ReturnType == nil {
+			return true
+		}
+		if t.ReturnType == nil || ol.ReturnType == nil {
+			return false
+		}
+		return t.ReturnType.Equals(ol.ReturnType)
+	}
+	return false
+}
+
+func (t *LambdaType) IsAssignableFrom(other Type) bool {
+	if other == nil {
+		return false
+	}
+
+	o, ok := other.(*LambdaType)
+	if !ok {
+		return false
+	}
+
+	if len(t.Params) != len(o.Params) {
+		return false
+	}
+
+	for i := range t.Params {
+		if !t.Params[i].IsAssignableFrom(o.Params[i]) {
+			return false
+		}
+	}
+
+	if t.ReturnType == nil {
+		return o.ReturnType == nil
+	}
+
+	return t.ReturnType.IsAssignableFrom(o.ReturnType)
+}
+
+func (t *LambdaType) Kind() TypeKind {
+	return LambdaKind
+}
+
+func NewLambdaType(params []Type, retType Type) *LambdaType {
+	return &LambdaType{
+		Params:     params,
+		ReturnType: retType,
+	}
 }

@@ -28,16 +28,12 @@ func (cf *ConstantFolding) foldOp(op *nir.Op) error {
 		return nil
 	}
 
-	// try to fold any len() calls first
-	for i, arg := range op.Args {
-		if folded, ok := cf.foldLenCall(arg); ok {
+	// check if all arguments are constants
+	for i := range op.Args {
+		if folded, ok := cf.foldExpr(op.Args[i]); ok {
 			op.Args[i] = *folded
 		}
-	}
-
-	// check if all arguments are constants
-	for _, arg := range op.Args {
-		if !cf.isConstant(arg) {
+		if !cf.isConst(op.Args[i]) {
 			return nil
 		}
 	}
@@ -60,27 +56,19 @@ func (cf *ConstantFolding) foldOp(op *nir.Op) error {
 	return nil
 }
 
-// folds len() calls on array literals
-func (cf *ConstantFolding) foldLenCall(expr nir.RawExpr) (*nir.RawExpr, bool) {
-	callExpr, ok := expr.Expr.(*nir.CallExpr)
-	if !ok {
+func (cf *ConstantFolding) foldExpr(expr nir.RawExpr) (*nir.RawExpr, bool) {
+	if !cf.isConst(expr) {
 		return nil, false
 	}
-
-	if !cf.isLenCall(callExpr) {
+	val, err := expr.Evaluate(&nir.EvaluationContext{})
+	if err != nil {
 		return nil, false
 	}
-
-	arrExpr, ok := callExpr.Args[0].Expr.(*nir.ArrExpr)
-	if !ok {
-		return nil, false
-	}
-
-	resExpr := nir.RawExpr{Expr: &nir.ImmExpr{Value: core.V(len(arrExpr.Value))}}
-	return &resExpr, true
+	immExpr := nir.RawExpr{Expr: &nir.ImmExpr{Value: val}}
+	return &immExpr, true
 }
 
-func (cf *ConstantFolding) isConstant(expr nir.RawExpr) bool {
+func (cf *ConstantFolding) isConst(expr nir.RawExpr) bool {
 	if expr.Expr == nil {
 		return false
 	}
@@ -89,21 +77,23 @@ func (cf *ConstantFolding) isConstant(expr nir.RawExpr) bool {
 		return true
 	case *nir.ArrExpr:
 		for _, arg := range e.Value {
-			if !cf.isConstant(arg) {
+			if !cf.isConst(arg) {
 				return false
 			}
 		}
 		return true
 	case *nir.ObjExpr:
 		for _, value := range e.Value {
-			if !cf.isConstant(value) {
+			if !cf.isConst(value) {
 				return false
 			}
 		}
 		return true
+	case *nir.IdxExpr:
+		return cf.isConst(e.From) && cf.isConst(e.Index)
 	case *nir.CallExpr:
 		for _, arg := range e.Args {
-			if !cf.isConstant(arg) {
+			if !cf.isConst(arg) {
 				return false
 			}
 		}
@@ -111,8 +101,4 @@ func (cf *ConstantFolding) isConstant(expr nir.RawExpr) bool {
 	default:
 		return false
 	}
-}
-
-func (cf *ConstantFolding) isLenCall(e *nir.CallExpr) bool {
-	return e.Func.Namespace == "" && e.Func.Name == "len"
 }

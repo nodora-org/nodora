@@ -299,6 +299,47 @@ func (c *CallExpr) Evaluate(ctx *EvaluationContext) (core.Value, error) {
 	return val, nil
 }
 
+type LambdaParams struct {
+	SymIndex int `json:"sym"`
+}
+
+type LambdaExpr struct {
+	Params []LambdaParams `json:"params"`
+	Ops    []Op           `json:"ops"`
+}
+
+func (le *LambdaExpr) Evaluate(ctx *EvaluationContext) (core.Value, error) {
+	lambda := core.Lambda{
+		Fn: func(args []core.Value) (core.Value, error) {
+			return le.Invoke(ctx, args)
+		},
+	}
+	return core.V(&lambda), nil
+}
+
+func (le *LambdaExpr) Invoke(ctx *EvaluationContext, args []core.Value) (core.Value, error) {
+	for i, p := range le.Params {
+		slotIdx := p.SymIndex
+		ctx.Slots[slotIdx] = args[i]
+	}
+
+	var lastOut *int
+	for i := range le.Ops {
+		op := &le.Ops[i]
+		if err := op.Execute(ctx); err != nil {
+			return core.U(), err
+		}
+		if op.Out != nil {
+			lastOut = op.Out
+		}
+	}
+
+	if lastOut != nil {
+		return ctx.Slots[*lastOut], nil
+	}
+	return core.U(), nil
+}
+
 type OpKind string
 
 const (
@@ -586,6 +627,12 @@ func (w *RawExpr) UnmarshalJSON(data []byte) error {
 		w.Expr = &e
 	case probe["call"] != nil:
 		var e CallExpr
+		if err := json.Unmarshal(data, &e); err != nil {
+			return err
+		}
+		w.Expr = &e
+	case probe["ops"] != nil:
+		var e LambdaExpr
 		if err := json.Unmarshal(data, &e); err != nil {
 			return err
 		}

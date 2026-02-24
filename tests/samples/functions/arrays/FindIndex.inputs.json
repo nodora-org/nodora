@@ -1,0 +1,35 @@
+[
+   {
+    "input": {
+      "users": [{ "name": "Alice" }, { "name": "Bob" }, { "name": "Charlie" }],
+      "name": "Alice"
+    },
+    "expected": {
+      "outputs": {
+        "index": 0
+      }
+    }
+  },
+  {
+    "input": {
+      "users": [{ "name": "Alice" }, { "name": "Bob" }, { "name": "Charlie" }],
+      "name": "Bob"
+    },
+    "expected": {
+      "outputs": {
+        "index": 1
+      }
+    }
+  },
+  {
+    "input": {
+      "users": [{ "name": "Alice" }, { "name": "Bob" }, { "name": "Charlie" }],
+      "name": "John"
+    },
+    "expected": {
+      "outputs": {
+        "index": -1
+      }
+    }
+  }
+]

@@ -1,0 +1,75 @@
+package core
+
+import (
+	"fmt"
+
+	"nodora.org/nodora/internal/types"
+	"nodora.org/nodora/pkg/core"
+)
+
+func every() types.Func {
+	return types.Func{
+		Name: "every",
+		Args: []types.ArgSpec{
+			{
+				Name:     "arr",
+				Type:     types.NewArrayType(types.AnyType),
+				Required: true,
+			},
+			{
+				Name:     "fx",
+				Type:     types.NewLambdaType([]types.Type{types.AnyType}, types.BoolType),
+				Required: true,
+			},
+		},
+		ReturnType: types.BoolType,
+		Fn:         everyImpl,
+	}
+}
+
+func everyImpl(args []core.Value) (core.Value, error) {
+	arr := args[0]
+	if arr.Undefined {
+		return core.U(), nil
+	}
+	arrVal, ok := arr.Raw.([]core.Value)
+	if !ok {
+		return core.U(), fmt.Errorf(
+			"expected %v for 'arr' argument, got %v",
+			types.NewArrayType(types.AnyType),
+			arr.Type(),
+		)
+	}
+
+	fx := args[1]
+	if fx.Undefined {
+		return core.U(), nil
+	}
+
+	fn, ok := fx.Raw.(*core.Lambda)
+	if !ok {
+		return core.U(), fmt.Errorf(
+			"expected %v for 'fx' argument, got %v",
+			types.NewLambdaType([]types.Type{types.AnyType}, types.BoolType),
+			fx.Type(),
+		)
+	}
+
+	result := true
+	for _, v := range arrVal {
+		r, err := (*fn).Fn([]core.Value{v})
+		if err != nil {
+			return core.U(), err
+		}
+		boolVal, ok := r.Raw.(bool)
+		if !ok {
+			return core.U(), fmt.Errorf(
+				"expected a bool value, got %v",
+				r.Type(),
+			)
+		}
+		result = result && boolVal
+	}
+
+	return core.V(result), nil
+}

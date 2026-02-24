@@ -1,0 +1,6 @@
+rule FindIndexRule {
+    out index = arrays::find_index(
+        input.users, 
+        |u| u.name == input.name
+    )
+}

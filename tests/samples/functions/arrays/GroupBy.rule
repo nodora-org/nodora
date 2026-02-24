@@ -1,0 +1,3 @@
+rule GroupByRule {
+    out result = arrays::group_by(input.users, |u| u.role)
+}

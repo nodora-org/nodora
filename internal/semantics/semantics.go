@@ -82,12 +82,15 @@ func NewSemanticAnalyzer(src string) *SemanticAnalyzer {
 }
 
 func newScope(parent *scope) *scope {
+	input := &ast.ReservedObject{Name: "input"}
+	input.Annotate(types.ObjectType)
+
 	symbols := make(map[string]*symbol)
-	symbols["input"] = &symbol{
-		Name:  "input",
+	symbols[input.Name] = &symbol{
+		Name:  input.Name,
 		Type:  types.ObjectType,
 		Kind:  symbolKindReserved,
-		Value: make(map[string]any),
+		Value: input,
 	}
 	return &scope{
 		symbols: symbols,
@@ -110,13 +113,14 @@ func (sc *SemanticAnalyzer) currentScope() *scope {
 	return sc.scopes[len(sc.scopes)-1]
 }
 
-func (sc *SemanticAnalyzer) isReservedName(name string) bool {
-	return name == "input"
+func (sc *SemanticAnalyzer) isReservedSymbol(name string) bool {
+	sym, _ := sc.lookupSymbol(name, ast.Span{})
+	return sym != nil && sym.Kind == symbolKindReserved
 }
 
 func (sc *SemanticAnalyzer) declareSymbol(name string, typ types.Type, kind string, value any, span ast.Span) error {
-	if sc.isReservedName(name) {
-		return sc.errorAt(span, "cannot declare symbol '%s': reserved for rule inputs", name)
+	if sc.isReservedSymbol(name) {
+		return sc.errorAt(span, "cannot declare symbol '%s': reserved", name)
 	}
 	scope := sc.currentScope()
 	if sym, exists := scope.symbols[name]; exists {
@@ -126,7 +130,7 @@ func (sc *SemanticAnalyzer) declareSymbol(name string, typ types.Type, kind stri
 	return nil
 }
 
-func (sc *SemanticAnalyzer) lookupSymbol(name string, span ast.Span) (*symbol, error) {
+func (sc *SemanticAnalyzer) lookupSymbol(name string, span ast.WithSpan) (*symbol, error) {
 	for i := len(sc.scopes) - 1; i >= 0; i-- {
 		if sym, exists := sc.scopes[i].symbols[name]; exists {
 			return sym, nil
@@ -173,6 +177,7 @@ func (sc *SemanticAnalyzer) inferType(expr ast.Expr) types.Type {
 		}
 		left := sc.inferType(e.Left)
 		right := sc.inferType(e.Right)
+
 		switch e.Op {
 		case "+":
 			if left.Equals(types.StringType) || right.Equals(types.StringType) {
@@ -209,6 +214,21 @@ func (sc *SemanticAnalyzer) inferType(expr ast.Expr) types.Type {
 			return fn.ReturnType
 		}
 		return types.UnknownType
+	case *ast.SelectorExpr:
+		if e.Type != nil {
+			return e.Type
+		}
+		return types.UnknownType
+	case *ast.IndexExpr:
+		if e.Type != nil {
+			return e.Type
+		}
+		return types.UnknownType
+	case *ast.LambdaExpr:
+		if e.Type != nil {
+			return e.Type
+		}
+		return sc.inferType(e.Body)
 	default:
 		return types.UnknownType
 	}
@@ -290,6 +310,9 @@ func (sc *SemanticAnalyzer) VisitSignal(s *ast.Signal) error {
 }
 
 func (sc *SemanticAnalyzer) VisitRule(r *ast.Rule) error {
+	// spew.Config.DisableMethods = true
+	// spew.Dump(*r)
+
 	if err := sc.declareSymbol(r.Name, nil, symbolKindRule, r, r.Span); err != nil {
 		sc.addError(err)
 	}
@@ -310,8 +333,14 @@ func (sc *SemanticAnalyzer) VisitAssignment(a *ast.Assignment) error {
 		sc.addError(err)
 	}
 
+	ty := sc.inferType(a.Expr)
+
+	if ty.Kind() == types.LambdaKind && a.IsOut {
+		sc.addError(sc.errorAt(a.Span, "'out' requires a non-function value, got %v", ty.String()))
+	}
+
 	// inferType returns UnknownType on failure, which is compatible with all type checks
-	a.Annotate(sc.inferType(a.Expr))
+	a.Annotate(ty)
 
 	if err := sc.declareSymbol(a.Name, a.Type, symbolKindVar, a.Expr, a.Span); err != nil {
 		sc.addError(err)
@@ -381,7 +410,12 @@ func (sc *SemanticAnalyzer) VisitBinaryExpr(be *ast.BinaryExpr) error {
 		if !valid {
 			sc.addError(sc.errorAt(be, "operator '%s' cannot be applied to '%s' and '%s'", be.Op, leftType.String(), rightType.String()))
 		}
-		be.Annotate(leftType)
+
+		if !leftType.Equals(types.UnknownType) {
+			be.Annotate(leftType)
+		} else {
+			be.Annotate(rightType)
+		}
 	case "-", "*", "/", "%":
 		lok := sc.requireType(leftType, types.NumberType)
 		rok := sc.requireType(rightType, types.NumberType)
@@ -486,7 +520,7 @@ func (sc *SemanticAnalyzer) VisitConditionalExpr(ce *ast.ConditionalExpr) error 
 	}
 	condType := sc.inferType(ce.Cond)
 	if !sc.requireType(condType, types.BoolType) {
-		sc.addError(sc.errorAt(ce, "condition in conditional expression must be boolean, got '%s'", condType.String()))
+		sc.addError(sc.errorAt(ce, "condition must be of type bool, got '%s'", condType.String()))
 	}
 
 	if err := ce.Then.Accept(sc); err != nil {
@@ -500,7 +534,11 @@ func (sc *SemanticAnalyzer) VisitConditionalExpr(ce *ast.ConditionalExpr) error 
 	elseType := sc.inferType(ce.Else)
 
 	if !sc.typesCompatible(thenType, elseType) {
-		sc.addError(sc.errorAt(ce, "then and else branches of conditional expression must have compatible types, got '%s' and '%s'", thenType.String(), elseType.String()))
+		sc.addError(sc.errorAt(ce,
+			"incompatible types in conditional expression, got '%s' and '%s'",
+			thenType.String(),
+			elseType.String(),
+		))
 	}
 
 	ce.Annotate(thenType)
@@ -508,31 +546,124 @@ func (sc *SemanticAnalyzer) VisitConditionalExpr(ce *ast.ConditionalExpr) error 
 }
 
 func (sc *SemanticAnalyzer) VisitSelectorExpr(se *ast.SelectorExpr) error {
-	switch e := se.Expr.(type) {
-	case *ast.Identifier:
-		if _, err := sc.lookupSymbol(e.Name, se.GetSpan()); err != nil {
-			sc.addError(err)
-			return nil
-		}
-		baseType := sc.inferType(e)
-		if baseType.Equals(types.UnknownType) {
-			return nil
-		}
-		if !sc.requireType(baseType, types.ObjectType) {
-			sc.addError(sc.errorAt(se, "cannot access property '%s' on type %s", se.Field, baseType.String()))
-		}
-	case *ast.IndexExpr:
-		if err := se.Expr.Accept(sc); err != nil {
-			sc.addError(err)
-		}
-	case *ast.SelectorExpr:
-		if err := se.Expr.Accept(sc); err != nil {
-			sc.addError(err)
-		}
-	default:
-		sc.addError(sc.errorAt(se, "cannot access property '%s' on type %s", se.Field, sc.inferType(se.Expr).String()))
+	if err := se.Expr.Accept(sc); err != nil {
+		sc.addError(err)
+		return nil
 	}
+
+	baseType := sc.inferType(se.Expr)
+	if baseType.Equals(types.UnknownType) {
+		se.Annotate(types.UnknownType)
+		return nil
+	}
+
+	if !sc.requireType(baseType, types.ObjectType) {
+		sc.addError(sc.errorAt(se, "cannot access property '%s' on type %s", se.Field, baseType.String()))
+		se.Annotate(types.UnknownType)
+		return nil
+	}
+
+	propertyType := sc.getPropertyType(se.Expr, se.Field)
+	se.Annotate(propertyType)
 	return nil
+}
+
+func (sc *SemanticAnalyzer) getPropertyType(expr ast.Expr, field string) types.Type {
+	resolved, path := sc.resolveExpr(expr)
+
+	if obj, ok := resolved.(*ast.ObjectLiteral); ok {
+		for _, prop := range obj.Properties {
+			if prop.Key == field {
+				return sc.inferType(prop.Value)
+			}
+		}
+		sc.addError(sc.errorAt(expr, "unknown property '%s' on object '%s'", field, path))
+		return types.UnknownType
+	}
+
+	return sc.inferType(resolved)
+}
+
+func (sc *SemanticAnalyzer) resolveExpr(expr ast.Expr) (ast.Expr, string) {
+	switch e := expr.(type) {
+	case *ast.Identifier:
+		sym, err := sc.lookupSymbol(e.Name, e)
+		if err != nil {
+			return e, e.Name
+		}
+		return sym.Value.(ast.Expr), e.Name
+
+	case *ast.SelectorExpr:
+		base, baseName := sc.resolveExpr(e.Expr)
+		path := baseName + "." + e.Field
+
+		if obj, ok := base.(*ast.ObjectLiteral); ok {
+			for _, prop := range obj.Properties {
+				if prop.Key == e.Field {
+					resolved, _ := sc.resolveExpr(prop.Value)
+					return resolved, path
+				}
+			}
+		}
+		return e, path
+
+	case *ast.IndexExpr:
+		base, baseName := sc.resolveExpr(e.Expr)
+
+		// build the path representation
+		indexStr := ""
+		switch idx := e.Index.(type) {
+		case *ast.StringLiteral:
+			indexStr = fmt.Sprintf("[%q]", idx.Value)
+		case *ast.NumberLiteral:
+			indexStr = fmt.Sprintf("[%v]", idx.Value)
+		case *ast.Identifier:
+			indexStr = fmt.Sprintf("[%s]", idx.Name)
+		default:
+			indexStr = "[?]"
+		}
+		path := baseName + indexStr
+
+		switch baseResolved := base.(type) {
+		case *ast.ArrayLiteral:
+			// handle numeric index on array
+			if numIdx, ok := e.Index.(*ast.NumberLiteral); ok {
+				idx := int(numIdx.Int)
+				if idx >= 0 && idx < len(baseResolved.Elements) {
+					resolved, _ := sc.resolveExpr(baseResolved.Elements[idx])
+					return resolved, path
+				}
+			}
+			return e, path
+
+		case *ast.ObjectLiteral:
+			// handle string index on object (like obj["key"])
+			var keyName string
+			switch idx := e.Index.(type) {
+			case *ast.StringLiteral:
+				keyName = idx.Value
+			case *ast.Identifier:
+				// could resolve the identifier to get its value
+				keyName = idx.Name
+			default:
+				return e, path
+			}
+
+			for _, prop := range baseResolved.Properties {
+				if prop.Key == keyName {
+					resolved, _ := sc.resolveExpr(prop.Value)
+					return resolved, path
+				}
+			}
+			return e, path
+
+		default:
+			return e, path
+		}
+
+	default:
+		return e, ""
+	}
 }
 
 func (sc *SemanticAnalyzer) VisitIndexExpr(ie *ast.IndexExpr) error {
@@ -547,6 +678,7 @@ func (sc *SemanticAnalyzer) VisitIndexExpr(ie *ast.IndexExpr) error {
 	indexType := sc.inferType(ie.Index)
 
 	if baseType.Equals(types.UnknownType) {
+		ie.Annotate(types.UnknownType)
 		return nil
 	}
 
@@ -559,6 +691,34 @@ func (sc *SemanticAnalyzer) VisitIndexExpr(ie *ast.IndexExpr) error {
 				baseType.String(),
 				types.NumberType.String(),
 			))
+			ie.Annotate(types.UnknownType)
+			return nil
+		}
+
+		// check array bounds if the index is constant and the array can be resolved
+		if idx, ok := sc.getConstantIndex(ie.Index); ok {
+			if resolved, _ := sc.resolveExpr(ie.Expr); resolved != nil {
+				if arrLit, ok := resolved.(*ast.ArrayLiteral); ok {
+					length := len(arrLit.Elements)
+
+					if idx < 0 || idx >= length {
+						sc.addError(sc.errorAt(ie, "array index %d out of bounds (length %d)", idx, length))
+						ie.Annotate(types.UnknownType)
+						return nil
+					}
+
+					elementType := sc.inferType(arrLit.Elements[idx])
+					ie.Annotate(elementType)
+					return nil
+				}
+			}
+		}
+
+		// extract the element type from the array type
+		if arrayType, ok := baseType.(*types.ArrayType); ok {
+			ie.Annotate(arrayType.Element)
+		} else {
+			ie.Annotate(types.AnyType)
 		}
 		return nil
 	}
@@ -573,9 +733,36 @@ func (sc *SemanticAnalyzer) VisitIndexExpr(ie *ast.IndexExpr) error {
 				types.StringType.String(),
 			))
 		}
+
+		// for object indexing, try to resolve the actual property type
+		// if the index is a string literal look it up
+		if strLit, ok := ie.Index.(*ast.StringLiteral); ok {
+			propertyType := sc.getPropertyType(ie.Expr, strLit.Value)
+			ie.Annotate(propertyType)
+		} else {
+			// don't know the specific property type (dynamic key)
+			ie.Annotate(types.AnyType)
+		}
+		return nil
 	}
 
+	sc.addError(sc.errorAt(ie.Index, "cannot index type '%s'", baseType.String()))
+	ie.Annotate(types.UnknownType)
 	return nil
+}
+
+func (sc *SemanticAnalyzer) getConstantIndex(expr ast.Expr) (int, bool) {
+	switch e := expr.(type) {
+	case *ast.NumberLiteral:
+		return int(e.Int), true
+	case *ast.UnaryExpr:
+		if e.Op == "-" {
+			if numLit, ok := e.Expr.(*ast.NumberLiteral); ok {
+				return -int(numLit.Int), true
+			}
+		}
+	}
+	return 0, false
 }
 
 func (sc *SemanticAnalyzer) VisitArrayLiteral(al *ast.ArrayLiteral) error {
@@ -584,6 +771,7 @@ func (sc *SemanticAnalyzer) VisitArrayLiteral(al *ast.ArrayLiteral) error {
 			sc.addError(err)
 		}
 	}
+	al.Annotate(sc.inferArrayType(al))
 	return nil
 }
 
@@ -598,11 +786,36 @@ func (sc *SemanticAnalyzer) VisitObjectLiteral(al *ast.ObjectLiteral) error {
 		if err := prop.Value.Accept(sc); err != nil {
 			sc.addError(err)
 		}
+		prop.Annotate(sc.inferType(prop.Value))
 	}
+	al.Annotate(types.ObjectType)
 	return nil
 }
 
 func (sc *SemanticAnalyzer) VisitParam(p *ast.Param) error {
+	return nil
+}
+
+func (sc *SemanticAnalyzer) VisitLambdaExpr(le *ast.LambdaExpr) error {
+	sc.pushScope()
+	for _, param := range le.Params {
+		if err := sc.declareSymbol(param.Name, types.UnknownType, symbolKindVar, nil, le.Span); err != nil {
+			sc.addError(err)
+		}
+	}
+	if err := le.Body.Accept(sc); err != nil {
+		sc.addError(err)
+	}
+
+	retType := sc.inferType(le.Body)
+	sc.popScope()
+
+	params := make([]types.Type, len(le.Params))
+	for i := range le.Params {
+		params[i] = types.AnyType
+	}
+
+	le.Annotate(types.NewLambdaType(params, retType))
 	return nil
 }
 
@@ -621,6 +834,7 @@ func (sc *SemanticAnalyzer) VisitCallExpr(ce *ast.CallExpr) error {
 
 	fn, _ := registry.Global().Get(ce.Namespace, ce.Name)
 	reqArgCount := fn.RequiredArgCount()
+
 	if len(ce.Args) < reqArgCount {
 		sc.addError(sc.errorAt(ce, "function '%s' expects %d arguments, got %d",
 			fn.FullPath(),
@@ -638,6 +852,7 @@ func (sc *SemanticAnalyzer) VisitCallExpr(ce *ast.CallExpr) error {
 		if i < len(fn.Args) {
 			argType := sc.inferType(arg)
 			fnArg := fn.Args[i]
+
 			if !sc.requireType(argType, fnArg.Type) {
 				sc.addError(sc.errorAt(
 					arg,
@@ -651,5 +866,9 @@ func (sc *SemanticAnalyzer) VisitCallExpr(ce *ast.CallExpr) error {
 	}
 
 	ce.Annotate(fn.ReturnType)
+	return nil
+}
+
+func (sc *SemanticAnalyzer) VisitReservedObject(ro *ast.ReservedObject) error {
 	return nil
 }

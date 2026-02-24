@@ -254,6 +254,11 @@ func (l *lexer) Lex(lval *yySymType) int {
 		l.col++
 		setSpan()
 		return MOD
+	case '|':
+		l.pos++
+		l.col++
+		setSpan()
+		return PIPE
 	}
 
 	// identifiers or keywords

@@ -1,0 +1,3 @@
+rule ZipStrictRule {
+    out result = arrays::zip(input.a, input.b, true)
+}

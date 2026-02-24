@@ -5,5 +5,5 @@ import (
 )
 
 func init() {
-	registry.Global().Register("arrays", concat, flatten, reverse, slice)
+	registry.Global().Register("arrays", concat, flatten, reverse, slice, zip, groupBy, findIndex)
 }

@@ -1,0 +1,3 @@
+rule SomeRule {
+    out result = some(input.data, |x| x > 5)
+}

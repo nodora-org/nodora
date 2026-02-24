@@ -1,0 +1,77 @@
+package arrays
+
+import (
+	"fmt"
+
+	"nodora.org/nodora/internal/types"
+	"nodora.org/nodora/pkg/core"
+)
+
+func zip() types.Func {
+	return types.Func{
+		Name: "zip",
+		Args: []types.ArgSpec{
+			{Name: "x", Type: types.NewArrayType(types.AnyType), Required: true},
+			{Name: "y", Type: types.NewArrayType(types.AnyType), Required: true},
+			{Name: "strict", Type: types.BoolType, Required: false},
+		},
+		ReturnType: types.NewArrayType(types.AnyType),
+		Fn:         zipImpl,
+	}
+}
+
+func zipImpl(args []core.Value) (core.Value, error) {
+	x := args[0]
+	if x.Undefined {
+		return core.U(), nil
+	}
+
+	arr1, ok := x.Raw.([]core.Value)
+	if !ok {
+		return core.U(), fmt.Errorf("expected %v for 'x' argument, got %v",
+			types.NewArrayType(types.AnyType),
+			x.Type(),
+		)
+	}
+
+	y := args[1]
+	if y.Undefined {
+		return core.U(), nil
+	}
+
+	arr2, ok := y.Raw.([]core.Value)
+	if !ok {
+		return core.U(), fmt.Errorf("expected %v for 'y' argument, got %v",
+			types.NewArrayType(types.AnyType),
+			x.Type(),
+		)
+	}
+
+	strictMode := false
+	if len(args) > 2 {
+		strict := args[2]
+		if strict.Undefined {
+			return core.U(), nil
+		}
+		strictMode, ok = strict.Raw.(bool)
+		if !ok {
+			return core.U(), fmt.Errorf("expected bool for 'strict' argument, got %v", strict.Type())
+		}
+	}
+
+	if strictMode && len(arr1) != len(arr2) {
+		return core.U(), fmt.Errorf(
+			"expected 'x' and 'y' arguments to have the same length, got %d and %d",
+			len(arr1),
+			len(arr2),
+		)
+	}
+
+	n := min(len(arr2), len(arr1))
+	result := make([]core.Value, n)
+	for i := range n {
+		result[i] = core.V([]core.Value{arr1[i], arr2[i]})
+	}
+
+	return core.V(result), nil
+}

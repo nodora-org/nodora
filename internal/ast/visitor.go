@@ -18,7 +18,9 @@ type Visitor interface {
 	VisitArrayLiteral(al *ArrayLiteral) error
 	VisitObjectLiteral(ol *ObjectLiteral) error
 	VisitCallExpr(ce *CallExpr) error
+	VisitLambdaExpr(pe *LambdaExpr) error
 	VisitParam(p *Param) error
+	VisitReservedObject(ro *ReservedObject) error
 }
 
 type BaseVisitor struct{}
@@ -136,4 +138,12 @@ func (bv *BaseVisitor) VisitCallExpr(ce *CallExpr) error {
 	return nil
 }
 
+func (bv *BaseVisitor) VisitLambdaExpr(le *LambdaExpr) error {
+	return le.Body.(Node).Accept(bv)
+}
+
 func (bv *BaseVisitor) VisitParam(p *Param) error { return nil }
+
+func (bv *BaseVisitor) VisitReservedObject(ro *ReservedObject) error {
+	return nil
+}

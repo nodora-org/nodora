@@ -1,0 +1,3 @@
+rule EveryRule {
+    out result = every(input.data, |x| x > 5)
+}

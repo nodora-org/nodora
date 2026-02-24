@@ -1,0 +1,134 @@
+rule Test {
+    company = {
+        name: "TechCorp",
+        departments: {
+            engineering: {
+                teams: {
+                    backend: {
+                        lead: {
+                            name: "Alice",
+                            contact: {
+                                email: "alice@techcorp.com",
+                                phone: "555-0001"
+                            }
+                        },
+                        members: [
+                            {name: "Bob", level: "senior"},
+                            {name: "Charlie", level: "junior"}
+                        ]
+                    },
+                    frontend: {
+                        lead: {
+                            name: "Diana",
+                            contact: {
+                                email: "diana@techcorp.com",
+                                phone: "555-0002"
+                            }
+                        }
+                    }
+                }
+            },
+            sales: {
+                manager: {
+                    name: "Eve",
+                    quota: 1000000
+                }
+            }
+        },
+        locations: [
+            {
+                city: "San Francisco",
+                address: {
+                    street: "123 Market St",
+                    zip: "94102"
+                },
+                offices: [
+                    {floor: 1, capacity: 50},
+                    {floor: 2, capacity: 75}
+                ]
+            },
+            {
+                city: "New York",
+                address: {
+                    street: "456 Broadway",
+                    zip: "10012"
+                }
+            }
+        ]
+    }
+
+    // deep selector chains
+    x1 = company.departments.engineering.teams.backend.lead.name
+    x2 = company.departments.engineering.teams.backend.lead.contact.email
+    x3 = company.departments.engineering.teams.frontend.lead.contact.phone
+    x4 = company.departments.sales.manager.quota
+
+    // array index with selector chains
+    x5 = company.departments.engineering.teams.backend.members[0].name
+    x6 = company.departments.engineering.teams.backend.members[1].level
+    x7 = company.locations[0].city
+    x8 = company.locations[0].address.street
+    x9 = company.locations[0].address.zip
+    x10 = company.locations[1].address.street
+
+    // nested array indexing with selectors
+    x11 = company.locations[0].offices[0].floor
+    x12 = company.locations[0].offices[1].capacity
+
+    // object indexing with string literals
+    x13 = company["name"]
+    x14 = company["departments"]["engineering"]["teams"]["backend"]["lead"]["name"]
+    x15 = company.departments["engineering"].teams["backend"].lead.name
+
+    // mixed indexing and selectors
+    x16 = company.locations[0]["city"]
+    x17 = company["locations"][0].city
+    x18 = company["locations"][0]["address"]["street"]
+
+    // triple nested array/object combos
+    data = {
+        matrix: [
+            [
+                {value: 1, meta: {color: "red"}},
+                {value: 2, meta: {color: "blue"}}
+            ],
+            [
+                {value: 3, meta: {color: "green"}},
+                {value: 4, meta: {color: "yellow"}}
+            ]
+        ]
+    }
+
+    x19 = data.matrix[0][0].value
+    x20 = data.matrix[0][1].meta.color
+    x21 = data.matrix[1][0].value
+    x22 = data.matrix[1][1].meta.color
+
+    // array of arrays of arrays
+    cube = [
+        [
+            [1, 2, 3],
+            [4, 5, 6]
+        ],
+        [
+            [7, 8, 9],
+            [10, 11, 12]
+        ]
+    ]
+
+    x23 = cube[0][0][0]
+    x24 = cube[0][1][2]
+    x25 = cube[1][0][1]
+    x26 = cube[1][1][2]
+
+    // complex chain with reserved input object
+    x27 = input.user.profile.settings.notifications.email
+    x28 = input.data.items[0].properties.tags[2].name
+
+    // error cases to test
+    err1 = company.departments.nonexistent.test
+    err2 = company.locations[0].offices[5].floor
+    err3 = company.name.invalid
+    err4 = users[0].missing.field
+    err5 = data.matrix[0][0].wrongField
+}

@@ -1,0 +1,22 @@
+[
+  {
+    "input": {
+      "users": [
+        { "name": "Alice", "role": "admin" },
+        { "name": "Bob", "role": "user" },
+        { "name": "Charlie", "role": "admin" }
+      ]
+    },
+    "expected": {
+      "outputs": {
+        "result": {
+          "admin": [
+            { "name": "Alice", "role": "admin" },
+            { "name": "Charlie", "role": "admin" }
+          ],
+          "user": [{ "name": "Bob", "role": "user" }]
+        }
+      }
+    }
+  }
+]

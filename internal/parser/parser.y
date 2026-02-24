@@ -30,6 +30,7 @@ import (
 %token <span> LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET COLON COMMA QMARK DOT NAMESPACE
 %token <span> PLUS MINUS STAR SLASH MOD
 %token <span> GT LT GTE LTE EQ NEQ AND OR NOT ASSIGN
+%token <span> PIPE
 
 %type <node> decl
 %type <nodes> decl_list
@@ -159,7 +160,13 @@ emit_stmt
     ;
 
 expr
-    : conditional_expr
+    : PIPE param_list PIPE expr
+        { 
+          le := &ast.LambdaExpr{Params: $2, Body: $4}
+          le.Span = $1.Merge($4.GetSpan())
+          $$ = le
+        }
+    | conditional_expr
         { $$ = $1 }
     ;
 

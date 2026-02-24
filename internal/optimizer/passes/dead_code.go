@@ -108,6 +108,13 @@ func (dce *DeadCodeElimination) collectSymReads(e *nir.RawExpr, usedSlots map[in
 		if e.When != nil {
 			dce.collectSymReads(e.When, usedSlots)
 		}
+	case *nir.LambdaExpr:
+		for i := range e.Ops {
+			op := &e.Ops[i]
+			for _, arg := range op.Args {
+				dce.collectSymReads(&arg, usedSlots)
+			}
+		}
 	}
 }
 

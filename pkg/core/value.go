@@ -74,6 +74,8 @@ func (v *Value) ToRaw() any {
 			raw[k] = v.ToRaw()
 		}
 		return raw
+	case *Lambda:
+		return nil
 	default:
 		return n
 	}
@@ -90,9 +92,15 @@ func (v *Value) Type() string {
 		return "array"
 	case ValueMap:
 		return "object"
+	case *Lambda:
+		return "lambda"
 	default:
 		return fmt.Sprintf("%T", v.Raw)
 	}
+}
+
+type Lambda struct {
+	Fn func(args []Value) (Value, error)
 }
 
 type ValueMap map[string]Value
@@ -133,6 +141,8 @@ func NormalizeValue(v any) (Value, error) {
 	case Value:
 		return val, nil
 	case []Value:
+		return fromRaw(val), nil
+	case *Lambda:
 		return fromRaw(val), nil
 	case ValueMap:
 		return fromRaw(val), nil
