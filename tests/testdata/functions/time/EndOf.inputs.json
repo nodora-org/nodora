@@ -1,0 +1,57 @@
+[
+  {
+    "input": {
+      "ts": 1749990645000,
+      "unit": "hour"
+    },
+    "expected": {
+      "outputs": {
+        "result": 1749992399999
+      }
+    }
+  },
+  {
+    "input": {
+      "ts": 1749990645000,
+      "unit": "day"
+    },
+    "expected": {
+      "outputs": {
+        "result": 1750031999999
+      }
+    }
+  },
+  {
+    "input": {
+      "ts": 1749990645000,
+      "unit": "week"
+    },
+    "expected": {
+      "outputs": {
+        "result": 1750031999999
+      }
+    }
+  },
+  {
+    "input": {
+      "ts": 1749990645000,
+      "unit": "month"
+    },
+    "expected": {
+      "outputs": {
+        "result": 1751327999999
+      }
+    }
+  },
+  {
+    "input": {
+      "ts": 1749990645000,
+      "unit": "year"
+    },
+    "expected": {
+      "outputs": {
+        "result": 1767225599999
+      }
+    }
+  }
+]

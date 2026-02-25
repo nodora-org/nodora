@@ -1,0 +1,3 @@
+rule SubRule {
+    out result = time::sub(input.ts, input.duration)
+}

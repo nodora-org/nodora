@@ -1,0 +1,3 @@
+rule SubUnitsRule {
+    out result = time::sub_units(input.ts, input.n, input.unit)
+}

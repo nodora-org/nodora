@@ -1,0 +1,22 @@
+[
+  {
+    "input": {
+      "value": "2025-06-15T12:30:45Z"
+    },
+    "expected": {
+      "outputs": {
+        "result": 1749990645000
+      }
+    }
+  },
+  {
+    "input": {
+      "value": "2025-01-01T00:00:00Z"
+    },
+    "expected": {
+      "outputs": {
+        "result": 1735689600000
+      }
+    }
+  }
+]

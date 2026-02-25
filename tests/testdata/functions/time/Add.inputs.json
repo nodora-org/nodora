@@ -1,0 +1,46 @@
+[
+  {
+    "input": {
+      "ts": 1749990645000,
+      "duration": "5m"
+    },
+    "expected": {
+      "outputs": {
+        "result": 1749990945000
+      }
+    }
+  },
+  {
+    "input": {
+      "ts": 1749990645000,
+      "duration": "1h30m"
+    },
+    "expected": {
+      "outputs": {
+        "result": 1749996045000
+      }
+    }
+  },
+  {
+    "input": {
+      "ts": 1749990645000,
+      "duration": "1d"
+    },
+    "expected": {
+      "outputs": {
+        "result": 1750077045000
+      }
+    }
+  },
+  {
+    "input": {
+      "ts": 1749990645000,
+      "duration": "500ms"
+    },
+    "expected": {
+      "outputs": {
+        "result": 1749990645500
+      }
+    }
+  }
+]

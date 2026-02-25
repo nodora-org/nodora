@@ -1,0 +1,3 @@
+rule AddRule {
+    out result = time::add(input.ts, input.duration)
+}

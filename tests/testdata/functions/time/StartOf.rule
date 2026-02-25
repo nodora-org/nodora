@@ -1,0 +1,3 @@
+rule StartOfRule {
+    out result = time::start_of(input.ts, input.unit)
+}

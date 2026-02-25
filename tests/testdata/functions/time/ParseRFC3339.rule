@@ -1,0 +1,3 @@
+rule ParseRFC3339Rule {
+    out result = time::parse_rfc3339(input.value)
+}

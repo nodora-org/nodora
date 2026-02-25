@@ -1,0 +1,3 @@
+rule AddUnitsRule {
+    out result = time::add_units(input.ts, input.n, input.unit)
+}

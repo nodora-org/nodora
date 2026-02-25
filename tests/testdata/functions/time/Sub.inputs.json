@@ -1,0 +1,35 @@
+[
+  {
+    "input": {
+      "ts": 1749990645000,
+      "duration": "2h"
+    },
+    "expected": {
+      "outputs": {
+        "result": 1749983445000
+      }
+    }
+  },
+  {
+    "input": {
+      "ts": 1749990645000,
+      "duration": "5m"
+    },
+    "expected": {
+      "outputs": {
+        "result": 1749990345000
+      }
+    }
+  },
+  {
+    "input": {
+      "ts": 1749990645000,
+      "duration": "1d12h"
+    },
+    "expected": {
+      "outputs": {
+        "result": 1749861045000
+      }
+    }
+  }
+]

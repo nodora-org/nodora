@@ -1,0 +1,3 @@
+rule EndOfRule {
+    out result = time::end_of(input.ts, input.unit)
+}

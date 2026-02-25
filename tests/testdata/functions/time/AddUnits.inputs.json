@@ -1,0 +1,50 @@
+[
+  {
+    "input": {
+      "ts": 1749990645000,
+      "n": 5,
+      "unit": "m"
+    },
+    "expected": {
+      "outputs": {
+        "result": 1749990945000
+      }
+    }
+  },
+  {
+    "input": {
+      "ts": 1749990645000,
+      "n": 2,
+      "unit": "h"
+    },
+    "expected": {
+      "outputs": {
+        "result": 1749997845000
+      }
+    }
+  },
+  {
+    "input": {
+      "ts": 1749990645000,
+      "n": 1,
+      "unit": "d"
+    },
+    "expected": {
+      "outputs": {
+        "result": 1750077045000
+      }
+    }
+  },
+  {
+    "input": {
+      "ts": 1749990645000,
+      "n": 30,
+      "unit": "s"
+    },
+    "expected": {
+      "outputs": {
+        "result": 1749990675000
+      }
+    }
+  }
+]

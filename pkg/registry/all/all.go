@@ -15,5 +15,6 @@ import (
 	_ "nodora.org/nodora/pkg/registry/objects"
 	_ "nodora.org/nodora/pkg/registry/semver"
 	_ "nodora.org/nodora/pkg/registry/strings"
+	_ "nodora.org/nodora/pkg/registry/time"
 	_ "nodora.org/nodora/pkg/registry/uuid"
 )
