@@ -1,0 +1,46 @@
+[
+  {
+    "input": {
+      "pattern": "*test",
+      "subj": "this is a match test"
+    },
+    "expected": {
+      "outputs": {
+        "match": true
+      }
+    }
+  },
+  {
+    "input": {
+      "pattern": "this*",
+      "subj": "this is a match test"
+    },
+    "expected": {
+      "outputs": {
+        "match": true
+      }
+    }
+  },
+  {
+    "input": {
+      "pattern": "test*",
+      "subj": "this is a match test"
+    },
+    "expected": {
+      "outputs": {
+        "match": false
+      }
+    }
+  },
+  {
+    "input": {
+      "pattern": "*quick*fox*dog",
+      "subj": "The quick brown fox jumped over the lazy dog"
+    },
+    "expected": {
+      "outputs": {
+        "match": true
+      }
+    }
+  }
+]

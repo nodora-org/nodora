@@ -9,6 +9,7 @@ import (
 	_ "nodora.org/nodora/pkg/registry/base64url"
 	_ "nodora.org/nodora/pkg/registry/conv"
 	_ "nodora.org/nodora/pkg/registry/crypto"
+	_ "nodora.org/nodora/pkg/registry/glob"
 	_ "nodora.org/nodora/pkg/registry/json"
 	_ "nodora.org/nodora/pkg/registry/math"
 	_ "nodora.org/nodora/pkg/registry/objects"
