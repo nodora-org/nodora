@@ -16,7 +16,7 @@ func zip() types.Func {
 			{Name: "y", Description: "The second array.", Type: types.NewArrayType(types.AnyType), Required: true},
 			{Name: "strict", Description: "If true, requires both arrays to have the same length.", Type: types.BoolType, Required: false},
 		},
-		ReturnType: types.NewArrayType(types.AnyType),
+		ReturnType: types.NewArrayType(types.NewArrayType(types.AnyType)),
 		Fn:         zipImpl,
 	}
 }
