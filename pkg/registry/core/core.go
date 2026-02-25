@@ -17,5 +17,7 @@ func GetFuncs() []func() types.Func {
 		every,
 		min,
 		max,
+		sum,
+		product,
 	}
 }

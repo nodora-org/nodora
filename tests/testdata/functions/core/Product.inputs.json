@@ -1,0 +1,22 @@
+[
+  {
+    "input": {
+      "data": [1, 2, 3, 4]
+    },
+    "expected": {
+      "outputs": {
+        "result": 24
+      }
+    }
+  },
+  {
+    "input": {
+      "data": []
+    },
+    "expected": {
+      "outputs": {
+        "result": 1
+      }
+    }
+  }
+]

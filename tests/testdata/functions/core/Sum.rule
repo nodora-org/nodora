@@ -1,0 +1,3 @@
+rule SumRule {
+    out result = sum(input.data)
+}
