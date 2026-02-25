@@ -82,7 +82,9 @@ class Evaluator {
     return this.evaluatorId;
   }
 
-  evaluate(ruleName, input = {}) {
+  async evaluate(ruleName, input = {}) {
+    await Promise.resolve();
+
     const result = globalThis.__nodoraEvaluate(
       this.evaluatorId,
       ruleName,
@@ -128,4 +130,53 @@ async function compile(src) {
   return result;
 }
 
-export { compile, createEvaluator, Evaluator };
+function assertType(x, type, err) {
+  if (!x || typeof x !== type) {
+    throw new Error(err);
+  }
+}
+
+async function registerFunction({ name, namespace, args, returnType, fn }) {
+  if (!wasmInstance) await init();
+
+  assertType(name, "string", "name is required and must be a string");
+  assertType(
+    returnType,
+    "string",
+    "returnType is required and must be a string",
+  );
+  assertType(fn, "function", "fn is required and must be a function");
+
+  args = (args || []).map((arg, i) => {
+    assertType(arg, "object", `args[${i}] must be an object`);
+    assertType(
+      arg.name,
+      "string",
+      `args[${i}].name is required and must be a string`,
+    );
+    assertType(
+      arg.type,
+      "string",
+      `args[${i}].type is required and must be a string`,
+    );
+
+    return {
+      name: arg.name,
+      type: arg.type,
+      required: !!(arg.required ?? true),
+    };
+  });
+
+  namespace = typeof namespace === "string" ? namespace : "";
+  const spec = {
+    name,
+    namespace,
+    args: args,
+    returnType,
+  };
+
+  const result = globalThis.__nodoraRegisterFunction(spec, fn);
+  if (result && result.error) throw new Error(result.error);
+}
+
+export { compile, createEvaluator, registerFunction, Evaluator };

@@ -22,7 +22,7 @@ test("eval", async () => {
   });
 
   evaluator.on("TestSignal", mockCallback);
-  const result = evaluator.evaluate("TestRule", { x: 123 });
+  const result = await evaluator.evaluate("TestRule", { x: 123 });
 
   expect(mockCallback).toHaveBeenCalled();
   expect(mockCallback).toHaveBeenCalledTimes(1);

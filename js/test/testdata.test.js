@@ -67,11 +67,13 @@ for (const { testName, rulePath, inputsPath } of testFiles) {
 
         try {
           if (tc.err) {
-            expect(() => evaluator.evaluate(ruleNames[0], tc.input)).toThrow();
+            expect(
+              evaluator.evaluate(ruleNames[0], tc.input),
+            ).rejects.toThrow();
             return;
           }
 
-          const result = evaluator.evaluate(ruleNames[0], tc.input);
+          const result = await evaluator.evaluate(ruleNames[0], tc.input);
 
           if (tc.expected.outputs) {
             for (const [key, expectedVal] of Object.entries(

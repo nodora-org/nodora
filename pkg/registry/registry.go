@@ -58,10 +58,9 @@ func (r *Registry) Get(namespace, name string) (*types.Func, bool) {
 }
 
 func (r *Registry) Register(namespace string, generators ...func() types.Func) error {
-	if _, exists := r.ns[namespace]; exists {
-		return fmt.Errorf("namespace '%s' already exists", namespace)
+	if _, exists := r.ns[namespace]; !exists {
+		r.ns[namespace] = &types.Namespace{Name: namespace, Funcs: map[string]types.Func{}}
 	}
-	r.ns[namespace] = &types.Namespace{Name: namespace, Funcs: map[string]types.Func{}}
 	for _, gen := range generators {
 		f := gen()
 		if r.Exists(namespace, f.Name) {

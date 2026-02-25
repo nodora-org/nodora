@@ -18,7 +18,10 @@ export interface Evaluator {
    * @param input - Input values for the rule
    * @returns Evaluation outputs
    */
-  evaluate(ruleName: string, input?: Record<string, any>): Record<string, any>;
+  evaluate(
+    ruleName: string,
+    input?: Record<string, any>,
+  ): Promise<Record<string, any>>;
 
   /**
    * Clean up evaluator resources
@@ -39,3 +42,33 @@ export function createEvaluator(programJSON: string): Promise<Evaluator>;
  * @returns Promise resolving to a JSON string containing the compiled NIR program
  */
 export function compile(src: string): Promise<string>;
+
+export type Type =
+  | "string"
+  | "number"
+  | "bool"
+  | "object"
+  | "any"
+  | "array"
+  | `array<${Type}>`
+  | `${Type}|${Type}`;
+
+export interface FunctionArgSpec {
+  name: string;
+  type: Type;
+  required?: boolean;
+}
+
+export interface RegisterFunctionOptions {
+  name: string;
+  namespace?: string;
+  args?: FunctionArgSpec[];
+  returnType: Type;
+  fn: (...args: any[]) => any;
+}
+
+/**
+ * Register a custom function in the registry. Must be called before compilation or evaluation.
+ * @param options - Function specification and implementation
+ */
+export function registerFunction(options: RegisterFunctionOptions): Promise<void>;
