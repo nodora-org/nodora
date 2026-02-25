@@ -524,7 +524,7 @@ func executeBinaryOp(op *Op, ctx *EvaluationContext) error {
 		r, ok := rval.Raw.(bool)
 		if !ok {
 			return fmt.Errorf(
-				"operator '%s' requires both operands to be bool, got %v and %v",
+				"operator '%s' requires both operands to be of type bool, got %v and %v",
 				op.Kind,
 				lval.Type(),
 				rval.Type(),
@@ -536,29 +536,29 @@ func executeBinaryOp(op *Op, ctx *EvaluationContext) error {
 		case OpOr:
 			ctx.Slots[*op.Out] = core.V(l || r)
 		default:
-			return fmt.Errorf("operator '%s' is not supported for booleans", op.Kind)
+			return fmt.Errorf("operator '%s' is not supported for type bool", op.Kind)
 		}
 		return nil
 	}
 
 	// handle string operations
 	if l, ok := lval.Raw.(string); ok {
-		r, ok := rval.Raw.(string)
-		if !ok {
-			ctx.Slots[*op.Out] = core.U()
-			return fmt.Errorf(
-				"operator '%s' requires both operands to be strings, got %v and %v",
-				op.Kind,
-				lval.Type(),
-				rval.Type(),
-			)
-		}
 		switch op.Kind {
 		case OpAdd:
+			r, ok := rval.Raw.(string)
+			if !ok {
+				ctx.Slots[*op.Out] = core.U()
+				return fmt.Errorf(
+					"operator '%s' requires both operands to be of type string, got %v and %v",
+					op.Kind,
+					lval.Type(),
+					rval.Type(),
+				)
+			}
 			ctx.Slots[*op.Out] = core.V(l + r)
 			return nil
 		default:
-			return fmt.Errorf("operator '%s' is not supported for strings", op.Kind)
+			return fmt.Errorf("operator '%s' is not supported for type string", op.Kind)
 		}
 	}
 

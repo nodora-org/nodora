@@ -19,5 +19,7 @@ func init() {
 		trimEnd,
 		split,
 		replace,
+		minLength,
+		maxLength,
 	)
 }

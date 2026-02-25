@@ -1,0 +1,3 @@
+rule MaxRule {
+    out result = max(input.data)
+}

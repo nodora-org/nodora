@@ -1,0 +1,3 @@
+rule MaxLengthRule {
+    out result = strings::max_length(input.data)
+}

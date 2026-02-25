@@ -1,0 +1,20 @@
+[
+  {
+    "input": {
+      "data": ["a", "bcd", "ef"]
+    },
+    "expected": {
+      "outputs": {
+        "result": 1
+      }
+    }
+  },
+  {
+    "input": {
+      "data": []
+    },
+    "expected": {
+      "outputs": {}
+    }
+  }
+]

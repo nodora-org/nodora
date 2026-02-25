@@ -1,0 +1,3 @@
+rule MinLengthRule {
+    out result = strings::min_length(input.data)
+}

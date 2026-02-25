@@ -65,6 +65,14 @@ func (t *SimpleType) IsAssignableFrom(other Type) bool {
 	if t.kind == AnyKind {
 		return true
 	}
+	if union, ok := other.(*UnionType); ok {
+		for _, member := range union.Types {
+			if t.IsAssignableFrom(member) {
+				return true
+			}
+		}
+		return false
+	}
 	return t.Equals(other)
 }
 
@@ -108,6 +116,14 @@ func (t *ArrayType) IsAssignableFrom(other Type) bool {
 	}
 	if simple, ok := other.(*SimpleType); ok && simple.kind == UnknownKind {
 		return true
+	}
+	if union, ok := other.(*UnionType); ok {
+		for _, member := range union.Types {
+			if t.IsAssignableFrom(member) {
+				return true
+			}
+		}
+		return false
 	}
 	if arr, ok := other.(*ArrayType); ok {
 		return t.Element.IsAssignableFrom(arr.Element)
@@ -183,6 +199,14 @@ func (t *LambdaType) Equals(other Type) bool {
 
 func (t *LambdaType) IsAssignableFrom(other Type) bool {
 	if other == nil {
+		return false
+	}
+	if union, ok := other.(*UnionType); ok {
+		for _, member := range union.Types {
+			if t.IsAssignableFrom(member) {
+				return true
+			}
+		}
 		return false
 	}
 

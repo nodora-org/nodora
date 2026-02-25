@@ -1,0 +1,3 @@
+rule MinRule {
+    out result = min(input.data)
+}

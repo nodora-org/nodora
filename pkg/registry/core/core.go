@@ -15,5 +15,7 @@ func GetFuncs() []func() types.Func {
 		sprintf,
 		some,
 		every,
+		min,
+		max,
 	}
 }

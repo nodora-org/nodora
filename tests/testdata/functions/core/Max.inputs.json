@@ -1,0 +1,30 @@
+[
+  {
+    "input": {
+      "data": [1, 2, 3]
+    },
+    "expected": {
+      "outputs": {
+        "result": 3
+      }
+    }
+  },
+  {
+    "input": {
+      "data": ["banana", "apple", "cherry"]
+    },
+    "expected": {
+      "outputs": {
+        "result": "cherry"
+      }
+    }
+  },
+  {
+    "input": {
+      "data": []
+    },
+    "expected": {
+      "outputs": {}
+    }
+  }
+]

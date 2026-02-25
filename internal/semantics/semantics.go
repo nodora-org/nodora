@@ -210,6 +210,9 @@ func (sc *SemanticAnalyzer) inferType(expr ast.Expr) types.Type {
 		// then and else should have the same type
 		return sc.inferType(e.Then)
 	case *ast.CallExpr:
+		if e.Type != nil {
+			return e.Type
+		}
 		if fn, ok := registry.Global().Get(e.Namespace, e.Name); ok {
 			return fn.ReturnType
 		}
@@ -258,7 +261,7 @@ func (sc *SemanticAnalyzer) inferArrayType(al *ast.ArrayLiteral) types.Type {
 	return types.NewArrayType(types.AnyType)
 }
 
-func (sc *SemanticAnalyzer) requireType(actualType types.Type, expectedTypes ...types.Type) bool {
+func (sc *SemanticAnalyzer) isType(actualType types.Type, expectedTypes ...types.Type) bool {
 	if actualType.Equals(types.UnknownType) {
 		return true
 	}
@@ -274,7 +277,7 @@ func (sc *SemanticAnalyzer) typesCompatible(a, b types.Type) bool {
 	if a.Equals(types.UnknownType) || b.Equals(types.UnknownType) {
 		return true
 	}
-	return a.Equals(b)
+	return a.IsAssignableFrom(b) || b.IsAssignableFrom(a)
 }
 
 func (sc *SemanticAnalyzer) Analyze(program *ast.Program) error {
@@ -403,8 +406,8 @@ func (sc *SemanticAnalyzer) VisitBinaryExpr(be *ast.BinaryExpr) error {
 
 	switch be.Op {
 	case "+":
-		valid := sc.requireType(leftType, types.NumberType, types.StringType) &&
-			sc.requireType(rightType, types.NumberType, types.StringType) &&
+		valid := sc.isType(leftType, types.NumberType, types.StringType) &&
+			sc.isType(rightType, types.NumberType, types.StringType) &&
 			sc.typesCompatible(leftType, rightType)
 
 		if !valid {
@@ -417,8 +420,8 @@ func (sc *SemanticAnalyzer) VisitBinaryExpr(be *ast.BinaryExpr) error {
 			be.Annotate(rightType)
 		}
 	case "-", "*", "/", "%":
-		lok := sc.requireType(leftType, types.NumberType)
-		rok := sc.requireType(rightType, types.NumberType)
+		lok := sc.isType(leftType, types.NumberType)
+		rok := sc.isType(rightType, types.NumberType)
 		if !(lok && rok) {
 			sc.addError(sc.errorAt(be, "operator '%s' cannot be applied to '%s' and '%s'", be.Op, leftType.String(), rightType.String()))
 		}
@@ -429,21 +432,21 @@ func (sc *SemanticAnalyzer) VisitBinaryExpr(be *ast.BinaryExpr) error {
 		}
 		be.Annotate(types.BoolType)
 	case "<", "<=", ">", ">=":
-		lok := sc.requireType(leftType, types.NumberType)
-		rok := sc.requireType(rightType, types.NumberType)
+		lok := sc.isType(leftType, types.NumberType)
+		rok := sc.isType(rightType, types.NumberType)
 		if !(lok && rok) {
 			sc.addError(sc.errorAt(be, "operator '%s' cannot be applied to '%s' and '%s'", be.Op, leftType.String(), rightType.String()))
 		}
 		be.Annotate(types.BoolType)
 	case "&&", "||":
-		lok := sc.requireType(leftType, types.BoolType)
-		rok := sc.requireType(rightType, types.BoolType)
+		lok := sc.isType(leftType, types.BoolType)
+		rok := sc.isType(rightType, types.BoolType)
 		if !(lok && rok) {
 			sc.addError(sc.errorAt(be, "operator '%s' cannot be applied to '%s' and '%s'", be.Op, leftType.String(), rightType.String()))
 		}
 		be.Annotate(types.BoolType)
 	case "in":
-		if !sc.requireType(rightType, types.NewArrayType(types.AnyType)) {
+		if !sc.isType(rightType, types.NewArrayType(types.AnyType)) {
 			sc.addError(sc.errorAt(be, "operator '%s' cannot be applied to type '%s'", be.Op, rightType.String()))
 		}
 		be.Annotate(types.BoolType)
@@ -462,12 +465,12 @@ func (sc *SemanticAnalyzer) VisitUnaryExpr(ue *ast.UnaryExpr) error {
 	ty := sc.inferType(ue.Expr)
 	switch ue.Op {
 	case "!":
-		if !sc.requireType(ty, types.BoolType) {
+		if !sc.isType(ty, types.BoolType) {
 			sc.addError(sc.errorAt(ue, "operand of '!' must be a '%s', got %s", types.BoolType.String(), ty.String()))
 		}
 		ue.Annotate(types.BoolType)
 	case "-":
-		if !sc.requireType(ty, types.NumberType) {
+		if !sc.isType(ty, types.NumberType) {
 			sc.addError(sc.errorAt(ue, "operand of '-' must be a '%s', got %s", types.NumberType.String(), ty.String()))
 		}
 		ue.Annotate(types.NumberType)
@@ -519,7 +522,7 @@ func (sc *SemanticAnalyzer) VisitConditionalExpr(ce *ast.ConditionalExpr) error 
 		sc.addError(err)
 	}
 	condType := sc.inferType(ce.Cond)
-	if !sc.requireType(condType, types.BoolType) {
+	if !sc.isType(condType, types.BoolType) {
 		sc.addError(sc.errorAt(ce, "condition must be of type bool, got '%s'", condType.String()))
 	}
 
@@ -557,7 +560,7 @@ func (sc *SemanticAnalyzer) VisitSelectorExpr(se *ast.SelectorExpr) error {
 		return nil
 	}
 
-	if !sc.requireType(baseType, types.ObjectType) {
+	if !sc.isType(baseType, types.ObjectType) {
 		sc.addError(sc.errorAt(se, "cannot access property '%s' on type %s", se.Field, baseType.String()))
 		se.Annotate(types.UnknownType)
 		return nil
@@ -684,8 +687,8 @@ func (sc *SemanticAnalyzer) VisitIndexExpr(ie *ast.IndexExpr) error {
 		return nil
 	}
 
-	if sc.requireType(baseType, types.NewArrayType(types.AnyType)) {
-		if !sc.requireType(indexType, types.NumberType) {
+	if sc.isType(baseType, types.NewArrayType(types.AnyType)) {
+		if !sc.isType(indexType, types.NumberType) {
 			sc.addError(sc.errorAt(
 				ie,
 				"cannot index with type '%s' for '%s' (expected '%s')",
@@ -725,8 +728,8 @@ func (sc *SemanticAnalyzer) VisitIndexExpr(ie *ast.IndexExpr) error {
 		return nil
 	}
 
-	if sc.requireType(baseType, types.ObjectType) {
-		if !sc.requireType(indexType, types.StringType) {
+	if sc.isType(baseType, types.ObjectType) {
+		if !sc.isType(indexType, types.StringType) {
 			sc.addError(sc.errorAt(
 				ie,
 				"cannot index with type '%s' for '%s' (expected '%s')",
@@ -855,7 +858,7 @@ func (sc *SemanticAnalyzer) VisitCallExpr(ce *ast.CallExpr) error {
 			argType := sc.inferType(arg)
 			fnArg := fn.Args[i]
 
-			if !sc.requireType(argType, fnArg.Type) {
+			if !sc.isType(argType, fnArg.Type) {
 				sc.addError(sc.errorAt(
 					arg,
 					"%v requires '%v' to be of type %v, got %v",
@@ -868,8 +871,45 @@ func (sc *SemanticAnalyzer) VisitCallExpr(ce *ast.CallExpr) error {
 		}
 	}
 
-	ce.Annotate(fn.ReturnType)
+	ce.Annotate(sc.narrowReturnType(fn, ce.Args))
 	return nil
+}
+
+// narrowReturnType attempts to narrow a union return type based on actual argument types
+func (sc *SemanticAnalyzer) narrowReturnType(fn *types.Func, args []ast.Expr) types.Type {
+	retUnion, ok := fn.ReturnType.(*types.UnionType)
+	if !ok {
+		return fn.ReturnType
+	}
+
+	for i, arg := range args {
+		if i >= len(fn.Args) {
+			break
+		}
+		paramUnion, ok := fn.Args[i].Type.(*types.UnionType)
+		if !ok || len(paramUnion.Types) != len(retUnion.Types) {
+			continue
+		}
+
+		argType := sc.inferType(arg)
+		matchIdx := -1
+		for j, member := range paramUnion.Types {
+			if member.IsAssignableFrom(argType) {
+				if matchIdx != -1 {
+					// can't narrow because it matches multiple members
+					matchIdx = -1
+					break
+				}
+				matchIdx = j
+			}
+		}
+
+		if matchIdx >= 0 {
+			return retUnion.Types[matchIdx]
+		}
+	}
+
+	return fn.ReturnType
 }
 
 func (sc *SemanticAnalyzer) VisitReservedObject(ro *ast.ReservedObject) error {
