@@ -9,11 +9,13 @@ import (
 
 func sum() types.Func {
 	return types.Func{
-		Name: "sum",
+		Name:        "sum",
+		Description: "Returns the sum of all numbers in the array.",
 		Args: []types.ArgSpec{{
-			Name:     "arr",
-			Type:     types.NewArrayType(types.NumberType),
-			Required: true,
+			Name:        "arr",
+			Description: "An array of numbers to sum.",
+			Type:        types.NewArrayType(types.NumberType),
+			Required:    true,
 		}},
 		ReturnType: types.NumberType,
 		Fn:         sumImpl,

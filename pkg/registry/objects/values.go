@@ -10,9 +10,10 @@ import (
 
 func values() types.Func {
 	return types.Func{
-		Name:       "values",
-		Args:       []types.ArgSpec{{Name: "obj", Type: types.ObjectType, Required: true}},
-		ReturnType: types.NewArrayType(types.AnyType),
+		Name:        "values",
+		Description: "Returns an array of an object's values, ordered by sorted keys.",
+		Args:        []types.ArgSpec{{Name: "obj", Description: "The object to extract values from.", Type: types.ObjectType, Required: true}},
+		ReturnType:  types.NewArrayType(types.AnyType),
 		Fn:         valuesImpl,
 	}
 }

@@ -9,9 +9,10 @@ import (
 
 func flatten() types.Func {
 	return types.Func{
-		Name: "flatten",
+		Name:        "flatten",
+		Description: "Recursively flattens nested arrays into a single flat array.",
 		Args: []types.ArgSpec{
-			{Name: "arr", Type: types.NewArrayType(types.AnyType), Required: true},
+			{Name: "arr", Description: "The array to flatten.", Type: types.NewArrayType(types.AnyType), Required: true},
 		},
 		ReturnType: types.NewArrayType(types.AnyType),
 		Fn:         flattenImpl,

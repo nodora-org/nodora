@@ -10,12 +10,14 @@ import (
 
 func lower() types.Func {
 	return types.Func{
-		Name: "lower",
+		Name:        "lower",
+		Description: "Converts a string to lowercase.",
 		Args: []types.ArgSpec{
 			{
-				Name:     "str",
-				Type:     types.StringType,
-				Required: true,
+				Name:        "str",
+				Description: "The string to convert.",
+				Type:        types.StringType,
+				Required:    true,
 			},
 		},
 		ReturnType: types.StringType,

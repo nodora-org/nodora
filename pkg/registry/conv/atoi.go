@@ -10,11 +10,13 @@ import (
 
 func atoi() types.Func {
 	return types.Func{
-		Name: "atoi",
+		Name:        "atoi",
+		Description: "Converts a string to an integer.",
 		Args: []types.ArgSpec{{
-			Name:     "str",
-			Type:     types.StringType,
-			Required: true,
+			Name:        "str",
+			Description: "The string to convert.",
+			Type:        types.StringType,
+			Required:    true,
 		}},
 		ReturnType: types.NumberType,
 		Fn:         atoiImpl,

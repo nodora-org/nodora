@@ -9,10 +9,11 @@ import (
 
 func isSubset() types.Func {
 	return types.Func{
-		Name: "is_subset",
+		Name:        "is_subset",
+		Description: "Returns true if all key-value pairs in sub exist and are equal in super.",
 		Args: []types.ArgSpec{
-			{Name: "super", Type: types.ObjectType, Required: true},
-			{Name: "sub", Type: types.ObjectType, Required: true},
+			{Name: "super", Description: "The superset object.", Type: types.ObjectType, Required: true},
+			{Name: "sub", Description: "The subset object to check against.", Type: types.ObjectType, Required: true},
 		},
 		ReturnType: types.ObjectType,
 		Fn:         isSubsetImpl,

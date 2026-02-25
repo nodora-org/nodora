@@ -10,10 +10,11 @@ import (
 
 func compare() types.Func {
 	return types.Func{
-		Name: "compare",
+		Name:        "compare",
+		Description: "Compares two semantic versions. Returns -1, 0, or 1.",
 		Args: []types.ArgSpec{
-			{Name: "v", Type: types.StringType, Required: true},
-			{Name: "w", Type: types.StringType, Required: true},
+			{Name: "v", Description: "The first version string.", Type: types.StringType, Required: true},
+			{Name: "w", Description: "The second version string.", Type: types.StringType, Required: true},
 		},
 		ReturnType: types.NumberType,
 		Fn:         compareImpl,

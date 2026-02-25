@@ -9,17 +9,20 @@ import (
 
 func findIndex() types.Func {
 	return types.Func{
-		Name: "find_index",
+		Name:        "find_index",
+		Description: "Returns the index of the first element that satisfies the predicate, or -1 if none.",
 		Args: []types.ArgSpec{
 			{
-				Name:     "arr",
-				Type:     types.NewArrayType(types.AnyType),
-				Required: true,
+				Name:        "arr",
+				Description: "The array to search.",
+				Type:        types.NewArrayType(types.AnyType),
+				Required:    true,
 			},
 			{
-				Name:     "fx",
-				Type:     types.NewLambdaType([]types.Type{types.AnyType}, types.BoolType),
-				Required: true,
+				Name:        "fx",
+				Description: "A predicate function applied to each element.",
+				Type:        types.NewLambdaType([]types.Type{types.AnyType}, types.BoolType),
+				Required:    true,
 			},
 		},
 		ReturnType: types.NumberType,

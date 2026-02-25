@@ -10,17 +10,20 @@ import (
 
 func contains() types.Func {
 	return types.Func{
-		Name: "contains",
+		Name:        "contains",
+		Description: "Returns true if the string contains the given substring.",
 		Args: []types.ArgSpec{
 			{
-				Name:     "str",
-				Type:     types.StringType,
-				Required: true,
+				Name:        "str",
+				Description: "The string to search in.",
+				Type:        types.StringType,
+				Required:    true,
 			},
 			{
-				Name:     "substr",
-				Type:     types.StringType,
-				Required: true,
+				Name:        "substr",
+				Description: "The substring to search for.",
+				Type:        types.StringType,
+				Required:    true,
 			},
 		},
 		ReturnType: types.BoolType,

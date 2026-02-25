@@ -10,17 +10,20 @@ import (
 
 func concat() types.Func {
 	return types.Func{
-		Name: "concat",
+		Name:        "concat",
+		Description: "Joins an array of strings into a single string using the given delimiter.",
 		Args: []types.ArgSpec{
 			{
-				Name:     "delim",
-				Type:     types.StringType,
-				Required: true,
+				Name:        "delim",
+				Description: "The delimiter to place between each element.",
+				Type:        types.StringType,
+				Required:    true,
 			},
 			{
-				Name:     "arr",
-				Type:     types.NewArrayType(types.StringType),
-				Required: true,
+				Name:        "arr",
+				Description: "The array of strings to join.",
+				Type:        types.NewArrayType(types.StringType),
+				Required:    true,
 			},
 		},
 		ReturnType: types.StringType,

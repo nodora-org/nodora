@@ -10,17 +10,20 @@ import (
 
 func trimStart() types.Func {
 	return types.Func{
-		Name: "trim_start",
+		Name:        "trim_start",
+		Description: "Removes leading characters found in cutset from the string.",
 		Args: []types.ArgSpec{
 			{
-				Name:     "str",
-				Type:     types.StringType,
-				Required: true,
+				Name:        "str",
+				Description: "The string to trim.",
+				Type:        types.StringType,
+				Required:    true,
 			},
 			{
-				Name:     "cutset",
-				Type:     types.StringType,
-				Required: true,
+				Name:        "cutset",
+				Description: "The set of characters to remove from the start.",
+				Type:        types.StringType,
+				Required:    true,
 			},
 		},
 		ReturnType: types.StringType,

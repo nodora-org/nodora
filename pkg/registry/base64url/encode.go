@@ -10,9 +10,10 @@ import (
 
 func encode() types.Func {
 	return types.Func{
-		Name:       "encode",
-		Args:       []types.ArgSpec{{Name: "str", Type: types.StringType, Required: true}},
-		ReturnType: types.StringType,
+		Name:        "encode",
+		Description: "Encodes a string to URL-safe base64.",
+		Args:        []types.ArgSpec{{Name: "str", Description: "The string to encode.", Type: types.StringType, Required: true}},
+		ReturnType:  types.StringType,
 		Fn:         encodeImpl,
 	}
 }

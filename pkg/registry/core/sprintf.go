@@ -10,10 +10,11 @@ import (
 
 func sprintf() types.Func {
 	return types.Func{
-		Name: "sprintf",
+		Name:        "sprintf",
+		Description: "Formats a string using a format specifier and arguments.",
 		Args: []types.ArgSpec{
-			{Name: "fmt", Type: types.StringType, Required: true},
-			{Name: "args", Type: types.NewArrayType(types.AnyType), Required: false},
+			{Name: "fmt", Description: "The format string.", Type: types.StringType, Required: true},
+			{Name: "args", Description: "The values to substitute into the format string.", Type: types.NewArrayType(types.AnyType), Required: false},
 		},
 		ReturnType: types.StringType,
 		Fn:         sprintfImpl,

@@ -10,11 +10,13 @@ import (
 
 func isAlphanumeric() types.Func {
 	return types.Func{
-		Name: "is_alnum",
+		Name:        "is_alnum",
+		Description: "Returns true if the string is non-empty and contains only alphanumeric characters.",
 		Args: []types.ArgSpec{{
-			Name:     "str",
-			Type:     types.StringType,
-			Required: true,
+			Name:        "str",
+			Description: "The string to check.",
+			Type:        types.StringType,
+			Required:    true,
 		}},
 		ReturnType: types.BoolType,
 		Fn:         isAlphanumericImpl,

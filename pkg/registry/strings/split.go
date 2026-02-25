@@ -10,17 +10,20 @@ import (
 
 func split() types.Func {
 	return types.Func{
-		Name: "split",
+		Name:        "split",
+		Description: "Splits a string into an array of substrings using the given delimiter.",
 		Args: []types.ArgSpec{
 			{
-				Name:     "str",
-				Type:     types.StringType,
-				Required: true,
+				Name:        "str",
+				Description: "The string to split.",
+				Type:        types.StringType,
+				Required:    true,
 			},
 			{
-				Name:     "delim",
-				Type:     types.StringType,
-				Required: true,
+				Name:        "delim",
+				Description: "The delimiter to split on.",
+				Type:        types.StringType,
+				Required:    true,
 			},
 		},
 		ReturnType: types.NewArrayType(types.StringType),

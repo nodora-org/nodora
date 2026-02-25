@@ -10,9 +10,10 @@ import (
 
 func reverse() types.Func {
 	return types.Func{
-		Name: "reverse",
+		Name:        "reverse",
+		Description: "Reverses the order of elements in an array.",
 		Args: []types.ArgSpec{
-			{Name: "arr", Type: types.NewArrayType(types.AnyType), Required: true},
+			{Name: "arr", Description: "The array to reverse.", Type: types.NewArrayType(types.AnyType), Required: true},
 		},
 		ReturnType: types.NewArrayType(types.AnyType),
 		Fn:         reverseImpl,

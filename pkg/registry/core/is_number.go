@@ -7,11 +7,13 @@ import (
 
 func isNumber() types.Func {
 	return types.Func{
-		Name: "is_number",
+		Name:        "is_number",
+		Description: "Returns true if the value is a number.",
 		Args: []types.ArgSpec{{
-			Name:     "value",
-			Type:     types.AnyType,
-			Required: true,
+			Name:        "value",
+			Description: "The value to check.",
+			Type:        types.AnyType,
+			Required:    true,
 		}},
 		ReturnType: types.BoolType,
 		Fn:         isNumberImpl,

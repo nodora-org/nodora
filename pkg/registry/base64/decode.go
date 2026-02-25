@@ -10,9 +10,10 @@ import (
 
 func decode() types.Func {
 	return types.Func{
-		Name:       "decode",
-		Args:       []types.ArgSpec{{Name: "str", Type: types.StringType, Required: true}},
-		ReturnType: types.StringType,
+		Name:        "decode",
+		Description: "Decodes a standard base64 encoded string.",
+		Args:        []types.ArgSpec{{Name: "str", Description: "The base64 encoded string to decode.", Type: types.StringType, Required: true}},
+		ReturnType:  types.StringType,
 		Fn:         decodeImpl,
 	}
 }

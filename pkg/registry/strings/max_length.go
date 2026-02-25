@@ -9,11 +9,13 @@ import (
 
 func maxLength() types.Func {
 	return types.Func{
-		Name: "max_length",
+		Name:        "max_length",
+		Description: "Returns the length of the longest string in the array.",
 		Args: []types.ArgSpec{{
-			Name:     "arr",
-			Type:     types.NewArrayType(types.StringType),
-			Required: true,
+			Name:        "arr",
+			Description: "An array of strings.",
+			Type:        types.NewArrayType(types.StringType),
+			Required:    true,
 		}},
 		ReturnType: types.NumberType,
 		Fn:         maxLengthImpl,

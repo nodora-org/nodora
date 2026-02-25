@@ -10,9 +10,10 @@ import (
 
 func round() types.Func {
 	return types.Func{
-		Name:       "round",
-		Args:       []types.ArgSpec{{Name: "x", Type: types.NumberType, Required: true}},
-		ReturnType: types.NumberType,
+		Name:        "round",
+		Description: "Rounds a number to the nearest integer.",
+		Args:        []types.ArgSpec{{Name: "x", Description: "The number to round.", Type: types.NumberType, Required: true}},
+		ReturnType:  types.NumberType,
 		Fn:         roundImpl,
 	}
 }

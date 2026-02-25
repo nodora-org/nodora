@@ -9,11 +9,13 @@ import (
 
 func isEmpty() types.Func {
 	return types.Func{
-		Name: "is_empty",
+		Name:        "is_empty",
+		Description: "Returns true if the array has no elements.",
 		Args: []types.ArgSpec{{
-			Name:     "arr",
-			Type:     types.NewArrayType(types.AnyType),
-			Required: true,
+			Name:        "arr",
+			Description: "The array to check.",
+			Type:        types.NewArrayType(types.AnyType),
+			Required:    true,
 		}},
 		ReturnType: types.BoolType,
 		Fn:         isEmptyImpl,

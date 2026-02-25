@@ -10,9 +10,10 @@ import (
 
 func abs() types.Func {
 	return types.Func{
-		Name:       "abs",
-		Args:       []types.ArgSpec{{Name: "x", Type: types.NumberType, Required: true}},
-		ReturnType: types.NumberType,
+		Name:        "abs",
+		Description: "Returns the absolute value of a number.",
+		Args:        []types.ArgSpec{{Name: "x", Description: "The number.", Type: types.NumberType, Required: true}},
+		ReturnType:  types.NumberType,
 		Fn:         absImpl,
 	}
 }

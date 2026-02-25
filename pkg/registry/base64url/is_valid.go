@@ -10,9 +10,10 @@ import (
 
 func isValid() types.Func {
 	return types.Func{
-		Name:       "is_valid",
-		Args:       []types.ArgSpec{{Name: "str", Type: types.StringType, Required: true}},
-		ReturnType: types.BoolType,
+		Name:        "is_valid",
+		Description: "Returns true if the string is valid URL-safe base64.",
+		Args:        []types.ArgSpec{{Name: "str", Description: "The string to validate.", Type: types.StringType, Required: true}},
+		ReturnType:  types.BoolType,
 		Fn:         isValidImpl,
 	}
 }

@@ -7,11 +7,13 @@ import (
 
 func isObject() types.Func {
 	return types.Func{
-		Name: "is_object",
+		Name:        "is_object",
+		Description: "Returns true if the value is an object.",
 		Args: []types.ArgSpec{{
-			Name:     "value",
-			Type:     types.AnyType,
-			Required: true,
+			Name:        "value",
+			Description: "The value to check.",
+			Type:        types.AnyType,
+			Required:    true,
 		}},
 		ReturnType: types.BoolType,
 		Fn:         isObjectImpl,

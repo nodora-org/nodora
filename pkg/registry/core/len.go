@@ -9,11 +9,13 @@ import (
 
 func length() types.Func {
 	return types.Func{
-		Name: "len",
+		Name:        "len",
+		Description: "Returns the length of a string, array, or object.",
 		Args: []types.ArgSpec{{
-			Name:     "value",
-			Type:     types.NewUnionType(types.StringType, types.NewArrayType(types.AnyType), types.ObjectType),
-			Required: true,
+			Name:        "value",
+			Description: "The string, array, or object to measure.",
+			Type:        types.NewUnionType(types.StringType, types.NewArrayType(types.AnyType), types.ObjectType),
+			Required:    true,
 		}},
 		ReturnType: types.NumberType,
 		Fn:         lengthImpl,

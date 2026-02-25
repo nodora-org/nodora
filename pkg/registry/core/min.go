@@ -10,9 +10,11 @@ import (
 
 func min() types.Func {
 	return types.Func{
-		Name: "min",
+		Name:        "min",
+		Description: "Returns the minimum element from an array of numbers or strings.",
 		Args: []types.ArgSpec{{
-			Name: "value",
+			Name:        "value",
+			Description: "An array of numbers or strings to find the minimum of.",
 			Type: types.NewUnionType(
 				types.NewArrayType(types.NumberType),
 				types.NewArrayType(types.StringType),

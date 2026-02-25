@@ -10,10 +10,11 @@ import (
 
 func minFunc() types.Func {
 	return types.Func{
-		Name: "min",
+		Name:        "min",
+		Description: "Returns the smaller of two numbers.",
 		Args: []types.ArgSpec{
-			{Name: "x", Type: types.NumberType, Required: true},
-			{Name: "y", Type: types.NumberType, Required: true},
+			{Name: "x", Description: "The first number.", Type: types.NumberType, Required: true},
+			{Name: "y", Description: "The second number.", Type: types.NumberType, Required: true},
 		},
 		ReturnType: types.NumberType,
 		Fn:         minImpl,

@@ -10,22 +10,26 @@ import (
 
 func replace() types.Func {
 	return types.Func{
-		Name: "replace",
+		Name:        "replace",
+		Description: "Replaces all occurrences of a substring with a replacement string.",
 		Args: []types.ArgSpec{
 			{
-				Name:     "str",
-				Type:     types.StringType,
-				Required: true,
+				Name:        "str",
+				Description: "The input string.",
+				Type:        types.StringType,
+				Required:    true,
 			},
 			{
-				Name:     "old",
-				Type:     types.StringType,
-				Required: true,
+				Name:        "old",
+				Description: "The substring to replace.",
+				Type:        types.StringType,
+				Required:    true,
 			},
 			{
-				Name:     "new",
-				Type:     types.StringType,
-				Required: true,
+				Name:        "new",
+				Description: "The replacement string.",
+				Type:        types.StringType,
+				Required:    true,
 			},
 		},
 		ReturnType: types.StringType,

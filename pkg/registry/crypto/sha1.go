@@ -11,9 +11,10 @@ import (
 
 func sha1() types.Func {
 	return types.Func{
-		Name:       "sha1",
-		Args:       []types.ArgSpec{{Name: "str", Type: types.StringType, Required: true}},
-		ReturnType: types.StringType,
+		Name:        "sha1",
+		Description: "Computes the SHA-1 hash of a string, returned as a hex string.",
+		Args:        []types.ArgSpec{{Name: "str", Description: "The string to hash.", Type: types.StringType, Required: true}},
+		ReturnType:  types.StringType,
 		Fn:         sha1Impl,
 	}
 }

@@ -10,9 +10,10 @@ import (
 
 func unmarshal() types.Func {
 	return types.Func{
-		Name:       "unmarshal",
-		Args:       []types.ArgSpec{{Name: "str", Type: types.StringType, Required: true}},
-		ReturnType: types.AnyType,
+		Name:        "unmarshal",
+		Description: "Parses a JSON string into a value.",
+		Args:        []types.ArgSpec{{Name: "str", Description: "The JSON string to parse.", Type: types.StringType, Required: true}},
+		ReturnType:  types.AnyType,
 		Fn:         unmarshalImpl,
 	}
 }

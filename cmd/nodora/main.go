@@ -34,6 +34,12 @@ func main() {
 				Action: actions.Compile,
 			},
 			{
+				Name:      "registry",
+				Usage:     "List available namespaces and functions",
+				ArgsUsage: "[namespace]",
+				Action:    actions.Registry,
+			},
+			{
 				Name:    "eval",
 				Aliases: []string{"run"},
 				Usage:   "Evaluate a rule",

@@ -8,17 +8,19 @@ import (
 )
 
 type ArgSpec struct {
-	Name     string
-	Type     Type
-	Required bool
+	Name        string
+	Description string
+	Type        Type
+	Required    bool
 }
 
 type Func struct {
-	Namespace  string
-	Name       string
-	Args       []ArgSpec
-	ReturnType Type
-	Fn         func([]core.Value) (core.Value, error)
+	Namespace   string
+	Name        string
+	Args        []ArgSpec
+	Description string
+	ReturnType  Type
+	Fn          func([]core.Value) (core.Value, error)
 }
 
 func (f *Func) RequiredArgCount() (n int) {

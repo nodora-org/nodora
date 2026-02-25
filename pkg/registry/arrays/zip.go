@@ -9,11 +9,12 @@ import (
 
 func zip() types.Func {
 	return types.Func{
-		Name: "zip",
+		Name:        "zip",
+		Description: "Combines two arrays into an array of pairs.",
 		Args: []types.ArgSpec{
-			{Name: "x", Type: types.NewArrayType(types.AnyType), Required: true},
-			{Name: "y", Type: types.NewArrayType(types.AnyType), Required: true},
-			{Name: "strict", Type: types.BoolType, Required: false},
+			{Name: "x", Description: "The first array.", Type: types.NewArrayType(types.AnyType), Required: true},
+			{Name: "y", Description: "The second array.", Type: types.NewArrayType(types.AnyType), Required: true},
+			{Name: "strict", Description: "If true, requires both arrays to have the same length.", Type: types.BoolType, Required: false},
 		},
 		ReturnType: types.NewArrayType(types.AnyType),
 		Fn:         zipImpl,

@@ -9,17 +9,20 @@ import (
 
 func groupBy() types.Func {
 	return types.Func{
-		Name: "group_by",
+		Name:        "group_by",
+		Description: "Groups array elements into an object by the result of a key function.",
 		Args: []types.ArgSpec{
 			{
-				Name:     "arr",
-				Type:     types.NewArrayType(types.AnyType),
-				Required: true,
+				Name:        "arr",
+				Description: "The array to group.",
+				Type:        types.NewArrayType(types.AnyType),
+				Required:    true,
 			},
 			{
-				Name:     "fx",
-				Type:     types.NewLambdaType([]types.Type{types.AnyType}, types.AnyType),
-				Required: true,
+				Name:        "fx",
+				Description: "A function that returns the grouping key for each element.",
+				Type:        types.NewLambdaType([]types.Type{types.AnyType}, types.AnyType),
+				Required:    true,
 			},
 		},
 		ReturnType: types.ObjectType,

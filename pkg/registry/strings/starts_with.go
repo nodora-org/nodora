@@ -10,17 +10,20 @@ import (
 
 func startsWith() types.Func {
 	return types.Func{
-		Name: "starts_with",
+		Name:        "starts_with",
+		Description: "Returns true if the string starts with the given prefix.",
 		Args: []types.ArgSpec{
 			{
-				Name:     "str",
-				Type:     types.StringType,
-				Required: true,
+				Name:        "str",
+				Description: "The string to check.",
+				Type:        types.StringType,
+				Required:    true,
 			},
 			{
-				Name:     "prefix",
-				Type:     types.StringType,
-				Required: true,
+				Name:        "prefix",
+				Description: "The prefix to look for.",
+				Type:        types.StringType,
+				Required:    true,
 			},
 		},
 		ReturnType: types.BoolType,

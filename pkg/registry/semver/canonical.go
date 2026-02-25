@@ -10,9 +10,10 @@ import (
 
 func canonical() types.Func {
 	return types.Func{
-		Name:       "canonical",
-		Args:       []types.ArgSpec{{Name: "version", Type: types.StringType, Required: true}},
-		ReturnType: types.NumberType,
+		Name:        "canonical",
+		Description: "Returns the canonical form of a semantic version string.",
+		Args:        []types.ArgSpec{{Name: "version", Description: "The version string to canonicalize.", Type: types.StringType, Required: true}},
+		ReturnType:  types.NumberType,
 		Fn:         canonicalImpl,
 	}
 }

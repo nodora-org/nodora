@@ -9,11 +9,12 @@ import (
 
 func slice() types.Func {
 	return types.Func{
-		Name: "slice",
+		Name:        "slice",
+		Description: "Returns a portion of an array from start index to stop index.",
 		Args: []types.ArgSpec{
-			{Name: "arr", Type: types.NewArrayType(types.AnyType), Required: true},
-			{Name: "start", Type: types.NumberType, Required: true},
-			{Name: "stop", Type: types.NumberType, Required: false},
+			{Name: "arr", Description: "The array to slice.", Type: types.NewArrayType(types.AnyType), Required: true},
+			{Name: "start", Description: "The start index (inclusive).", Type: types.NumberType, Required: true},
+			{Name: "stop", Description: "The stop index (exclusive). Defaults to array length.", Type: types.NumberType, Required: false},
 		},
 		ReturnType: types.NewArrayType(types.AnyType),
 		Fn:         sliceImpl,

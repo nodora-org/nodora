@@ -12,10 +12,11 @@ import (
 
 func hmacSha256() types.Func {
 	return types.Func{
-		Name: "hmac_sha256",
+		Name:        "hmac_sha256",
+		Description: "Computes an HMAC-SHA256 message authentication code, returned as a hex string.",
 		Args: []types.ArgSpec{
-			{Name: "key", Type: types.StringType, Required: true},
-			{Name: "msg", Type: types.StringType, Required: true},
+			{Name: "key", Description: "The secret key.", Type: types.StringType, Required: true},
+			{Name: "msg", Description: "The message to authenticate.", Type: types.StringType, Required: true},
 		},
 		ReturnType: types.StringType,
 		Fn:         hmacSha256Impl,

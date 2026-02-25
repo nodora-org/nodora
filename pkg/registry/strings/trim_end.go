@@ -10,17 +10,20 @@ import (
 
 func trimEnd() types.Func {
 	return types.Func{
-		Name: "trim_end",
+		Name:        "trim_end",
+		Description: "Removes trailing characters found in cutset from the string.",
 		Args: []types.ArgSpec{
 			{
-				Name:     "str",
-				Type:     types.StringType,
-				Required: true,
+				Name:        "str",
+				Description: "The string to trim.",
+				Type:        types.StringType,
+				Required:    true,
 			},
 			{
-				Name:     "cutset",
-				Type:     types.StringType,
-				Required: true,
+				Name:        "cutset",
+				Description: "The set of characters to remove from the end.",
+				Type:        types.StringType,
+				Required:    true,
 			},
 		},
 		ReturnType: types.StringType,

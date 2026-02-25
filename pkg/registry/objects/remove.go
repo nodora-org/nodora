@@ -9,10 +9,11 @@ import (
 
 func remove() types.Func {
 	return types.Func{
-		Name: "remove",
+		Name:        "remove",
+		Description: "Removes the specified keys from an object.",
 		Args: []types.ArgSpec{
-			{Name: "obj", Type: types.ObjectType, Required: true},
-			{Name: "keys", Type: types.NewArrayType(types.StringType), Required: true},
+			{Name: "obj", Description: "The object to remove keys from.", Type: types.ObjectType, Required: true},
+			{Name: "keys", Description: "An array of key names to remove.", Type: types.NewArrayType(types.StringType), Required: true},
 		},
 		ReturnType: types.ObjectType,
 		Fn:         removeImpl,

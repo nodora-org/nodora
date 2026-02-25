@@ -9,11 +9,12 @@ import (
 
 func clamp() types.Func {
 	return types.Func{
-		Name: "clamp",
+		Name:        "clamp",
+		Description: "Clamps a number to the range [min, max].",
 		Args: []types.ArgSpec{
-			{Name: "x", Type: types.NumberType, Required: true},
-			{Name: "min", Type: types.NumberType, Required: true},
-			{Name: "max", Type: types.NumberType, Required: true},
+			{Name: "x", Description: "The number to clamp.", Type: types.NumberType, Required: true},
+			{Name: "min", Description: "The lower bound.", Type: types.NumberType, Required: true},
+			{Name: "max", Description: "The upper bound.", Type: types.NumberType, Required: true},
 		},
 		ReturnType: types.NumberType,
 		Fn:         clampImpl,

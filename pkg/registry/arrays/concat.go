@@ -9,10 +9,11 @@ import (
 
 func concat() types.Func {
 	return types.Func{
-		Name: "concat",
+		Name:        "concat",
+		Description: "Concatenates two arrays into a single array.",
 		Args: []types.ArgSpec{
-			{Name: "x", Type: types.NewArrayType(types.AnyType), Required: true},
-			{Name: "y", Type: types.NewArrayType(types.AnyType), Required: true},
+			{Name: "x", Description: "The first array.", Type: types.NewArrayType(types.AnyType), Required: true},
+			{Name: "y", Description: "The second array.", Type: types.NewArrayType(types.AnyType), Required: true},
 		},
 		ReturnType: types.NewArrayType(types.AnyType),
 		Fn:         concatImpl,

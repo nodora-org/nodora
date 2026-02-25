@@ -10,9 +10,10 @@ import (
 
 func ceil() types.Func {
 	return types.Func{
-		Name:       "ceil",
-		Args:       []types.ArgSpec{{Name: "x", Type: types.NumberType, Required: true}},
-		ReturnType: types.NumberType,
+		Name:        "ceil",
+		Description: "Returns the smallest integer greater than or equal to x.",
+		Args:        []types.ArgSpec{{Name: "x", Description: "The number to round up.", Type: types.NumberType, Required: true}},
+		ReturnType:  types.NumberType,
 		Fn:         ceilImpl,
 	}
 }

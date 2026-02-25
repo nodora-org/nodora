@@ -10,10 +10,11 @@ import (
 
 func union() types.Func {
 	return types.Func{
-		Name: "union",
+		Name:        "union",
+		Description: "Merges two objects. Keys from obj2 overwrite keys from obj1.",
 		Args: []types.ArgSpec{
-			{Name: "obj1", Type: types.ObjectType, Required: true},
-			{Name: "obj2", Type: types.ObjectType, Required: true},
+			{Name: "obj1", Description: "The base object.", Type: types.ObjectType, Required: true},
+			{Name: "obj2", Description: "The object to merge in (takes precedence).", Type: types.ObjectType, Required: true},
 		},
 		ReturnType: types.ObjectType,
 		Fn:         unionImpl,

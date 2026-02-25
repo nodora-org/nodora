@@ -9,17 +9,20 @@ import (
 
 func some() types.Func {
 	return types.Func{
-		Name: "some",
+		Name:        "some",
+		Description: "Returns true if at least one element in the array satisfies the predicate.",
 		Args: []types.ArgSpec{
 			{
-				Name:     "arr",
-				Type:     types.NewArrayType(types.AnyType),
-				Required: true,
+				Name:        "arr",
+				Description: "The array to test.",
+				Type:        types.NewArrayType(types.AnyType),
+				Required:    true,
 			},
 			{
-				Name:     "fx",
-				Type:     types.NewLambdaType([]types.Type{types.AnyType}, types.BoolType),
-				Required: true,
+				Name:        "fx",
+				Description: "A predicate function applied to each element.",
+				Type:        types.NewLambdaType([]types.Type{types.AnyType}, types.BoolType),
+				Required:    true,
 			},
 		},
 		ReturnType: types.BoolType,

@@ -9,11 +9,13 @@ import (
 
 func product() types.Func {
 	return types.Func{
-		Name: "product",
+		Name:        "product",
+		Description: "Returns the product of all numbers in the array.",
 		Args: []types.ArgSpec{{
-			Name:     "arr",
-			Type:     types.NewArrayType(types.NumberType),
-			Required: true,
+			Name:        "arr",
+			Description: "An array of numbers to multiply.",
+			Type:        types.NewArrayType(types.NumberType),
+			Required:    true,
 		}},
 		ReturnType: types.NumberType,
 		Fn:         productImpl,

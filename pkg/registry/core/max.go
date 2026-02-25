@@ -10,9 +10,11 @@ import (
 
 func max() types.Func {
 	return types.Func{
-		Name: "max",
+		Name:        "max",
+		Description: "Returns the maximum element from an array of numbers or strings.",
 		Args: []types.ArgSpec{{
-			Name: "value",
+			Name:        "value",
+			Description: "An array of numbers or strings to find the maximum of.",
 			Type: types.NewUnionType(
 				types.NewArrayType(types.NumberType),
 				types.NewArrayType(types.StringType),

@@ -10,9 +10,10 @@ import (
 
 func isValid() types.Func {
 	return types.Func{
-		Name:       "is_valid",
-		Args:       []types.ArgSpec{{Name: "version", Type: types.StringType, Required: true}},
-		ReturnType: types.BoolType,
+		Name:        "is_valid",
+		Description: "Returns true if the string is a valid semantic version.",
+		Args:        []types.ArgSpec{{Name: "version", Description: "The version string to validate.", Type: types.StringType, Required: true}},
+		ReturnType:  types.BoolType,
 		Fn:         isValidImpl,
 	}
 }

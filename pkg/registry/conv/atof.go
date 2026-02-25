@@ -10,11 +10,13 @@ import (
 
 func atof() types.Func {
 	return types.Func{
-		Name: "atof",
+		Name:        "atof",
+		Description: "Converts a string to a floating-point number.",
 		Args: []types.ArgSpec{{
-			Name:     "str",
-			Type:     types.StringType,
-			Required: true,
+			Name:        "str",
+			Description: "The string to convert.",
+			Type:        types.StringType,
+			Required:    true,
 		}},
 		ReturnType: types.NumberType,
 		Fn:         atofImpl,

@@ -10,9 +10,10 @@ import (
 
 func floor() types.Func {
 	return types.Func{
-		Name:       "floor",
-		Args:       []types.ArgSpec{{Name: "x", Type: types.NumberType, Required: true}},
-		ReturnType: types.NumberType,
+		Name:        "floor",
+		Description: "Returns the largest integer less than or equal to x.",
+		Args:        []types.ArgSpec{{Name: "x", Description: "The number to round down.", Type: types.NumberType, Required: true}},
+		ReturnType:  types.NumberType,
 		Fn:         floorImpl,
 	}
 }

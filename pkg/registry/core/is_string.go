@@ -7,11 +7,13 @@ import (
 
 func isString() types.Func {
 	return types.Func{
-		Name: "is_string",
+		Name:        "is_string",
+		Description: "Returns true if the value is a string.",
 		Args: []types.ArgSpec{{
-			Name:     "value",
-			Type:     types.AnyType,
-			Required: true,
+			Name:        "value",
+			Description: "The value to check.",
+			Type:        types.AnyType,
+			Required:    true,
 		}},
 		ReturnType: types.BoolType,
 		Fn:         isStringImpl,

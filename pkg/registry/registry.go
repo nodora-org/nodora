@@ -11,12 +11,6 @@ type Registry struct {
 	ns map[string]*types.Namespace
 }
 
-func newRegistry() Registry {
-	return Registry{
-		ns: make(map[string]*types.Namespace),
-	}
-}
-
 var registry Registry
 
 func init() {
@@ -26,6 +20,25 @@ func init() {
 
 func Global() *Registry {
 	return &registry
+}
+
+func newRegistry() Registry {
+	return Registry{
+		ns: make(map[string]*types.Namespace),
+	}
+}
+
+func (r *Registry) Namespaces() []string {
+	namespaces := make([]string, 0, len(r.ns))
+	for ns := range r.ns {
+		namespaces = append(namespaces, ns)
+	}
+	return namespaces
+}
+
+func (r *Registry) GetNamespace(namespace string) (*types.Namespace, bool) {
+	ns, ok := r.ns[namespace]
+	return ns, ok
 }
 
 func (r *Registry) Exists(namespace, name string) bool {

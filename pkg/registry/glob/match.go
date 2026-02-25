@@ -10,10 +10,11 @@ import (
 
 func match() types.Func {
 	return types.Func{
-		Name: "match",
+		Name:        "match",
+		Description: "Returns true if the subject string matches the glob pattern.",
 		Args: []types.ArgSpec{
-			{Name: "pattern", Type: types.StringType, Required: true},
-			{Name: "subj", Type: types.StringType, Required: true},
+			{Name: "pattern", Description: "The glob pattern to match against.", Type: types.StringType, Required: true},
+			{Name: "subj", Description: "The string to test.", Type: types.StringType, Required: true},
 		},
 		ReturnType: types.BoolType,
 		Fn:         matchImpl,

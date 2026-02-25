@@ -9,10 +9,11 @@ import (
 
 func filter() types.Func {
 	return types.Func{
-		Name: "filter",
+		Name:        "filter",
+		Description: "Returns a new object containing only the specified keys.",
 		Args: []types.ArgSpec{
-			{Name: "obj", Type: types.ObjectType, Required: true},
-			{Name: "keys", Type: types.NewArrayType(types.StringType), Required: true},
+			{Name: "obj", Description: "The source object.", Type: types.ObjectType, Required: true},
+			{Name: "keys", Description: "An array of key names to keep.", Type: types.NewArrayType(types.StringType), Required: true},
 		},
 		ReturnType: types.ObjectType,
 		Fn:         filterImpl,

@@ -9,11 +9,12 @@ import (
 
 func get() types.Func {
 	return types.Func{
-		Name: "get",
+		Name:        "get",
+		Description: "Gets a value from an object by key, returning a default if the key does not exist.",
 		Args: []types.ArgSpec{
-			{Name: "obj", Type: types.ObjectType, Required: true},
-			{Name: "key", Type: types.StringType, Required: true},
-			{Name: "default", Type: types.AnyType, Required: true}},
+			{Name: "obj", Description: "The object to look up.", Type: types.ObjectType, Required: true},
+			{Name: "key", Description: "The key to look up.", Type: types.StringType, Required: true},
+			{Name: "default", Description: "The value to return if the key is not found.", Type: types.AnyType, Required: true}},
 		ReturnType: types.AnyType,
 		Fn:         getImpl,
 	}

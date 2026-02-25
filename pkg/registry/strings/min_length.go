@@ -9,11 +9,13 @@ import (
 
 func minLength() types.Func {
 	return types.Func{
-		Name: "min_length",
+		Name:        "min_length",
+		Description: "Returns the length of the shortest string in the array.",
 		Args: []types.ArgSpec{{
-			Name:     "arr",
-			Type:     types.NewArrayType(types.StringType),
-			Required: true,
+			Name:        "arr",
+			Description: "An array of strings.",
+			Type:        types.NewArrayType(types.StringType),
+			Required:    true,
 		}},
 		ReturnType: types.NumberType,
 		Fn:         minLengthImpl,

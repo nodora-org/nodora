@@ -10,12 +10,14 @@ import (
 
 func upper() types.Func {
 	return types.Func{
-		Name: "upper",
+		Name:        "upper",
+		Description: "Converts a string to uppercase.",
 		Args: []types.ArgSpec{
 			{
-				Name:     "str",
-				Type:     types.StringType,
-				Required: true,
+				Name:        "str",
+				Description: "The string to convert.",
+				Type:        types.StringType,
+				Required:    true,
 			},
 		},
 		ReturnType: types.StringType,

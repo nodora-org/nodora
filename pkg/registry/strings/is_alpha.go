@@ -10,11 +10,13 @@ import (
 
 func isAlpha() types.Func {
 	return types.Func{
-		Name: "is_alpha",
+		Name:        "is_alpha",
+		Description: "Returns true if the string is non-empty and contains only alphabetic characters.",
 		Args: []types.ArgSpec{{
-			Name:     "str",
-			Type:     types.StringType,
-			Required: true,
+			Name:        "str",
+			Description: "The string to check.",
+			Type:        types.StringType,
+			Required:    true,
 		}},
 		ReturnType: types.BoolType,
 		Fn:         isAlphaImpl,

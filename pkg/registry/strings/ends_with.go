@@ -10,17 +10,20 @@ import (
 
 func endsWith() types.Func {
 	return types.Func{
-		Name: "ends_with",
+		Name:        "ends_with",
+		Description: "Returns true if the string ends with the given suffix.",
 		Args: []types.ArgSpec{
 			{
-				Name:     "str",
-				Type:     types.StringType,
-				Required: true,
+				Name:        "str",
+				Description: "The string to check.",
+				Type:        types.StringType,
+				Required:    true,
 			},
 			{
-				Name:     "suffix",
-				Type:     types.StringType,
-				Required: true,
+				Name:        "suffix",
+				Description: "The suffix to look for.",
+				Type:        types.StringType,
+				Required:    true,
 			},
 		},
 		ReturnType: types.BoolType,
