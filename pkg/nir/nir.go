@@ -192,10 +192,10 @@ func evaluateArrayAccess(from []core.Value, indexVal core.Value) (core.Value, er
 	if indexVal.Undefined {
 		return core.U(), nil
 	}
-	idx, ok := core.ToInt(indexVal)
-	if !ok {
+	if !core.IsInt(indexVal.Raw) {
 		return core.U(), fmt.Errorf("array index must be int, got %s", indexVal.Type())
 	}
+	idx, _ := core.ToInt(indexVal)
 	if idx < 0 || idx >= len(from) {
 		return core.U(), fmt.Errorf("index %d out of bounds (length %d)", idx, len(from))
 	}

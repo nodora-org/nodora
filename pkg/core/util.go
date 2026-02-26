@@ -57,12 +57,33 @@ func ToFloat64(v any) (float64, bool) {
 	}
 }
 
+func IsInt(v any) bool {
+	switch n := v.(type) {
+	case Value:
+		return IsInt(n.Raw)
+	case int, int8, int16, int32, int64:
+		return true
+	case float32:
+		return float64(n) == math.Trunc(float64(n))
+	case float64:
+		return n == math.Trunc(n)
+	default:
+		return false
+	}
+}
+
 func ToInt(v any) (int, bool) {
 	switch n := v.(type) {
 	case Value:
 		return ToInt(n.Raw)
 	case int:
 		return n, true
+	case int8:
+		return int(n), true
+	case int16:
+		return int(n), true
+	case int32:
+		return int(n), true
 	case int64:
 		return int(n), true
 	case float32:

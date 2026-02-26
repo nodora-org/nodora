@@ -313,9 +313,6 @@ func (sc *SemanticAnalyzer) VisitSignal(s *ast.Signal) error {
 }
 
 func (sc *SemanticAnalyzer) VisitRule(r *ast.Rule) error {
-	// spew.Config.DisableMethods = true
-	// spew.Dump(*r)
-
 	if err := sc.declareSymbol(r.Name, nil, symbolKindRule, r, r.Span); err != nil {
 		sc.addError(err)
 	}
@@ -489,23 +486,21 @@ func (sc *SemanticAnalyzer) VisitIdentifier(id *ast.Identifier) error {
 }
 
 func (sc *SemanticAnalyzer) VisitNumberLiteral(nl *ast.NumberLiteral) error {
-	if strings.Contains(nl.Value, ".") {
-		val, err := strconv.ParseFloat(nl.Value, 64)
+	if strings.Contains(nl.Raw, ".") {
+		val, err := strconv.ParseFloat(nl.Raw, 64)
 		if err != nil {
 			return err
 		}
-		nl.Kind = ast.FloatNumber
-		nl.Float = val
+		nl.Value = val
 		return nil
 	}
 
-	val, err := strconv.ParseInt(nl.Value, 10, 64)
+	val, err := strconv.ParseInt(nl.Raw, 10, 64)
 	if err != nil {
 		return err
 	}
 
-	nl.Kind = ast.IntNumber
-	nl.Int = val
+	nl.Value = float64(val)
 	return nil
 }
 
@@ -614,14 +609,15 @@ func (sc *SemanticAnalyzer) resolveExpr(expr ast.Expr) (ast.Expr, string) {
 
 	case *ast.IndexExpr:
 		base, baseName := sc.resolveExpr(e.Expr)
+		index, _ := sc.resolveExpr(e.Index)
 
 		// build the path representation
 		indexStr := ""
-		switch idx := e.Index.(type) {
+		switch idx := index.(type) {
 		case *ast.StringLiteral:
 			indexStr = fmt.Sprintf("[%q]", idx.Value)
 		case *ast.NumberLiteral:
-			indexStr = fmt.Sprintf("[%v]", idx.Value)
+			indexStr = fmt.Sprintf("[%v]", int(idx.Value))
 		case *ast.Identifier:
 			indexStr = fmt.Sprintf("[%s]", idx.Name)
 		default:
@@ -632,11 +628,13 @@ func (sc *SemanticAnalyzer) resolveExpr(expr ast.Expr) (ast.Expr, string) {
 		switch baseResolved := base.(type) {
 		case *ast.ArrayLiteral:
 			// handle numeric index on array
-			if numIdx, ok := e.Index.(*ast.NumberLiteral); ok {
-				idx := int(numIdx.Int)
-				if idx >= 0 && idx < len(baseResolved.Elements) {
-					resolved, _ := sc.resolveExpr(baseResolved.Elements[idx])
-					return resolved, path
+			if numIdx, ok := index.(*ast.NumberLiteral); ok {
+				if numIdx.IsInt() {
+					idx := int(numIdx.Value)
+					if idx >= 0 && idx < len(baseResolved.Elements) {
+						resolved, _ := sc.resolveExpr(baseResolved.Elements[idx])
+						return resolved, path
+					}
 				}
 			}
 			return e, path
@@ -644,7 +642,7 @@ func (sc *SemanticAnalyzer) resolveExpr(expr ast.Expr) (ast.Expr, string) {
 		case *ast.ObjectLiteral:
 			// handle string index on object (like obj["key"])
 			var keyName string
-			switch idx := e.Index.(type) {
+			switch idx := index.(type) {
 			case *ast.StringLiteral:
 				keyName = idx.Value
 			case *ast.Identifier:
@@ -679,8 +677,10 @@ func (sc *SemanticAnalyzer) VisitIndexExpr(ie *ast.IndexExpr) error {
 		sc.addError(err)
 	}
 
+	resolvedIdx, _ := sc.resolveExpr(ie.Index)
+
 	baseType := sc.inferType(ie.Expr)
-	indexType := sc.inferType(ie.Index)
+	indexType := sc.inferType(resolvedIdx)
 
 	if baseType.Equals(types.UnknownType) {
 		ie.Annotate(types.UnknownType)
@@ -700,8 +700,17 @@ func (sc *SemanticAnalyzer) VisitIndexExpr(ie *ast.IndexExpr) error {
 			return nil
 		}
 
+		switch i := resolvedIdx.(type) {
+		case *ast.NumberLiteral:
+			if !i.IsInt() {
+				sc.addError(sc.errorAt(ie.Index, "array index must be an integer"))
+				ie.Annotate(types.UnknownType)
+				return nil
+			}
+		}
+
 		// check array bounds if the index is constant and the array can be resolved
-		if idx, ok := sc.getConstantIndex(ie.Index); ok {
+		if idx, ok := sc.getConstantIndex(resolvedIdx); ok {
 			if resolved, _ := sc.resolveExpr(ie.Expr); resolved != nil {
 				if arrLit, ok := resolved.(*ast.ArrayLiteral); ok {
 					length := len(arrLit.Elements)
@@ -717,6 +726,13 @@ func (sc *SemanticAnalyzer) VisitIndexExpr(ie *ast.IndexExpr) error {
 					return nil
 				}
 			}
+		}
+
+		// if the index type is unknown (prior error), propagate unknown
+		// to avoid cascading errors
+		if indexType.Equals(types.UnknownType) {
+			ie.Annotate(types.UnknownType)
+			return nil
 		}
 
 		// extract the element type from the array type
@@ -737,11 +753,20 @@ func (sc *SemanticAnalyzer) VisitIndexExpr(ie *ast.IndexExpr) error {
 				baseType.String(),
 				types.StringType.String(),
 			))
+			ie.Annotate(types.UnknownType)
+			return nil
+		}
+
+		// if the index type is unknown (prior error), propagate unknown
+		// to avoid cascading errors
+		if indexType.Equals(types.UnknownType) {
+			ie.Annotate(types.UnknownType)
+			return nil
 		}
 
 		// for object indexing, try to resolve the actual property type
 		// if the index is a string literal look it up
-		if strLit, ok := ie.Index.(*ast.StringLiteral); ok {
+		if strLit, ok := resolvedIdx.(*ast.StringLiteral); ok {
 			propertyType := sc.getPropertyType(ie.Expr, strLit.Value)
 			ie.Annotate(propertyType)
 		} else {
@@ -759,11 +784,12 @@ func (sc *SemanticAnalyzer) VisitIndexExpr(ie *ast.IndexExpr) error {
 func (sc *SemanticAnalyzer) getConstantIndex(expr ast.Expr) (int, bool) {
 	switch e := expr.(type) {
 	case *ast.NumberLiteral:
-		return int(e.Int), true
+		return int(e.Value), true
 	case *ast.UnaryExpr:
 		if e.Op == "-" {
-			if numLit, ok := e.Expr.(*ast.NumberLiteral); ok {
-				return -int(numLit.Int), true
+			val, ok := sc.getConstantIndex(e.Expr)
+			if ok {
+				return -val, true
 			}
 		}
 	}

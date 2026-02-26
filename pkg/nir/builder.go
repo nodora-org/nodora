@@ -206,14 +206,7 @@ func (b *Builder) buildExpr(expr ast.Expr) exprResult {
 
 	switch e := expr.(type) {
 	case *ast.NumberLiteral:
-		switch e.Kind {
-		case ast.FloatNumber:
-			return immResult(e.Float)
-		case ast.IntNumber:
-			return immResult(e.Int)
-		default:
-			return immResult(e.Value)
-		}
+		return immResult(e.Value)
 
 	case *ast.StringLiteral:
 		return immResult(e.Value)

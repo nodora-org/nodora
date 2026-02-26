@@ -361,7 +361,7 @@ primary_expr
         }
     | NUMBER
         { 
-          n := &ast.NumberLiteral{Value: $1}
+          n := &ast.NumberLiteral{Raw: $1}
           n.Span = $<span>1
           $$ = n
         }

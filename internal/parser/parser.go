@@ -1011,7 +1011,7 @@ yydefault:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser.y:363
 		{
-			n := &ast.NumberLiteral{Value: yyDollar[1].str}
+			n := &ast.NumberLiteral{Raw: yyDollar[1].str}
 			n.Span = yyDollar[1].span
 			yyVAL.expr = n
 		}

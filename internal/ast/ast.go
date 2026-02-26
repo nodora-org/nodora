@@ -210,38 +210,23 @@ func (id *Identifier) String() string {
 	return id.Name
 }
 
-type NumberKind int
-
-const (
-	IntNumber NumberKind = iota
-	FloatNumber
-)
-
 type NumberLiteral struct {
 	Typed
 	Span
-	Kind  NumberKind
-	Value string
-	Int   int64
-	Float float64
+	Raw   string
+	Value float64
 }
 
 func (nl *NumberLiteral) Accept(visitor Visitor) error {
 	return visitor.VisitNumberLiteral(nl)
 }
 
-func (nl *NumberLiteral) GetValue() (bool, any) {
-	switch nl.Kind {
-	case FloatNumber:
-		return true, nl.Float
-	case IntNumber:
-		return true, nl.Int
-	}
-	return false, nil
+func (nl *NumberLiteral) String() string {
+	return nl.Raw
 }
 
-func (nl *NumberLiteral) String() string {
-	return nl.Value
+func (nl *NumberLiteral) IsInt() bool {
+	return !strings.Contains(nl.Raw, ".")
 }
 
 type StringLiteral struct {
