@@ -591,7 +591,8 @@ func (sc *SemanticAnalyzer) resolveExpr(expr ast.Expr) (ast.Expr, string) {
 		if err != nil {
 			return e, e.Name
 		}
-		return sym.Value.(ast.Expr), e.Name
+		resolved, _ := sc.resolveExpr(sym.Value.(ast.Expr))
+		return resolved, e.Name
 
 	case *ast.SelectorExpr:
 		base, baseName := sc.resolveExpr(e.Expr)
@@ -678,64 +679,44 @@ func (sc *SemanticAnalyzer) VisitIndexExpr(ie *ast.IndexExpr) error {
 	}
 
 	resolvedIdx, _ := sc.resolveExpr(ie.Index)
-
 	baseType := sc.inferType(ie.Expr)
 	indexType := sc.inferType(resolvedIdx)
 
-	if baseType.Equals(types.UnknownType) {
+	if baseType.Equals(types.UnknownType) || indexType.Equals(types.UnknownType) {
 		ie.Annotate(types.UnknownType)
 		return nil
 	}
 
 	if sc.isType(baseType, types.NewArrayType(types.AnyType)) {
 		if !sc.isType(indexType, types.NumberType) {
-			sc.addError(sc.errorAt(
-				ie,
+			sc.addError(sc.errorAt(ie,
 				"cannot index with type '%s' for '%s' (expected '%s')",
-				indexType.String(),
-				baseType.String(),
-				types.NumberType.String(),
+				indexType.String(), baseType.String(), types.NumberType.String(),
 			))
 			ie.Annotate(types.UnknownType)
 			return nil
 		}
 
-		switch i := resolvedIdx.(type) {
-		case *ast.NumberLiteral:
-			if !i.IsInt() {
-				sc.addError(sc.errorAt(ie.Index, "array index must be an integer"))
-				ie.Annotate(types.UnknownType)
-				return nil
-			}
+		if num, ok := resolvedIdx.(*ast.NumberLiteral); ok && !num.IsInt() {
+			sc.addError(sc.errorAt(ie.Index, "array index must be an integer"))
+			ie.Annotate(types.UnknownType)
+			return nil
 		}
 
-		// check array bounds if the index is constant and the array can be resolved
 		if idx, ok := sc.getConstantIndex(resolvedIdx); ok {
 			if resolved, _ := sc.resolveExpr(ie.Expr); resolved != nil {
 				if arrLit, ok := resolved.(*ast.ArrayLiteral); ok {
-					length := len(arrLit.Elements)
-
-					if idx < 0 || idx >= length {
-						sc.addError(sc.errorAt(ie, "array index %d out of bounds (length %d)", idx, length))
+					if idx < 0 || idx >= len(arrLit.Elements) {
+						sc.addError(sc.errorAt(ie, "array index %d out of bounds (length %d)", idx, len(arrLit.Elements)))
 						ie.Annotate(types.UnknownType)
 						return nil
 					}
-
-					elementType := sc.inferType(arrLit.Elements[idx])
-					ie.Annotate(elementType)
+					ie.Annotate(sc.inferType(arrLit.Elements[idx]))
 					return nil
 				}
 			}
 		}
 
-		// if the index type is unknown (prior error), propagate unknown
-		// to avoid cascading errors
-		if indexType.Equals(types.UnknownType) {
-			ie.Annotate(types.UnknownType)
-			return nil
-		}
-
-		// extract the element type from the array type
 		if arrayType, ok := baseType.(*types.ArrayType); ok {
 			ie.Annotate(arrayType.Element)
 		} else {
@@ -746,31 +727,17 @@ func (sc *SemanticAnalyzer) VisitIndexExpr(ie *ast.IndexExpr) error {
 
 	if sc.isType(baseType, types.ObjectType) {
 		if !sc.isType(indexType, types.StringType) {
-			sc.addError(sc.errorAt(
-				ie,
+			sc.addError(sc.errorAt(ie,
 				"cannot index with type '%s' for '%s' (expected '%s')",
-				indexType.String(),
-				baseType.String(),
-				types.StringType.String(),
+				indexType.String(), baseType.String(), types.StringType.String(),
 			))
 			ie.Annotate(types.UnknownType)
 			return nil
 		}
 
-		// if the index type is unknown (prior error), propagate unknown
-		// to avoid cascading errors
-		if indexType.Equals(types.UnknownType) {
-			ie.Annotate(types.UnknownType)
-			return nil
-		}
-
-		// for object indexing, try to resolve the actual property type
-		// if the index is a string literal look it up
 		if strLit, ok := resolvedIdx.(*ast.StringLiteral); ok {
-			propertyType := sc.getPropertyType(ie.Expr, strLit.Value)
-			ie.Annotate(propertyType)
+			ie.Annotate(sc.getPropertyType(ie.Expr, strLit.Value))
 		} else {
-			// don't know the specific property type (dynamic key)
 			ie.Annotate(types.AnyType)
 		}
 		return nil

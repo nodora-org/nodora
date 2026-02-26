@@ -96,7 +96,7 @@ func TestDeadCodeElimination_UnusedSignals(t *testing.T) {
 			}
 
 			dce := NewDeadCodeElimination()
-			err := dce.Run(p)
+			_, err := dce.Run(p)
 			if err != nil {
 				t.Fatalf("Run() returned error: %v", err)
 			}
@@ -295,7 +295,7 @@ func TestDeadCodeElimination_DeadOperations(t *testing.T) {
 			}
 
 			dce := NewDeadCodeElimination()
-			err := dce.Run(p)
+			_, err := dce.Run(p)
 			if err != nil {
 				t.Fatalf("Run() returned error: %v", err)
 			}
@@ -599,7 +599,7 @@ func TestDeadCodeElimination_ComplexExpressions(t *testing.T) {
 			}
 
 			dce := NewDeadCodeElimination()
-			err := dce.Run(p)
+			_, err := dce.Run(p)
 			if err != nil {
 				t.Fatalf("Run() returned error: %v", err)
 			}
@@ -666,7 +666,7 @@ func TestDeadCodeElimination_MultipleRules(t *testing.T) {
 	}
 
 	dce := NewDeadCodeElimination()
-	err := dce.Run(p)
+	_, err := dce.Run(p)
 	if err != nil {
 		t.Fatalf("Run() returned error: %v", err)
 	}

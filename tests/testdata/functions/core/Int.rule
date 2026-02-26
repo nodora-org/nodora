@@ -1,0 +1,3 @@
+rule IntRule {
+    out result = int(input.x)
+}

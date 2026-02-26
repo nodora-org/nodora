@@ -32,11 +32,7 @@ func (c *Compiler) Compile(src string) (*nir.Program, error) {
 	}
 
 	opt := optimizer.NewOptimizer()
-	constFold := passes.NewConstantFolding()
-
-	opt.AddPass(constFold) // 1st pass
-	opt.AddPass(passes.NewConstantPropagation())
-	opt.AddPass(constFold) // 2nd pass
+	opt.AddPass(passes.NewRepeatedPass(10, passes.NewConstantFolding(), passes.NewConstantPropagation()))
 	opt.AddPass(passes.NewDeadCodeElimination())
 	opt.AddPass(passes.NewSymbolRemap())
 

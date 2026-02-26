@@ -118,7 +118,7 @@ func TestOptimizer(t *testing.T) {
 	optimizer.AddPass(passes.NewSymbolRemap())
 
 	if err := optimizer.Run(&prog); err != nil {
-		t.Errorf("Optimizer returned an error: %v", err)
+		t.Fatalf("Optimizer returned an error: %v", err)
 	}
 
 	expectedProg := nir.Program{

@@ -11,21 +11,24 @@ func NewConstantFolding() *ConstantFolding {
 	return &ConstantFolding{}
 }
 
-func (cf *ConstantFolding) Run(p *nir.Program) error {
+func (cf *ConstantFolding) Run(p *nir.Program) (bool, error) {
+	changed := false
 	for ruleName, rule := range p.Rules {
 		for i := range rule.Ops {
-			if err := cf.foldOp(&rule.Ops[i]); err != nil {
-				return err
+			c, err := cf.foldOp(&rule.Ops[i])
+			if err != nil {
+				return changed, err
 			}
+			changed = changed || c
 		}
 		p.Rules[ruleName] = rule
 	}
-	return nil
+	return changed, nil
 }
 
-func (cf *ConstantFolding) foldOp(op *nir.Op) error {
+func (cf *ConstantFolding) foldOp(op *nir.Op) (bool, error) {
 	if op.Out == nil {
-		return nil
+		return false, nil
 	}
 
 	// check if all arguments are constants
@@ -34,7 +37,7 @@ func (cf *ConstantFolding) foldOp(op *nir.Op) error {
 			op.Args[i] = *folded
 		}
 		if !cf.isConst(op.Args[i]) {
-			return nil
+			return false, nil
 		}
 	}
 
@@ -44,7 +47,7 @@ func (cf *ConstantFolding) foldOp(op *nir.Op) error {
 
 	// execute the op
 	if err := op.Execute(&evalCtx); err != nil {
-		return err
+		return false, err
 	}
 
 	result := evalCtx.Slots[*op.Out]
@@ -53,7 +56,7 @@ func (cf *ConstantFolding) foldOp(op *nir.Op) error {
 	op.Kind = nir.OpCopy
 	op.Args = []nir.RawExpr{{Expr: &nir.ImmExpr{Value: result}}}
 
-	return nil
+	return true, nil
 }
 
 func (cf *ConstantFolding) foldExpr(expr nir.RawExpr) (*nir.RawExpr, bool) {
@@ -91,6 +94,8 @@ func (cf *ConstantFolding) isConst(expr nir.RawExpr) bool {
 		return true
 	case *nir.IdxExpr:
 		return cf.isConst(e.From) && cf.isConst(e.Index)
+	case *nir.SelExpr:
+		return cf.isConst(e.From)
 	case *nir.CallExpr:
 		for _, arg := range e.Args {
 			if !cf.isConst(arg) {

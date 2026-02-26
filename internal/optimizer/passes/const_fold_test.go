@@ -61,7 +61,7 @@ func TestConstantFolding(t *testing.T) {
 			}
 
 			cf := NewConstantFolding()
-			cf.Run(p)
+			_, _ = cf.Run(p)
 
 			rule := p.Rules["Test"]
 			if len(rule.Ops) != 1 {
@@ -108,7 +108,7 @@ func TestConstantFolding_NoFold(t *testing.T) {
 	}
 
 	cf := NewConstantFolding()
-	cf.Run(p)
+	_, _ = cf.Run(p)
 
 	rule := p.Rules["Test"]
 	op := rule.Ops[0]

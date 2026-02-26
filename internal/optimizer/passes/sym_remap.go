@@ -13,13 +13,13 @@ func NewSymbolRemap() *SymbolRemap {
 	return &SymbolRemap{}
 }
 
-func (sr *SymbolRemap) Run(p *nir.Program) error {
+func (sr *SymbolRemap) Run(p *nir.Program) (bool, error) {
 	for key := range p.Rules {
 		r := p.Rules[key]
 		sr.remapSlots(&r)
 		p.Rules[key] = r
 	}
-	return nil
+	return false, nil
 }
 
 func (sr *SymbolRemap) remapSlots(r *nir.Rule) {

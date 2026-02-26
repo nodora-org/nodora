@@ -12,7 +12,9 @@ func NewDeadCodeElimination() *DeadCodeElimination {
 	return &DeadCodeElimination{}
 }
 
-func (dce *DeadCodeElimination) Run(p *nir.Program) error {
+func (dce *DeadCodeElimination) Run(p *nir.Program) (bool, error) {
+	changed := false
+
 	// collect used signals by scanning all rules
 	usedSignals := dce.collectUsedSignals(p)
 
@@ -20,17 +22,20 @@ func (dce *DeadCodeElimination) Run(p *nir.Program) error {
 	for key := range p.Signals {
 		if !usedSignals[key] {
 			delete(p.Signals, key)
+			changed = true
 		}
 	}
 
 	// eliminate dead operations
 	for key := range p.Rules {
 		r := p.Rules[key]
-		dce.eliminateDeadOperations(&r)
+		if dce.eliminateDeadOperations(&r) {
+			changed = true
+		}
 		p.Rules[key] = r
 	}
 
-	return nil
+	return changed, nil
 }
 
 func (dce *DeadCodeElimination) collectUsedSignals(p *nir.Program) map[string]bool {
@@ -47,9 +52,9 @@ func (dce *DeadCodeElimination) collectUsedSignals(p *nir.Program) map[string]bo
 	return usedSignals
 }
 
-func (dce *DeadCodeElimination) eliminateDeadOperations(r *nir.Rule) {
+func (dce *DeadCodeElimination) eliminateDeadOperations(r *nir.Rule) bool {
 	if len(r.Ops) == 0 {
-		return
+		return false
 	}
 
 	// start with slots used by outputs
@@ -74,7 +79,9 @@ func (dce *DeadCodeElimination) eliminateDeadOperations(r *nir.Rule) {
 	// reverse to restore original order
 	slices.Reverse(liveOps)
 
+	changed := len(liveOps) != len(r.Ops)
 	r.Ops = liveOps
+	return changed
 }
 
 func (dce *DeadCodeElimination) collectSymReads(e *nir.RawExpr, usedSlots map[int]bool) {

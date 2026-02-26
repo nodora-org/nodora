@@ -1,30 +1,27 @@
 package optimizer
 
 import (
+	"nodora.org/nodora/internal/optimizer/passes"
 	"nodora.org/nodora/pkg/nir"
 )
 
-type Pass interface {
-	Run(p *nir.Program) error
-}
-
 type Optimizer struct {
-	passes []Pass
+	passes []passes.Pass
 }
 
 func NewOptimizer() *Optimizer {
 	return &Optimizer{
-		passes: make([]Pass, 0),
+		passes: make([]passes.Pass, 0),
 	}
 }
 
-func (o *Optimizer) AddPass(p Pass) {
+func (o *Optimizer) AddPass(p passes.Pass) {
 	o.passes = append(o.passes, p)
 }
 
 func (o *Optimizer) Run(p *nir.Program) error {
 	for _, pass := range o.passes {
-		if err := pass.Run(p); err != nil {
+		if _, err := pass.Run(p); err != nil {
 			return err
 		}
 	}

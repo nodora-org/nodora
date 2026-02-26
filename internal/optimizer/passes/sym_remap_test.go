@@ -115,7 +115,7 @@ func TestSymbolRemap_BasicRemapping(t *testing.T) {
 			}
 
 			sr := NewSymbolRemap()
-			err := sr.Run(p)
+			_, err := sr.Run(p)
 			if err != nil {
 				t.Fatalf("Run() returned an error: %v", err)
 			}
@@ -229,7 +229,7 @@ func TestSymbolRemap_SymExprRemapping(t *testing.T) {
 			}
 
 			sr := NewSymbolRemap()
-			err := sr.Run(p)
+			_, err := sr.Run(p)
 			if err != nil {
 				t.Fatalf("Run() returned an error: %v", err)
 			}
@@ -572,7 +572,7 @@ func TestSymbolRemap_ComplexExpressions(t *testing.T) {
 			}
 
 			sr := NewSymbolRemap()
-			err := sr.Run(p)
+			_, err := sr.Run(p)
 			if err != nil {
 				t.Fatalf("Run() returned an error: %v", err)
 			}
@@ -620,7 +620,7 @@ func TestSymbolRemap_MultipleRules(t *testing.T) {
 	}
 
 	sr := NewSymbolRemap()
-	err := sr.Run(p)
+	_, err := sr.Run(p)
 	if err != nil {
 		t.Fatalf("Run() returned an error: %v", err)
 	}
@@ -676,7 +676,7 @@ func TestSymbolRemap_NilHandling(t *testing.T) {
 	}
 
 	sr := NewSymbolRemap()
-	err := sr.Run(p)
+	_, err := sr.Run(p)
 	if err != nil {
 		t.Fatalf("Run() returned an error: %v", err)
 	}

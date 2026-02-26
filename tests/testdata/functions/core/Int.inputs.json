@@ -1,0 +1,68 @@
+[
+  {
+    "input": {
+      "x": 1.2
+    },
+    "expected": {
+      "outputs": {
+        "result": 1
+      }
+    }
+  },
+  {
+    "input": {
+      "x": 1
+    },
+    "expected": {
+      "outputs": {
+        "result": 1
+      }
+    }
+  },
+  {
+    "input": {
+      "x": true
+    },
+    "expected": {
+      "outputs": {
+        "result": 1
+      }
+    }
+  },
+  {
+    "input": {
+      "x": false
+    },
+    "expected": {
+      "outputs": {
+        "result": 0
+      }
+    }
+  },
+  {
+    "input": {
+      "x": "1"
+    },
+    "expected": {
+      "outputs": {
+        "result": 1
+      }
+    }
+  },
+  {
+    "input": {
+      "x": "1.2"
+    },
+    "expected": {
+      "outputs": {
+        "result": 1
+      }
+    }
+  },
+  {
+    "input": {
+      "x": [1]
+    },
+    "err": true
+  }
+]

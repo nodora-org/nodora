@@ -33,7 +33,7 @@ func TestConstantPropagation(t *testing.T) {
 	}
 
 	cp := NewConstantPropagation()
-	cp.Run(p)
+	_, _ = cp.Run(p)
 
 	rule := p.Rules["Test"]
 	op := rule.Ops[1]
