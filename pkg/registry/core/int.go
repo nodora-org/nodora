@@ -40,7 +40,7 @@ func intImpl(args []core.Value) (core.Value, error) {
 	case string:
 		val, err := strconv.ParseFloat(v, 64)
 		if err != nil {
-			return core.U(), err
+			return core.U(), fmt.Errorf("cannot parse %q as number", v)
 		}
 		return core.V(math.Trunc(val)), nil
 	default:

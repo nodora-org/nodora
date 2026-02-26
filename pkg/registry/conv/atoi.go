@@ -37,7 +37,7 @@ func atoiImpl(args []core.Value) (core.Value, error) {
 
 	intVal, err := strconv.Atoi(strVal)
 	if err != nil {
-		return core.U(), err
+		return core.U(), fmt.Errorf("cannot parse %q as integer", strVal)
 	}
 
 	return core.V(intVal), nil

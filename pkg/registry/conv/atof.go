@@ -37,7 +37,7 @@ func atofImpl(args []core.Value) (core.Value, error) {
 
 	floatVal, err := strconv.ParseFloat(strVal, 64)
 	if err != nil {
-		return core.U(), err
+		return core.U(), fmt.Errorf("cannot parse %q as float", strVal)
 	}
 
 	return core.V(floatVal), nil
