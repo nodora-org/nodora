@@ -1,37 +1,7 @@
+import "./wasm_exec";
+
 let wasmInstance = null;
-let GoClass = null;
 let initPromise = null;
-
-async function loadWasmExec() {
-  if (GoClass) return;
-
-  if (typeof globalThis.Go !== "undefined") {
-    GoClass = globalThis.Go;
-    return;
-  }
-
-  try {
-    // try ESM import first
-    const wasmExecUrl = new URL("./wasm_exec.js", import.meta.url);
-    await import(wasmExecUrl.href);
-    GoClass = globalThis.Go;
-  } catch (esmErr) {
-    const { readFile } = await import("fs/promises");
-    const { fileURLToPath } = await import("url");
-
-    const wasmExecPath = fileURLToPath(
-      new URL("./wasm_exec.js", import.meta.url),
-    );
-    const code = await readFile(wasmExecPath, "utf8");
-    new Function(code)();
-
-    GoClass = globalThis.Go;
-  }
-
-  if (!GoClass) {
-    throw new Error("wasm_exec.js did not define Go class");
-  }
-}
 
 async function loadWasmBinary() {
   if (typeof window !== "undefined") {
@@ -50,10 +20,11 @@ async function loadWasmBinary() {
 
 async function init() {
   if (initPromise) return initPromise;
-
   initPromise = (async () => {
-    await loadWasmExec();
-
+    let GoClass = globalThis.Go;
+    if (!GoClass) {
+      throw new Error("wasm_exec.js did not define Go class");
+    }
     const go = new GoClass();
     const wasmBytes = await loadWasmBinary();
 
@@ -82,9 +53,7 @@ class Evaluator {
     return this.evaluatorId;
   }
 
-  async evaluate(ruleName, input = {}) {
-    await Promise.resolve();
-
+  evaluate(ruleName, input = {}) {
     const result = globalThis.__nodoraEvaluate(
       this.evaluatorId,
       ruleName,
@@ -92,6 +61,10 @@ class Evaluator {
     );
     if (result.error) throw new Error(result.error);
     return result;
+  }
+
+  async evaluateAsync(ruleName, input = {}) {
+    return this.evaluate(ruleName, input);
   }
 
   on(signalName, callback) {
@@ -126,7 +99,7 @@ async function compile(src) {
     await init();
   }
   const result = globalThis.__nodoraCompile(src);
-  if (result.error) throw new Error(result.error);
+  if (result.error) throw result.error;
   return result;
 }
 
@@ -179,4 +152,4 @@ async function registerFunction({ name, namespace, args, returnType, fn }) {
   if (result && result.error) throw new Error(result.error);
 }
 
-export { compile, createEvaluator, registerFunction, Evaluator };
+export { compile, createEvaluator, Evaluator, registerFunction };

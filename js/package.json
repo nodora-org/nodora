@@ -10,6 +10,9 @@
     "test": "make test",
     "prepublishOnly": "bun run build"
   },
+  "files": [
+    "lib"
+  ],
   "keywords": [
     "nodora",
     "rule",
@@ -17,7 +20,7 @@
     "engine",
     "wasm"
   ],
-  "author": "",
+  "author": "Nodora",
   "license": "MIT",
   "engines": {
     "node": ">=20.11.0"
@@ -28,14 +31,9 @@
   },
   "exports": {
     ".": {
-      "import": {
-        "types": "./lib/index.d.ts",
-        "default": "./lib/index.js"
-      },
-      "require": {
-        "types": "./lib/index.d.ts",
-        "default": "./lib/index.js"
-      }
+      "import": "./lib/index.js",
+      "require": "./lib/index.js",
+      "types": "./lib/index.d.ts"
     }
   }
 }

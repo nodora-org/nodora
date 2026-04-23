@@ -29,7 +29,7 @@ test("register function", async () => {
   );
 
   const evaluator = await createEvaluator(testProgram);
-  const result = await evaluator.evaluate("TestRule", { x: 1, y: 2 });
+  const result = await evaluator.evaluateAsync("TestRule", { x: 1, y: 2 });
 
   expect(result).toEqual({
     outputs: {
@@ -70,7 +70,7 @@ test("reject async function", async () => {
   );
 
   const evaluator = await createEvaluator(testProgram);
-  expect(evaluator.evaluate("TestRule", { x: 1, y: 2 })).rejects.toThrow(
+  expect(evaluator.evaluateAsync("TestRule", { x: 1, y: 2 })).rejects.toThrow(
     /async functions are not supported/,
   );
 

@@ -1,8 +1,18 @@
+export type EmittedSignal = {
+  name: string;
+  args: any[];
+};
+
+export type EvaluationResult = {
+  outputs: Record<string, any>;
+  emitted_signals: EmittedSignal[];
+};
+
 export interface Evaluator {
   /**
    * Get evaluator id
    */
-  getId(): int;
+  getId(): number;
 
   /**
    * Register a callback for a signal
@@ -13,15 +23,23 @@ export interface Evaluator {
   on(signalName: string, callback: (...args: any[]) => void): Evaluator;
 
   /**
-   * Evaluate a rule with the given input
+   * Evaluates a rule with the given input
    * @param ruleName - Name of the rule to evaluate
    * @param input - Input values for the rule
-   * @returns Evaluation outputs
+   * @returns Evaluation result
    */
-  evaluate(
+  evaluate(ruleName: string, input?: Record<string, any>): EvaluationResult;
+
+  /**
+   * Asynchronously evaluates a rule with the given input
+   * @param ruleName - Name of the rule to evaluate
+   * @param input - Input values for the rule
+   * @returns Promise resolving to the evaluation result
+   */
+  evaluateAsync(
     ruleName: string,
     input?: Record<string, any>,
-  ): Promise<Record<string, any>>;
+  ): Promise<EvaluationResult>;
 
   /**
    * Clean up evaluator resources
@@ -43,15 +61,10 @@ export function createEvaluator(programJSON: string): Promise<Evaluator>;
  */
 export function compile(src: string): Promise<string>;
 
-export type Type =
-  | "string"
-  | "number"
-  | "bool"
-  | "object"
-  | "any"
-  | "array"
-  | `array<${Type}>`
-  | `${Type}|${Type}`;
+type BaseType = "string" | "number" | "bool" | "object" | "any";
+type ArrayType = `array<${string}>`;
+type UnionType = `${string}|${string}`;
+export type Type = BaseType | ArrayType | UnionType;
 
 export interface FunctionArgSpec {
   name: string;
@@ -71,4 +84,6 @@ export interface RegisterFunctionOptions {
  * Register a custom function in the registry. Must be called before compilation or evaluation.
  * @param options - Function specification and implementation
  */
-export function registerFunction(options: RegisterFunctionOptions): Promise<void>;
+export function registerFunction(
+  options: RegisterFunctionOptions,
+): Promise<void>;

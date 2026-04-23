@@ -44,7 +44,7 @@ func compile(this js.Value, args []js.Value) any {
 
 	prog, err := c.Compile(src)
 	if err != nil {
-		return errorObject(err.Error())
+		return errorObject(err)
 	}
 
 	jsonBytes, err := json.Marshal(prog)
@@ -215,10 +215,11 @@ func registerFunction(this js.Value, args []js.Value) any {
 	return js.Undefined()
 }
 
-func errorObject(err string) any {
-	return js.ValueOf(map[string]any{
+func errorObject(err any) any {
+	jsonBytes, err := json.Marshal(map[string]any{
 		"error": err,
 	})
+	return js.Global().Get("JSON").Call("parse", string(jsonBytes))
 }
 
 // converts a JS object to core.ValueMap

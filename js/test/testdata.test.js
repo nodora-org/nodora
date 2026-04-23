@@ -68,12 +68,12 @@ for (const { testName, rulePath, inputsPath } of testFiles) {
         try {
           if (tc.err) {
             expect(
-              evaluator.evaluate(ruleNames[0], tc.input),
+              evaluator.evaluateAsync(ruleNames[0], tc.input),
             ).rejects.toThrow();
             return;
           }
 
-          const result = await evaluator.evaluate(ruleNames[0], tc.input);
+          const result = await evaluator.evaluateAsync(ruleNames[0], tc.input);
 
           if (tc.expected.outputs) {
             for (const [key, expectedVal] of Object.entries(
