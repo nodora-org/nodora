@@ -3,8 +3,8 @@ package arrays
 import (
 	"fmt"
 
-	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
+	"nodora.org/nodora/pkg/types"
 )
 
 func groupBy() types.Func {

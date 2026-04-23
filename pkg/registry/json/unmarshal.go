@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
+	"nodora.org/nodora/pkg/types"
 )
 
 func unmarshal() types.Func {
@@ -14,7 +14,7 @@ func unmarshal() types.Func {
 		Description: "Parses a JSON string into a value.",
 		Args:        []types.ArgSpec{{Name: "str", Description: "The JSON string to parse.", Type: types.StringType, Required: true}},
 		ReturnType:  types.AnyType,
-		Fn:         unmarshalImpl,
+		Fn:          unmarshalImpl,
 	}
 }
 

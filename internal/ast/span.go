@@ -3,8 +3,8 @@ package ast
 import "fmt"
 
 type Position struct {
-	Line int
-	Col  int
+	Line int `json:"line"`
+	Col  int `json:"col"`
 }
 
 func (p Position) String() string {
@@ -16,8 +16,8 @@ type WithSpan interface {
 }
 
 type Span struct {
-	Start Position
-	End   Position
+	Start Position `json:"start"`
+	End   Position `json:"end"`
 }
 
 func (s *Span) SetSpan(startLine, startCol, endLine, endCol int) {

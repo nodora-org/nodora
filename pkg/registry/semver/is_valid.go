@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"golang.org/x/mod/semver"
-	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
+	"nodora.org/nodora/pkg/types"
 )
 
 func isValid() types.Func {
@@ -14,7 +14,7 @@ func isValid() types.Func {
 		Description: "Returns true if the string is a valid semantic version.",
 		Args:        []types.ArgSpec{{Name: "version", Description: "The version string to validate.", Type: types.StringType, Required: true}},
 		ReturnType:  types.BoolType,
-		Fn:         isValidImpl,
+		Fn:          isValidImpl,
 	}
 }
 

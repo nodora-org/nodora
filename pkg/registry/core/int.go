@@ -5,8 +5,8 @@ import (
 	"math"
 	"strconv"
 
-	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
+	"nodora.org/nodora/pkg/types"
 )
 
 func int_() types.Func {

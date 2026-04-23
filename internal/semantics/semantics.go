@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"nodora.org/nodora/internal/ast"
-	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/registry"
+	"nodora.org/nodora/pkg/types"
 )
 
 const (
@@ -30,8 +30,8 @@ type symbol struct {
 }
 
 type SourceError struct {
-	Span    ast.Span
-	Message string
+	Span    ast.Span `json:"span"`
+	Message string   `json:"message"`
 	srcLine string
 }
 
@@ -46,7 +46,7 @@ func (e *SourceError) Error() string {
 }
 
 type SemanticErrors struct {
-	Errors []error
+	Errors []error `json:"errors"`
 }
 
 func (se *SemanticErrors) Add(err error) {

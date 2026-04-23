@@ -4,8 +4,8 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
+	"nodora.org/nodora/pkg/types"
 )
 
 func decode() types.Func {
@@ -14,7 +14,7 @@ func decode() types.Func {
 		Description: "Decodes a standard base64 encoded string.",
 		Args:        []types.ArgSpec{{Name: "str", Description: "The base64 encoded string to decode.", Type: types.StringType, Required: true}},
 		ReturnType:  types.StringType,
-		Fn:         decodeImpl,
+		Fn:          decodeImpl,
 	}
 }
 

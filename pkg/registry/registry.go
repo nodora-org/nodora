@@ -3,8 +3,8 @@ package registry
 import (
 	"fmt"
 
-	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/registry/core"
+	"nodora.org/nodora/pkg/types"
 )
 
 type Registry struct {

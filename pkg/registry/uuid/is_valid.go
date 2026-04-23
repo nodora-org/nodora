@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
+	"nodora.org/nodora/pkg/types"
 )
 
 func isValid() types.Func {
@@ -14,7 +14,7 @@ func isValid() types.Func {
 		Description: "Returns true if the string is a valid UUID.",
 		Args:        []types.ArgSpec{{Name: "str", Description: "The string to validate.", Type: types.StringType, Required: true}},
 		ReturnType:  types.BoolType,
-		Fn:         isValidImpl,
+		Fn:          isValidImpl,
 	}
 }
 

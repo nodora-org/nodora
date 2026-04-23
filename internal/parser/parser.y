@@ -341,7 +341,7 @@ postfix_expr
     | postfix_expr DOT IDENT
         { 
           s := &ast.SelectorExpr{Expr: $1, Field: $3}
-          s.Span = $1.GetSpan() // approx
+          s.Span = $1.GetSpan().Merge($<span>3)
           $$ = s
         }
     | postfix_expr LBRACKET expr RBRACKET
@@ -437,13 +437,12 @@ obj_prop_list
 %%
 
 type ParserError struct {
-	line      int
-	col       int
-	lastError string
+    Pos     *ast.Position `json:"pos"`
+	Message string        `json:"message"`
 }
 
 func (pe ParserError) Error() string {
-	return fmt.Sprintf("%d:%d: %s", pe.line, pe.col, pe.lastError)
+	return fmt.Sprintf("%s: %s", pe.Pos.String(), pe.Message)
 }
 
 func Parse(input string) (*ast.Program, error) {
@@ -452,9 +451,8 @@ func Parse(input string) (*ast.Program, error) {
 
     if p.Parse(l) != 0 {
         return nil, &ParserError{
-            l.line,
-            l.col,
-            l.lastError,
+            Pos: &ast.Position{ Line: l.line, Col: l.col },
+			Message: l.lastError,
         }
     }
 

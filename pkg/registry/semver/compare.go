@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"golang.org/x/mod/semver"
-	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
+	"nodora.org/nodora/pkg/types"
 )
 
 func compare() types.Func {

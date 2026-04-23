@@ -1,8 +1,8 @@
 package core
 
 import (
-	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
+	"nodora.org/nodora/pkg/types"
 )
 
 func isArray() types.Func {

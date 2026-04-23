@@ -6,8 +6,8 @@ import (
 	"encoding/hex"
 	"fmt"
 
-	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
+	"nodora.org/nodora/pkg/types"
 )
 
 func hmacSha256() types.Func {

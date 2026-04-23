@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"sort"
 
-	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
+	"nodora.org/nodora/pkg/types"
 )
 
 func values() types.Func {
@@ -14,7 +14,7 @@ func values() types.Func {
 		Description: "Returns an array of an object's values, ordered by sorted keys.",
 		Args:        []types.ArgSpec{{Name: "obj", Description: "The object to extract values from.", Type: types.ObjectType, Required: true}},
 		ReturnType:  types.NewArrayType(types.AnyType),
-		Fn:         valuesImpl,
+		Fn:          valuesImpl,
 	}
 }
 

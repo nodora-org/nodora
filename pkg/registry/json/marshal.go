@@ -3,8 +3,8 @@ package json
 import (
 	"encoding/json"
 
-	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
+	"nodora.org/nodora/pkg/types"
 )
 
 func marshal() types.Func {
@@ -13,7 +13,7 @@ func marshal() types.Func {
 		Description: "Serializes a value to a JSON string.",
 		Args:        []types.ArgSpec{{Name: "x", Description: "The value to serialize.", Type: types.AnyType, Required: true}},
 		ReturnType:  types.StringType,
-		Fn:         marshalImpl,
+		Fn:          marshalImpl,
 	}
 }
 

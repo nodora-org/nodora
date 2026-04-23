@@ -3,8 +3,8 @@ package time
 import (
 	gotime "time"
 
-	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
+	"nodora.org/nodora/pkg/types"
 )
 
 func now() types.Func {

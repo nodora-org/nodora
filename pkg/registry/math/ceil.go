@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"math"
 
-	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
+	"nodora.org/nodora/pkg/types"
 )
 
 func ceil() types.Func {
@@ -14,7 +14,7 @@ func ceil() types.Func {
 		Description: "Returns the smallest integer greater than or equal to x.",
 		Args:        []types.ArgSpec{{Name: "x", Description: "The number to round up.", Type: types.NumberType, Required: true}},
 		ReturnType:  types.NumberType,
-		Fn:         ceilImpl,
+		Fn:          ceilImpl,
 	}
 }
 

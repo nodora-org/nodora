@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"math"
 
-	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
+	"nodora.org/nodora/pkg/types"
 )
 
 func round() types.Func {
@@ -14,7 +14,7 @@ func round() types.Func {
 		Description: "Rounds a number to the nearest integer.",
 		Args:        []types.ArgSpec{{Name: "x", Description: "The number to round.", Type: types.NumberType, Required: true}},
 		ReturnType:  types.NumberType,
-		Fn:         roundImpl,
+		Fn:          roundImpl,
 	}
 }
 

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"nodora.org/nodora/internal/types"
+	"nodora.org/nodora/pkg/types"
 )
 
 type Node interface {

@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"golang.org/x/mod/semver"
-	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
+	"nodora.org/nodora/pkg/types"
 )
 
 func canonical() types.Func {
@@ -14,7 +14,7 @@ func canonical() types.Func {
 		Description: "Returns the canonical form of a semantic version string.",
 		Args:        []types.ArgSpec{{Name: "version", Description: "The version string to canonicalize.", Type: types.StringType, Required: true}},
 		ReturnType:  types.NumberType,
-		Fn:         canonicalImpl,
+		Fn:          canonicalImpl,
 	}
 }
 

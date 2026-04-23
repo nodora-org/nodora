@@ -1,6 +1,6 @@
 package core
 
-import "nodora.org/nodora/internal/types"
+import "nodora.org/nodora/pkg/types"
 
 func GetFuncs() []func() types.Func {
 	return []func() types.Func{

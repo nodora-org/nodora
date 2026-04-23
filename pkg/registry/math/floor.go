@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"math"
 
-	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
+	"nodora.org/nodora/pkg/types"
 )
 
 func floor() types.Func {
@@ -14,7 +14,7 @@ func floor() types.Func {
 		Description: "Returns the largest integer less than or equal to x.",
 		Args:        []types.ArgSpec{{Name: "x", Description: "The number to round down.", Type: types.NumberType, Required: true}},
 		ReturnType:  types.NumberType,
-		Fn:         floorImpl,
+		Fn:          floorImpl,
 	}
 }
 

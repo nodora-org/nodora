@@ -3,8 +3,8 @@ package strings
 import (
 	"fmt"
 
-	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
+	"nodora.org/nodora/pkg/types"
 )
 
 func minLength() types.Func {

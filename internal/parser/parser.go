@@ -130,13 +130,12 @@ const yyInitialStackSize = 16
 //line parser.y:437
 
 type ParserError struct {
-	line      int
-	col       int
-	lastError string
+	Pos     *ast.Position `json:"pos"`
+	Message string        `json:"message"`
 }
 
 func (pe ParserError) Error() string {
-	return fmt.Sprintf("%d:%d: %s", pe.line, pe.col, pe.lastError)
+	return fmt.Sprintf("%s: %s", pe.Pos.String(), pe.Message)
 }
 
 func Parse(input string) (*ast.Program, error) {
@@ -145,9 +144,8 @@ func Parse(input string) (*ast.Program, error) {
 
 	if p.Parse(l) != 0 {
 		return nil, &ParserError{
-			l.line,
-			l.col,
-			l.lastError,
+			Pos:     &ast.Position{Line: l.line, Col: l.col},
+			Message: l.lastError,
 		}
 	}
 
@@ -988,7 +986,7 @@ yydefault:
 //line parser.y:342
 		{
 			s := &ast.SelectorExpr{Expr: yyDollar[1].expr, Field: yyDollar[3].str}
-			s.Span = yyDollar[1].expr.GetSpan() // approx
+			s.Span = yyDollar[1].expr.GetSpan().Merge(yyDollar[3].span)
 			yyVAL.expr = s
 		}
 	case 54:

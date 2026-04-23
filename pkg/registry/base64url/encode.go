@@ -4,8 +4,8 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
+	"nodora.org/nodora/pkg/types"
 )
 
 func encode() types.Func {
@@ -14,7 +14,7 @@ func encode() types.Func {
 		Description: "Encodes a string to URL-safe base64.",
 		Args:        []types.ArgSpec{{Name: "str", Description: "The string to encode.", Type: types.StringType, Required: true}},
 		ReturnType:  types.StringType,
-		Fn:         encodeImpl,
+		Fn:          encodeImpl,
 	}
 }
 

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"math"
 
-	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
+	"nodora.org/nodora/pkg/types"
 )
 
 func abs() types.Func {
@@ -14,7 +14,7 @@ func abs() types.Func {
 		Description: "Returns the absolute value of a number.",
 		Args:        []types.ArgSpec{{Name: "x", Description: "The number.", Type: types.NumberType, Required: true}},
 		ReturnType:  types.NumberType,
-		Fn:         absImpl,
+		Fn:          absImpl,
 	}
 }
 

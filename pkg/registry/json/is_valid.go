@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
+	"nodora.org/nodora/pkg/types"
 )
 
 func isValid() types.Func {
@@ -14,7 +14,7 @@ func isValid() types.Func {
 		Description: "Returns true if the string is valid JSON.",
 		Args:        []types.ArgSpec{{Name: "str", Description: "The string to validate.", Type: types.StringType, Required: true}},
 		ReturnType:  types.BoolType,
-		Fn:         isValidImpl,
+		Fn:          isValidImpl,
 	}
 }
 

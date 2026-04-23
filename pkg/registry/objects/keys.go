@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"sort"
 
-	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/core"
+	"nodora.org/nodora/pkg/types"
 )
 
 func keys() types.Func {
@@ -14,7 +14,7 @@ func keys() types.Func {
 		Description: "Returns a sorted array of an object's keys.",
 		Args:        []types.ArgSpec{{Name: "obj", Description: "The object to extract keys from.", Type: types.ObjectType, Required: true}},
 		ReturnType:  types.NewArrayType(types.StringType),
-		Fn:         keysImpl,
+		Fn:          keysImpl,
 	}
 }
 
