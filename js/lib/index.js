@@ -1,22 +1,8 @@
-import "./wasm_exec";
+import "./wasm_exec.js";
+import { loadWasmBinary } from "#wasm-loader";
 
 let wasmInstance = null;
 let initPromise = null;
-
-async function loadWasmBinary() {
-  if (typeof window !== "undefined") {
-    const wasmUrl = new URL("./nodora.wasm", import.meta.url);
-    const response = await fetch(wasmUrl.href);
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-    return response.arrayBuffer();
-  }
-
-  const { readFile } = await import("fs/promises");
-  const { fileURLToPath } = await import("url");
-  return readFile(fileURLToPath(new URL("./nodora.wasm", import.meta.url)));
-}
 
 async function init() {
   if (initPromise) return initPromise;

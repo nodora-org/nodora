@@ -1,6 +1,6 @@
 {
   "name": "@nodora/js",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "JS bindings for Nodora rule engine",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -31,9 +31,15 @@
   },
   "exports": {
     ".": {
+      "types": "./lib/index.d.ts",
       "import": "./lib/index.js",
-      "require": "./lib/index.js",
-      "types": "./lib/index.d.ts"
+      "require": "./lib/index.js"
+    }
+  },
+  "imports": {
+    "#wasm-loader": {
+      "browser": "./lib/wasm.browser.js",
+      "default": "./lib/wasm.node.js"
     }
   }
 }
