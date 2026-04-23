@@ -9,13 +9,13 @@ import (
 	"strings"
 	"syscall/js"
 
-	"nodora.org/nodora/internal/types"
 	"nodora.org/nodora/pkg/compiler"
 	"nodora.org/nodora/pkg/core"
 	"nodora.org/nodora/pkg/evaluator"
 	"nodora.org/nodora/pkg/nir"
 	"nodora.org/nodora/pkg/registry"
 	_ "nodora.org/nodora/pkg/registry/all"
+	"nodora.org/nodora/pkg/types"
 )
 
 var (
