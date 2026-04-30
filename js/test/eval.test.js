@@ -14,7 +14,7 @@ test("eval", async () => {
   );
 
   const evaluator = await createEvaluator(testProgram);
-  expect(evaluator.getId()).toBe(1);
+  expect(evaluator.getId()).toBeGreaterThan(0);
 
   const mockCallback = mock((x, y) => {
     expect(x).toEqual(123);

@@ -1,6 +1,6 @@
 {
   "name": "@nodora/js",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "JS bindings for Nodora rule engine",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -17,17 +17,13 @@
     "nodora",
     "rule",
     "policy",
-    "engine",
-    "wasm"
+    "engine"
   ],
   "author": "Nodora",
   "license": "MIT",
-  "engines": {
-    "node": ">=20.11.0"
-  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nodora/nodora.git"
+    "url": "git+https://github.com/nodora-org/nodora.git"
   },
   "exports": {
     ".": {
