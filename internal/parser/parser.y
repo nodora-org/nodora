@@ -279,12 +279,6 @@ additive_expr
           b.Span = $1.GetSpan().Merge($3.GetSpan())
           $$ = b
         }
-    | additive_expr MOD unary_expr
-        { 
-          b := &ast.BinaryExpr{Left: $1, Op: "%", Right: $3}
-          b.Span = $1.GetSpan().Merge($3.GetSpan())
-          $$ = b
-        }
     | multiplicative_expr
         { $$ = $1 }
     ;
@@ -301,6 +295,12 @@ multiplicative_expr
           b := &ast.BinaryExpr{Left: $1, Op: "/", Right: $3}
           b.Span = $1.GetSpan().Merge($3.GetSpan())
           $$ = b
+        }
+    | multiplicative_expr MOD unary_expr
+        { 
+            b := &ast.BinaryExpr{Left: $1, Op: "%", Right: $3}
+            b.Span = $1.GetSpan().Merge($3.GetSpan())
+            $$ = b
         }
     | unary_expr
         { $$ = $1 }
