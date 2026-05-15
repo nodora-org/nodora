@@ -1,4 +1,6 @@
+version: 2
 project_name: nodora
+
 builds:
   - main: ./cmd/nodora
     env:
@@ -14,7 +16,12 @@ builds:
       - -X nodora.org/nodora.Version={{ .Tag }}
 
 archives:
-  - format: tar.gz
+  - name_template: "{{ .ProjectName }}-{{ .Tag }}-{{ .Os }}-{{ .Arch }}"
+    formats:
+      - tar.gz
     format_overrides:
       - goos: windows
-        format: zip
+        formats:
+          - zip
+    files:
+      - LICENSE
