@@ -21,6 +21,7 @@ type Visitor interface {
 	VisitLambdaExpr(pe *LambdaExpr) error
 	VisitParam(p *Param) error
 	VisitReservedObject(ro *ReservedObject) error
+	VisitMatchExpr(m *MatchExpr) error
 }
 
 type BaseVisitor struct{}
@@ -145,5 +146,27 @@ func (bv *BaseVisitor) VisitLambdaExpr(le *LambdaExpr) error {
 func (bv *BaseVisitor) VisitParam(p *Param) error { return nil }
 
 func (bv *BaseVisitor) VisitReservedObject(ro *ReservedObject) error {
+	return nil
+}
+
+func (bv *BaseVisitor) VisitMatchExpr(m *MatchExpr) error {
+	if err := m.Value.(Node).Accept(bv); err != nil {
+		return err
+	}
+	for _, arm := range m.Arms {
+		if _, isIdent := arm.Pattern.(*Identifier); !isIdent {
+			if err := arm.Pattern.(Node).Accept(bv); err != nil {
+				return err
+			}
+		}
+		if arm.Guard != nil {
+			if err := arm.Guard.(Node).Accept(bv); err != nil {
+				return err
+			}
+		}
+		if err := arm.Body.(Node).Accept(bv); err != nil {
+			return err
+		}
+	}
 	return nil
 }

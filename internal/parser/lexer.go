@@ -27,6 +27,7 @@ var keywords = map[string]int{
 	"else":   ELSE,
 	"true":   TRUE,
 	"false":  FALSE,
+	"match":  MATCH,
 }
 
 // NewLexer creates a new lexer for the given input string.
@@ -119,6 +120,11 @@ func (l *lexer) Lex(lval *yySymType) int {
 			l.col += 2
 			setSpan()
 			return NAMESPACE
+		case "=>":
+			l.pos += 2
+			l.col += 2
+			setSpan()
+			return FATARROW
 		}
 	}
 

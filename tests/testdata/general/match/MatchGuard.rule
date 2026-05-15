@@ -1,0 +1,8 @@
+rule MatchGuardRule {
+    out tier = match input.requests {
+        n when n > 1000 => "critical",
+        n when n > 500  => "warning",
+        n when n > 100  => "elevated",
+        _               => "normal",
+    }
+}

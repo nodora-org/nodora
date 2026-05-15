@@ -1,0 +1,18 @@
+[
+  {
+    "input": { "plan": "free" },
+    "expected": { "outputs": { "limit": 100 } }
+  },
+  {
+    "input": { "plan": "pro" },
+    "expected": { "outputs": { "limit": 1000 } }
+  },
+  {
+    "input": { "plan": "ent" },
+    "expected": { "outputs": { "limit": 10000 } }
+  },
+  {
+    "input": { "plan": "unknown" },
+    "expected": { "outputs": { "limit": 500 } }
+  }
+]

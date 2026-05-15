@@ -6,7 +6,7 @@
     },
     "expected": {
       "outputs": {
-        "match": true
+        "matched": true
       }
     }
   },
@@ -17,7 +17,7 @@
     },
     "expected": {
       "outputs": {
-        "match": true
+        "matched": true
       }
     }
   },
@@ -28,7 +28,7 @@
     },
     "expected": {
       "outputs": {
-        "match": false
+        "matched": false
       }
     }
   },
@@ -39,7 +39,7 @@
     },
     "expected": {
       "outputs": {
-        "match": true
+        "matched": true
       }
     }
   }

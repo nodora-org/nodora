@@ -1,0 +1,18 @@
+[
+  {
+    "input": { "category": "size", "value": "m" },
+    "expected": { "outputs": { "label": "medium" } }
+  },
+  {
+    "input": { "category": "color", "value": "g" },
+    "expected": { "outputs": { "label": "green" } }
+  },
+  {
+    "input": { "category": "size", "value": "xxl" },
+    "expected": { "outputs": { "label": "unknown-size" } }
+  },
+  {
+    "input": { "category": "shape", "value": "square" },
+    "expected": { "outputs": { "label": "unknown-category" } }
+  }
+]

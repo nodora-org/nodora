@@ -209,6 +209,14 @@ func (sc *SemanticAnalyzer) inferType(expr ast.Expr) types.Type {
 		}
 		// then and else should have the same type
 		return sc.inferType(e.Then)
+	case *ast.MatchExpr:
+		if e.Type != nil {
+			return e.Type
+		}
+		if len(e.Arms) > 0 {
+			return sc.inferType(e.Arms[0].Body)
+		}
+		return types.UnknownType
 	case *ast.CallExpr:
 		if e.Type != nil {
 			return e.Type
@@ -509,6 +517,98 @@ func (sc *SemanticAnalyzer) VisitStringLiteral(sl *ast.StringLiteral) error {
 }
 
 func (sc *SemanticAnalyzer) VisitBoolLiteral(bl *ast.BoolLiteral) error {
+	return nil
+}
+
+func (sc *SemanticAnalyzer) isMatchExhaustive(scrutType types.Type, arms []*ast.MatchArm) bool {
+	for _, arm := range arms {
+		if arm.IsCatchAll() {
+			return true
+		}
+	}
+	// Bool exhaustiveness: both true and false literal arms with no guards
+	// cover every bool value. Only applied when the scrutinee is statically
+	// known to be bool — an unknown type might be anything at runtime.
+	if scrutType != nil && scrutType.Equals(types.BoolType) {
+		hasTrue, hasFalse := false, false
+		for _, arm := range arms {
+			if arm.Guard != nil {
+				continue
+			}
+			if bl, ok := arm.Pattern.(*ast.BoolLiteral); ok {
+				if bl.Value {
+					hasTrue = true
+				} else {
+					hasFalse = true
+				}
+			}
+		}
+		if hasTrue && hasFalse {
+			return true
+		}
+	}
+	return false
+}
+
+func (sc *SemanticAnalyzer) VisitMatchExpr(m *ast.MatchExpr) error {
+	if err := m.Value.Accept(sc); err != nil {
+		sc.addError(err)
+	}
+	scrutType := sc.inferType(m.Value)
+
+	if !sc.isMatchExhaustive(scrutType, m.Arms) {
+		sc.addError(sc.errorAt(m, "match expression is not exhaustive: add a wildcard '_' or bare identifier arm"))
+	}
+
+	var firstBodyType types.Type
+	for i, arm := range m.Arms {
+		sc.pushScope()
+
+		switch p := arm.Pattern.(type) {
+		case *ast.Identifier:
+			if p.Name != "_" {
+				if err := sc.declareSymbol(p.Name, scrutType, symbolKindVar, m.Value, p.Span); err != nil {
+					sc.addError(err)
+				}
+			}
+		default:
+			if err := arm.Pattern.Accept(sc); err != nil {
+				sc.addError(err)
+			}
+			patType := sc.inferType(arm.Pattern)
+			if !sc.typesCompatible(scrutType, patType) {
+				sc.addError(sc.errorAt(arm.Pattern, "match pattern type '%s' is incompatible with scrutinee type '%s'", patType.String(), scrutType.String()))
+			}
+		}
+
+		if arm.Guard != nil {
+			if err := arm.Guard.Accept(sc); err != nil {
+				sc.addError(err)
+			}
+			guardType := sc.inferType(arm.Guard)
+			if !sc.isType(guardType, types.BoolType) {
+				sc.addError(sc.errorAt(arm.Guard, "match guard must be of type bool, got '%s'", guardType.String()))
+			}
+		}
+
+		if err := arm.Body.Accept(sc); err != nil {
+			sc.addError(err)
+		}
+		bodyType := sc.inferType(arm.Body)
+		if i == 0 {
+			firstBodyType = bodyType
+		} else if !sc.typesCompatible(firstBodyType, bodyType) {
+			sc.addError(sc.errorAt(arm.Body, "incompatible match arm body types: '%s' and '%s'", firstBodyType.String(), bodyType.String()))
+		}
+
+		sc.popScope()
+	}
+
+	if firstBodyType != nil {
+		m.Annotate(firstBodyType)
+	} else {
+		m.Annotate(types.UnknownType)
+	}
 	return nil
 }
 

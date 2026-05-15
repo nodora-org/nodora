@@ -375,3 +375,46 @@ type ReservedObject struct {
 func (ro *ReservedObject) Accept(visitor Visitor) error {
 	return nil
 }
+
+type MatchArm struct {
+	Span
+	Pattern Expr
+	Guard   Expr
+	Body    Expr
+}
+
+func (a *MatchArm) IsCatchAll() bool {
+	_, isIdent := a.Pattern.(*Identifier)
+	return isIdent && a.Guard == nil
+}
+
+func (a *MatchArm) BindingName() string {
+	id, ok := a.Pattern.(*Identifier)
+	if !ok || id.Name == "_" {
+		return ""
+	}
+	return id.Name
+}
+
+type MatchExpr struct {
+	Typed
+	Span
+	Value Expr
+	Arms  []*MatchArm
+}
+
+func (m *MatchExpr) Accept(visitor Visitor) error {
+	return visitor.VisitMatchExpr(m)
+}
+
+func (m *MatchExpr) String() string {
+	arms := make([]string, len(m.Arms))
+	for i, arm := range m.Arms {
+		if arm.Guard != nil {
+			arms[i] = fmt.Sprintf("%v when %v => %v", arm.Pattern, arm.Guard, arm.Body)
+		} else {
+			arms[i] = fmt.Sprintf("%v => %v", arm.Pattern, arm.Body)
+		}
+	}
+	return fmt.Sprintf("match %v { %s }", m.Value, strings.Join(arms, ", "))
+}

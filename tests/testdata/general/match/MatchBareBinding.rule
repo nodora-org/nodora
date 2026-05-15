@@ -1,0 +1,7 @@
+rule MatchBareBindingRule {
+    out doubled = match input.n {
+        0 => 0,
+        1 => 2,
+        n => n * 10
+    }
+}

@@ -1,0 +1,14 @@
+[
+  {
+    "input": { "n": 5 },
+    "expected": { "outputs": { "label": "yes" } }
+  },
+  {
+    "input": { "n": -1 },
+    "expected": { "outputs": { "label": "no" } }
+  },
+  {
+    "input": { "n": 0 },
+    "expected": { "outputs": { "label": "no" } }
+  }
+]

@@ -1,0 +1,18 @@
+[
+  {
+    "input": { "n": 0 },
+    "expected": { "outputs": { "doubled": 0 } }
+  },
+  {
+    "input": { "n": 1 },
+    "expected": { "outputs": { "doubled": 2 } }
+  },
+  {
+    "input": { "n": 5 },
+    "expected": { "outputs": { "doubled": 50 } }
+  },
+  {
+    "input": { "n": 7 },
+    "expected": { "outputs": { "doubled": 70 } }
+  }
+]

@@ -1,0 +1,8 @@
+rule MatchLiteralRule {
+    out limit = match input.plan {
+        "free" => 100,
+        "pro"  => 1000,
+        "ent"  => 10000,
+        _      => 500,
+    }
+}

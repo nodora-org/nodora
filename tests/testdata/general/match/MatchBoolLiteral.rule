@@ -1,0 +1,7 @@
+rule MatchBoolLiteralRule {
+    is_positive = input.n > 0
+    out label = match is_positive {
+        true  => "yes",
+        false => "no"
+    }
+}

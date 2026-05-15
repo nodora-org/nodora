@@ -268,6 +268,9 @@ func (b *Builder) buildExpr(expr ast.Expr) exprResult {
 	case *ast.ConditionalExpr:
 		return b.buildConditionalExpr(e)
 
+	case *ast.MatchExpr:
+		return b.buildMatchExpr(e)
+
 	case *ast.CallExpr:
 		return b.buildCallExpr(e)
 
@@ -322,6 +325,87 @@ func (b *Builder) buildBinaryExpr(expr *ast.BinaryExpr) exprResult {
 
 	b.addOp(opKind, []RawExpr{left.toRawExpr(), right.toRawExpr()}, &out)
 	return symResult(out)
+}
+
+func (b *Builder) withBinding(name string, sym int, fn func()) {
+	if name == "" {
+		fn()
+		return
+	}
+	prev, had := b.symbols[name]
+	b.symbols[name] = sym
+	fn()
+	if had {
+		b.symbols[name] = prev
+	} else {
+		delete(b.symbols, name)
+	}
+}
+
+func (b *Builder) buildMatchExpr(expr *ast.MatchExpr) exprResult {
+	scrutRes := b.buildExpr(expr.Value)
+	scrutSym := b.materialize(scrutRes)
+
+	catchAllIdx := -1
+	for i, arm := range expr.Arms {
+		if arm.IsCatchAll() {
+			catchAllIdx = i
+			break
+		}
+	}
+	if catchAllIdx < 0 {
+		// semantics permits this when the arms are structurally exhaustive
+		// e.g. bool scrutinee with both true and false literal arms
+		// use the last arm as the chain's terminal branch
+		catchAllIdx = len(expr.Arms) - 1
+	}
+
+	catchArm := expr.Arms[catchAllIdx]
+	var elseResult exprResult
+	b.withBinding(catchArm.BindingName(), scrutSym, func() {
+		elseResult = b.buildExpr(catchArm.Body)
+	})
+
+	for i := catchAllIdx - 1; i >= 0; i-- {
+		arm := expr.Arms[i]
+		bindingName := arm.BindingName()
+
+		var condResult exprResult
+		var bodyResult exprResult
+
+		b.withBinding(bindingName, scrutSym, func() {
+			var litCond exprResult
+			hasLitCond := false
+			if _, isIdent := arm.Pattern.(*ast.Identifier); !isIdent {
+				patRes := b.buildExpr(arm.Pattern)
+				eqSym := b.allocSymbol()
+				b.addOp(OpEq, []RawExpr{symResult(scrutSym).toRawExpr(), patRes.toRawExpr()}, &eqSym)
+				litCond = symResult(eqSym)
+				hasLitCond = true
+			}
+
+			if arm.Guard != nil {
+				guardRes := b.buildExpr(arm.Guard)
+				if hasLitCond {
+					andSym := b.allocSymbol()
+					b.addOp(OpAnd, []RawExpr{litCond.toRawExpr(), guardRes.toRawExpr()}, &andSym)
+					condResult = symResult(andSym)
+				} else {
+					condResult = guardRes
+				}
+			} else {
+				condResult = litCond
+			}
+
+			bodyResult = b.buildExpr(arm.Body)
+		})
+
+		selSym := b.allocSymbol()
+		b.addOp(OpSelect, []RawExpr{condResult.toRawExpr(), bodyResult.toRawExpr(), elseResult.toRawExpr()}, &selSym)
+		elseResult = symResult(selSym)
+	}
+
+	return elseResult
 }
 
 func (b *Builder) buildConditionalExpr(expr *ast.ConditionalExpr) exprResult {

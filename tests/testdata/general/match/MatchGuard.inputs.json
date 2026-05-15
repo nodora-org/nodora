@@ -1,0 +1,22 @@
+[
+  {
+    "input": { "requests": 1500 },
+    "expected": { "outputs": { "tier": "critical" } }
+  },
+  {
+    "input": { "requests": 750 },
+    "expected": { "outputs": { "tier": "warning" } }
+  },
+  {
+    "input": { "requests": 250 },
+    "expected": { "outputs": { "tier": "elevated" } }
+  },
+  {
+    "input": { "requests": 50 },
+    "expected": { "outputs": { "tier": "normal" } }
+  },
+  {
+    "input": { "requests": 1000 },
+    "expected": { "outputs": { "tier": "warning" } }
+  }
+]

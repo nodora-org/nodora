@@ -1,3 +1,3 @@
 rule GlobMatchRule {
-    out match = glob::match(input.pattern, input.subj)
+    out matched = glob::matches(input.pattern, input.subj)
 }

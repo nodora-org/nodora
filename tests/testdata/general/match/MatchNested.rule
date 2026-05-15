@@ -1,0 +1,17 @@
+rule MatchNestedRule {
+    out label = match input.category {
+        "size" => match input.value {
+            "s" => "small",
+            "m" => "medium",
+            "l" => "large",
+            _   => "unknown-size"
+        },
+        "color" => match input.value {
+            "r" => "red",
+            "g" => "green",
+            "b" => "blue",
+            _   => "unknown-color"
+        },
+        _ => "unknown-category"
+    }
+}
