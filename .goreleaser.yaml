@@ -1,0 +1,20 @@
+project_name: nodora
+builds:
+  - main: ./cmd/nodora
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -X nodora.org/nodora.Version={{ .Tag }}
+
+archives:
+  - format: tar.gz
+    format_overrides:
+      - goos: windows
+        format: zip
