@@ -14,7 +14,7 @@ import (
 func main() {
 	cmd := &cli.Command{
 		Name:  "nodora",
-		Usage: "A rule compiler and evaluator for governed logic at scale",
+		Usage: "Compile and evaluate rules",
 		Commands: []*cli.Command{
 			{
 				Name:  "version",
@@ -26,7 +26,7 @@ func main() {
 			},
 			{
 				Name:  "compile",
-				Usage: "Compile a ruleset file",
+				Usage: "Compile a ruleset",
 				Flags: []cli.Flag{
 					&cli.StringFlag{Name: "file", Aliases: []string{"f"}, Required: true},
 					&cli.StringFlag{Name: "output", Aliases: []string{"o"}},
