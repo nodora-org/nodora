@@ -1,6 +1,6 @@
 # Build artifacts
 *.wasm
-lib/wasm_exec.js
+*.wasm.gz
 
 # Dependencies
 node_modules/
