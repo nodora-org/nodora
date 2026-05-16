@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # install.sh - one-line installer
 set -eu
 
@@ -45,7 +45,7 @@ main() {
   # fetch latest release
   info "Fetching latest release…"
   LATEST="$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest" \
-    | grep '"tag_name"' | head -1 | sed 's/.*"tag_name": *"//;s/".*//')"
+    | grep '"tag_name"' | head -n 1 | sed 's/.*"tag_name": *"//;s/".*//')"
 
   if [ -z "$LATEST" ]; then
     error "could not determine latest release"
@@ -69,7 +69,7 @@ main() {
   tar -xzf "${TMPDIR}/${FILENAME}" -C "$TMPDIR"
 
   # find the binary
-  BINARY_PATH="$(find "$TMPDIR" -name "$BINARY" -type f | head -1)"
+  BINARY_PATH="$(find "$TMPDIR" -name "$BINARY" -type f | head -n 1)"
   if [ -z "$BINARY_PATH" ]; then
     error "could not find '${BINARY}' binary in archive"
   fi
@@ -79,7 +79,7 @@ main() {
   if [ -w "$INSTALL_DIR" ]; then
     mv "$BINARY_PATH" "${INSTALL_DIR}/${BINARY}"
   else
-    info "Elevated permissions required to install to ${INSTALL_DIR}"
+    info "sudo required to install to ${INSTALL_DIR}"
     sudo mv "$BINARY_PATH" "${INSTALL_DIR}/${BINARY}"
   fi
 

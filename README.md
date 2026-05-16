@@ -14,10 +14,24 @@ Rules are **compiled** to a portable intermediate representation (NIR) and then
 
 ## Installation
 
-Nodora requires **Go 1.24+**.
+### Linux / macOS
 
 ```sh
-git clone https://github.com/nodora/nodora.git
+curl -fsSL https://nodora.org/install.sh | bash
+```
+
+### Windows
+
+```powershell
+irm https://nodora.org/install.ps1 | iex
+```
+
+### Build from source
+
+Building from source requires **Go 1.24+**.
+
+```sh
+git clone https://github.com/nodora-org/nodora.git
 cd nodora
 make build
 ```
