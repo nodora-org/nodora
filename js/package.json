@@ -1,6 +1,6 @@
 {
   "name": "@nodora/js",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "JS bindings for Nodora rule engine",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
