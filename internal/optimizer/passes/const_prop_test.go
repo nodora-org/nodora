@@ -47,3 +47,58 @@ func TestConstantPropagation(t *testing.T) {
 		t.Errorf("Expected ImmExpr to have value of 1, but got %v", imm.Value)
 	}
 }
+
+// ensures that constants from one rule don't leak into another
+func TestConstantPropagationRuleIsolation(t *testing.T) {
+	p := &nir.Program{
+		Rules: map[string]nir.Rule{
+			"RuleA": {
+				Ops: []nir.Op{
+					{
+						Kind: nir.OpCopy,
+						Args: []nir.RawExpr{{Expr: &nir.ImmExpr{Value: core.V(false)}}},
+						Out:  core.IntPtr(1),
+					},
+					{
+						Kind: nir.OpCopy,
+						Args: []nir.RawExpr{{Expr: &nir.ImmExpr{Value: core.V(float64(42))}}},
+						Out:  core.IntPtr(2),
+					},
+				},
+			},
+			"RuleB": {
+				Ops: []nir.Op{
+					{
+						Kind: nir.OpCopy,
+						Args: []nir.RawExpr{{Expr: &nir.SelExpr{
+							Path: "a",
+							From: nir.RawExpr{Expr: &nir.SymExpr{Index: 0}},
+						}}},
+						Out: core.IntPtr(1),
+					},
+					{
+						Kind: nir.OpCopy,
+						Args: []nir.RawExpr{{Expr: &nir.SelExpr{
+							Path: "b",
+							From: nir.RawExpr{Expr: &nir.SymExpr{Index: 0}},
+						}}},
+						Out: core.IntPtr(2),
+					},
+					{
+						Kind: nir.OpAnd,
+						Args: []nir.RawExpr{
+							{Expr: &nir.SymExpr{Index: 1}},
+							{Expr: &nir.SymExpr{Index: 2}},
+						},
+						Out: core.IntPtr(3),
+					},
+				},
+			},
+		},
+	}
+
+	rp := NewRepeatedPass(10, NewConstantFolding(), NewConstantPropagation())
+	if _, err := rp.Run(p); err != nil {
+		t.Errorf("optimizer returned error due to cross-rule constant leak: %v", err)
+	}
+}
