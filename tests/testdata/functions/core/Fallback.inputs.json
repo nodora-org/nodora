@@ -1,0 +1,20 @@
+[
+  {
+    "input": {
+      "x": 1
+    },
+    "expected": {
+      "outputs": {
+        "result": 1
+      }
+    }
+  },
+  {
+    "input": {},
+    "expected": {
+      "outputs": {
+        "result": 0
+      }
+    }
+  }
+]

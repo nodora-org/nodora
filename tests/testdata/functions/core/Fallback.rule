@@ -1,0 +1,3 @@
+rule FallbackRule {
+    out result = fallback(input.x, 0)
+}

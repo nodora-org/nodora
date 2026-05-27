@@ -1,4 +1,5 @@
 rule ObjectsRule {
+    empty = {}
     obj = { a: input.a, b: { c: input.c } }
     out a = obj.a
     out b = obj.b

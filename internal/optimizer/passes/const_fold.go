@@ -31,13 +31,16 @@ func (cf *ConstantFolding) foldOp(op *nir.Op) (bool, error) {
 		return false, nil
 	}
 
-	// check if all arguments are constants
+	changed := false
 	for i := range op.Args {
 		if folded, ok := cf.foldExpr(op.Args[i]); ok {
 			op.Args[i] = *folded
+			changed = true
 		}
+	}
+	for i := range op.Args {
 		if !cf.isConst(op.Args[i]) {
-			return false, nil
+			return changed, nil
 		}
 	}
 

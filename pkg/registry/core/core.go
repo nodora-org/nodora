@@ -20,5 +20,6 @@ func GetFuncs() []func() types.Func {
 		max,
 		sum,
 		product,
+		fallback,
 	}
 }

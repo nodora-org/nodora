@@ -46,7 +46,7 @@ import (
 %type <expr> logical_or_expr logical_and_expr equality_expr relational_expr membership_expr additive_expr multiplicative_expr unary_expr postfix_expr primary_expr
 %type <exprs> arg_list args_opt
 %type <prop> obj_prop
-%type <props> obj_prop_list
+%type <props> obj_prop_list obj_props_opt
 %type <arm> match_arm
 %type <arms> match_arms
 
@@ -473,7 +473,7 @@ primary_expr
           a.Span = $1.Merge($3)
           $$ = a
         }
-    | LBRACE obj_prop_list RBRACE
+    | LBRACE obj_props_opt RBRACE
         { ol := &ast.ObjectLiteral{Properties: $2}
           ol.Span = $1.Merge($3)
           $$ = ol
@@ -509,6 +509,13 @@ obj_prop
           p.Span = $<span>1.Merge($3.GetSpan())
           $$ = p
         }
+    ;
+
+obj_props_opt
+    :
+        { $$ = []ast.ObjectProperty{} }
+    | obj_prop_list
+        { $$ = $1 }
     ;
 
 obj_prop_list
