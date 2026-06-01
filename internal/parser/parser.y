@@ -468,14 +468,25 @@ primary_expr
           $$ = b
         }
     | LBRACKET args_opt RBRACKET
-        { 
+        {
           a := &ast.ArrayLiteral{Elements: $2}
           a.Span = $1.Merge($3)
+          $$ = a
+        }
+    | LBRACKET arg_list COMMA RBRACKET
+        {
+          a := &ast.ArrayLiteral{Elements: $2}
+          a.Span = $1.Merge($4)
           $$ = a
         }
     | LBRACE obj_props_opt RBRACE
         { ol := &ast.ObjectLiteral{Properties: $2}
           ol.Span = $1.Merge($3)
+          $$ = ol
+        }
+    | LBRACE obj_prop_list COMMA RBRACE
+        { ol := &ast.ObjectLiteral{Properties: $2}
+          ol.Span = $1.Merge($4)
           $$ = ol
         }
     | LPAREN expr RPAREN
