@@ -16,6 +16,7 @@ func sha256() types.Func {
 		Args:        []types.ArgSpec{{Name: "str", Description: "The string to hash.", Type: types.StringType, Required: true}},
 		ReturnType:  types.StringType,
 		Fn:          sha256Impl,
+		Pure:        true,
 	}
 }
 

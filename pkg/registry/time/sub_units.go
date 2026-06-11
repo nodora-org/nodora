@@ -18,6 +18,7 @@ func subUnits() types.Func {
 		},
 		ReturnType: types.NumberType,
 		Fn:         subUnitsImpl,
+		Pure:       true,
 	}
 }
 

@@ -3,6 +3,7 @@ package passes
 import (
 	"nodora.org/nodora/pkg/core"
 	"nodora.org/nodora/pkg/nir"
+	"nodora.org/nodora/pkg/registry"
 )
 
 type ConstantFolding struct{}
@@ -100,6 +101,10 @@ func (cf *ConstantFolding) isConst(expr nir.RawExpr) bool {
 	case *nir.SelExpr:
 		return cf.isConst(e.From)
 	case *nir.CallExpr:
+		fn, ok := registry.Global().Get(e.Func.Namespace, e.Func.Name)
+		if !ok || !fn.Pure {
+			return false
+		}
 		for _, arg := range e.Args {
 			if !cf.isConst(arg) {
 				return false

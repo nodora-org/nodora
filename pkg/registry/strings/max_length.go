@@ -19,6 +19,7 @@ func maxLength() types.Func {
 		}},
 		ReturnType: types.NumberType,
 		Fn:         maxLengthImpl,
+		Pure:       true,
 	}
 }
 

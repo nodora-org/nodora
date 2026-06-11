@@ -24,6 +24,7 @@ func fallback() types.Func {
 			}},
 		ReturnType: types.AnyType,
 		Fn:         fallbackImpl,
+		Pure:       true,
 	}
 }
 

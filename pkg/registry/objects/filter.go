@@ -17,6 +17,7 @@ func filter() types.Func {
 		},
 		ReturnType: types.ObjectType,
 		Fn:         filterImpl,
+		Pure:       true,
 	}
 }
 

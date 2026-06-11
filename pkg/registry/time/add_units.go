@@ -18,6 +18,7 @@ func addUnits() types.Func {
 		},
 		ReturnType: types.NumberType,
 		Fn:         addUnitsImpl,
+		Pure:       true,
 	}
 }
 

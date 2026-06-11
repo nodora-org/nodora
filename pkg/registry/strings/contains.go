@@ -28,6 +28,7 @@ func contains() types.Func {
 		},
 		ReturnType: types.BoolType,
 		Fn:         containsImpl,
+		Pure:       true,
 	}
 }
 

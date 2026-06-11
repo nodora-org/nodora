@@ -27,6 +27,7 @@ func findIndex() types.Func {
 		},
 		ReturnType: types.NumberType,
 		Fn:         findIndexImpl,
+		Pure:       true,
 	}
 }
 

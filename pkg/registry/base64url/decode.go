@@ -15,6 +15,7 @@ func decode() types.Func {
 		Args:        []types.ArgSpec{{Name: "str", Description: "The base64url encoded string to decode.", Type: types.StringType, Required: true}},
 		ReturnType:  types.StringType,
 		Fn:          decodeImpl,
+		Pure:        true,
 	}
 }
 

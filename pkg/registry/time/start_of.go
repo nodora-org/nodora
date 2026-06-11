@@ -18,6 +18,7 @@ func startOf() types.Func {
 		},
 		ReturnType: types.NumberType,
 		Fn:         startOfImpl,
+		Pure:       true,
 	}
 }
 

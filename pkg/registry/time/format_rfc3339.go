@@ -17,6 +17,7 @@ func formatRFC3339() types.Func {
 		},
 		ReturnType: types.StringType,
 		Fn:         formatRFC3339Impl,
+		Pure:       true,
 	}
 }
 

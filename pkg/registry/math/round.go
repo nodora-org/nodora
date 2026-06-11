@@ -15,6 +15,7 @@ func round() types.Func {
 		Args:        []types.ArgSpec{{Name: "x", Description: "The number to round.", Type: types.NumberType, Required: true}},
 		ReturnType:  types.NumberType,
 		Fn:          roundImpl,
+		Pure:        true,
 	}
 }
 

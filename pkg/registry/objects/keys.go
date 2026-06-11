@@ -15,6 +15,7 @@ func keys() types.Func {
 		Args:        []types.ArgSpec{{Name: "obj", Description: "The object to extract keys from.", Type: types.ObjectType, Required: true}},
 		ReturnType:  types.NewArrayType(types.StringType),
 		Fn:          keysImpl,
+		Pure:        true,
 	}
 }
 

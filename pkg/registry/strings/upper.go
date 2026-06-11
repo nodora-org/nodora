@@ -22,6 +22,7 @@ func upper() types.Func {
 		},
 		ReturnType: types.StringType,
 		Fn:         upperImpl,
+		Pure:       true,
 	}
 }
 

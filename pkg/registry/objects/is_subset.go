@@ -17,6 +17,7 @@ func isSubset() types.Func {
 		},
 		ReturnType: types.ObjectType,
 		Fn:         isSubsetImpl,
+		Pure:       true,
 	}
 }
 

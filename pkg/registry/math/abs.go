@@ -15,6 +15,7 @@ func abs() types.Func {
 		Args:        []types.ArgSpec{{Name: "x", Description: "The number.", Type: types.NumberType, Required: true}},
 		ReturnType:  types.NumberType,
 		Fn:          absImpl,
+		Pure:        true,
 	}
 }
 

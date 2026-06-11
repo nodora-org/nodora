@@ -19,6 +19,7 @@ func sum() types.Func {
 		}},
 		ReturnType: types.NumberType,
 		Fn:         sumImpl,
+		Pure:       true,
 	}
 }
 

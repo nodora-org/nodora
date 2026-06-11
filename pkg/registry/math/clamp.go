@@ -18,6 +18,7 @@ func clamp() types.Func {
 		},
 		ReturnType: types.NumberType,
 		Fn:         clampImpl,
+		Pure:       true,
 	}
 }
 

@@ -20,6 +20,7 @@ func isAlpha() types.Func {
 		}},
 		ReturnType: types.BoolType,
 		Fn:         isAlphaImpl,
+		Pure:       true,
 	}
 }
 

@@ -14,6 +14,7 @@ func now() types.Func {
 		Args:        []types.ArgSpec{},
 		ReturnType:  types.NumberType,
 		Fn:          nowImpl,
+		Pure:        false,
 	}
 }
 

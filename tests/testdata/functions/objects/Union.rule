@@ -1,3 +1,5 @@
 rule UnionRule {
-    out obj = objects::union(input.obj1, input.obj2)
+    out obj1 = input.obj1
+    out obj2 = input.obj2
+    out result = objects::union(obj1, obj2)
 }

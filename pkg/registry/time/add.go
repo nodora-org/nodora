@@ -17,6 +17,7 @@ func add() types.Func {
 		},
 		ReturnType: types.NumberType,
 		Fn:         addImpl,
+		Pure:       true,
 	}
 }
 

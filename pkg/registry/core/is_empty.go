@@ -19,6 +19,7 @@ func isEmpty() types.Func {
 		}},
 		ReturnType: types.BoolType,
 		Fn:         isEmptyImpl,
+		Pure:       true,
 	}
 }
 

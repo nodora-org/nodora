@@ -20,6 +20,7 @@ func atof() types.Func {
 		}},
 		ReturnType: types.NumberType,
 		Fn:         atofImpl,
+		Pure:       true,
 	}
 }
 

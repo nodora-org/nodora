@@ -28,6 +28,7 @@ func concat() types.Func {
 		},
 		ReturnType: types.StringType,
 		Fn:         concatImpl,
+		Pure:       true,
 	}
 }
 

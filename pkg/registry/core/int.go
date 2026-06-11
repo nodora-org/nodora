@@ -21,6 +21,7 @@ func int_() types.Func {
 		}},
 		ReturnType: types.NumberType,
 		Fn:         intImpl,
+		Pure:       true,
 	}
 }
 

@@ -16,6 +16,7 @@ func flatten() types.Func {
 		},
 		ReturnType: types.NewArrayType(types.AnyType),
 		Fn:         flattenImpl,
+		Pure:       true,
 	}
 }
 

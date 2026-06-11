@@ -20,6 +20,7 @@ func hmacSha256() types.Func {
 		},
 		ReturnType: types.StringType,
 		Fn:         hmacSha256Impl,
+		Pure:       true,
 	}
 }
 

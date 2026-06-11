@@ -14,6 +14,7 @@ func marshal() types.Func {
 		Args:        []types.ArgSpec{{Name: "x", Description: "The value to serialize.", Type: types.AnyType, Required: true}},
 		ReturnType:  types.StringType,
 		Fn:          marshalImpl,
+		Pure:        true,
 	}
 }
 

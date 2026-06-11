@@ -18,6 +18,7 @@ func maxFunc() types.Func {
 		},
 		ReturnType: types.NumberType,
 		Fn:         maxImpl,
+		Pure:       true,
 	}
 }
 

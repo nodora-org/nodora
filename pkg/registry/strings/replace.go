@@ -34,6 +34,7 @@ func replace() types.Func {
 		},
 		ReturnType: types.StringType,
 		Fn:         replaceImpl,
+		Pure:       true,
 	}
 }
 

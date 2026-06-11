@@ -20,6 +20,7 @@ func isAlphanumeric() types.Func {
 		}},
 		ReturnType: types.BoolType,
 		Fn:         isAlphanumericImpl,
+		Pure:       true,
 	}
 }
 

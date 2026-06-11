@@ -23,6 +23,7 @@ func max() types.Func {
 		}},
 		ReturnType: types.NewUnionType(types.NumberType, types.StringType),
 		Fn:         maxImpl,
+		Pure:       true,
 	}
 }
 

@@ -18,6 +18,7 @@ func zip() types.Func {
 		},
 		ReturnType: types.NewArrayType(types.NewArrayType(types.AnyType)),
 		Fn:         zipImpl,
+		Pure:       true,
 	}
 }
 

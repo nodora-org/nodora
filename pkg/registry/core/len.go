@@ -19,6 +19,7 @@ func length() types.Func {
 		}},
 		ReturnType: types.NumberType,
 		Fn:         lengthImpl,
+		Pure:       true,
 	}
 }
 

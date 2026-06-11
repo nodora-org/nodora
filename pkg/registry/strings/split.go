@@ -28,6 +28,7 @@ func split() types.Func {
 		},
 		ReturnType: types.NewArrayType(types.StringType),
 		Fn:         splitImpl,
+		Pure:       true,
 	}
 }
 

@@ -2,6 +2,7 @@ package objects
 
 import (
 	"fmt"
+	"maps"
 
 	"nodora.org/nodora/pkg/core"
 	"nodora.org/nodora/pkg/types"
@@ -17,6 +18,7 @@ func remove() types.Func {
 		},
 		ReturnType: types.ObjectType,
 		Fn:         removeImpl,
+		Pure:       true,
 	}
 }
 
@@ -37,13 +39,14 @@ func removeImpl(args []core.Value) (core.Value, error) {
 		return core.U(), fmt.Errorf("expected array for 'keys' argument, got %v", keys.Type())
 	}
 
+	result := maps.Clone(objVal)
 	for _, k := range keysVal {
 		keyVal, ok := k.Raw.(string)
 		if !ok {
 			return core.U(), fmt.Errorf("expected string in 'keys' array, got %v", k.Type())
 		}
-		delete(objVal, keyVal)
+		delete(result, keyVal)
 	}
 
-	return core.V(objVal), nil
+	return core.V(result), nil
 }

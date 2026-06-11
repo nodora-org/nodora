@@ -15,6 +15,7 @@ func ceil() types.Func {
 		Args:        []types.ArgSpec{{Name: "x", Description: "The number to round up.", Type: types.NumberType, Required: true}},
 		ReturnType:  types.NumberType,
 		Fn:          ceilImpl,
+		Pure:        true,
 	}
 }
 

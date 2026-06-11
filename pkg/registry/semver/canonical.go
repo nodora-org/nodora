@@ -15,6 +15,7 @@ func canonical() types.Func {
 		Args:        []types.ArgSpec{{Name: "version", Description: "The version string to canonicalize.", Type: types.StringType, Required: true}},
 		ReturnType:  types.NumberType,
 		Fn:          canonicalImpl,
+		Pure:        true,
 	}
 }
 

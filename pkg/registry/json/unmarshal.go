@@ -15,6 +15,7 @@ func unmarshal() types.Func {
 		Args:        []types.ArgSpec{{Name: "str", Description: "The JSON string to parse.", Type: types.StringType, Required: true}},
 		ReturnType:  types.AnyType,
 		Fn:          unmarshalImpl,
+		Pure:        true,
 	}
 }
 

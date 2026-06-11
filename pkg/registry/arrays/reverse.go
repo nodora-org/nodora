@@ -17,6 +17,7 @@ func reverse() types.Func {
 		},
 		ReturnType: types.NewArrayType(types.AnyType),
 		Fn:         reverseImpl,
+		Pure:       true,
 	}
 }
 

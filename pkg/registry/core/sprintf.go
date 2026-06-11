@@ -18,6 +18,7 @@ func sprintf() types.Func {
 		},
 		ReturnType: types.StringType,
 		Fn:         sprintfImpl,
+		Pure:       true,
 	}
 }
 

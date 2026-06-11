@@ -19,6 +19,7 @@ func minLength() types.Func {
 		}},
 		ReturnType: types.NumberType,
 		Fn:         minLengthImpl,
+		Pure:       true,
 	}
 }
 

@@ -23,6 +23,7 @@ func min() types.Func {
 		}},
 		ReturnType: types.NewUnionType(types.NumberType, types.StringType),
 		Fn:         minImpl,
+		Pure:       true,
 	}
 }
 

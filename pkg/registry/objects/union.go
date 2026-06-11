@@ -18,6 +18,7 @@ func union() types.Func {
 		},
 		ReturnType: types.ObjectType,
 		Fn:         unionImpl,
+		Pure:       true,
 	}
 }
 
@@ -42,7 +43,8 @@ func unionImpl(args []core.Value) (core.Value, error) {
 		return core.U(), fmt.Errorf("expected object for 'obj2' argument, got %v", obj2.Type())
 	}
 
-	maps.Copy(obj1Val, obj2Val)
+	result := maps.Clone(obj1Val)
+	maps.Copy(result, obj2Val)
 
-	return core.V(obj1Val), nil
+	return core.V(result), nil
 }

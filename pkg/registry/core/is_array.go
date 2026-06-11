@@ -17,6 +17,7 @@ func isArray() types.Func {
 		}},
 		ReturnType: types.BoolType,
 		Fn:         isArrayImpl,
+		Pure:       true,
 	}
 }
 

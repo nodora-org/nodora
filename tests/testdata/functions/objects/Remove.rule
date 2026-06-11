@@ -1,3 +1,4 @@
 rule RemoveRule {
-    out obj = objects::remove(input.data, ["a", "b"])
+    out data = input.data
+    out result = objects::remove(data, ["a", "b"])
 }

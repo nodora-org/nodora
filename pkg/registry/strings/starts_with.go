@@ -28,6 +28,7 @@ func startsWith() types.Func {
 		},
 		ReturnType: types.BoolType,
 		Fn:         startsWithImpl,
+		Pure:       true,
 	}
 }
 

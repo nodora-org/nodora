@@ -27,6 +27,7 @@ func some() types.Func {
 		},
 		ReturnType: types.BoolType,
 		Fn:         someImpl,
+		Pure:       true,
 	}
 }
 

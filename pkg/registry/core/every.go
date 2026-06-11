@@ -27,6 +27,7 @@ func every() types.Func {
 		},
 		ReturnType: types.BoolType,
 		Fn:         everyImpl,
+		Pure:       true,
 	}
 }
 

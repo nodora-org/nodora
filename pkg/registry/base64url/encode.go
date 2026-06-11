@@ -15,6 +15,7 @@ func encode() types.Func {
 		Args:        []types.ArgSpec{{Name: "str", Description: "The string to encode.", Type: types.StringType, Required: true}},
 		ReturnType:  types.StringType,
 		Fn:          encodeImpl,
+		Pure:        true,
 	}
 }
 

@@ -17,6 +17,7 @@ func isString() types.Func {
 		}},
 		ReturnType: types.BoolType,
 		Fn:         isStringImpl,
+		Pure:       true,
 	}
 }
 

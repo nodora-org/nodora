@@ -15,6 +15,7 @@ func floor() types.Func {
 		Args:        []types.ArgSpec{{Name: "x", Description: "The number to round down.", Type: types.NumberType, Required: true}},
 		ReturnType:  types.NumberType,
 		Fn:          floorImpl,
+		Pure:        true,
 	}
 }
 

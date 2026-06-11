@@ -17,6 +17,7 @@ func parseRFC3339() types.Func {
 		},
 		ReturnType: types.NumberType,
 		Fn:         parseRFC3339Impl,
+		Pure:       true,
 	}
 }
 

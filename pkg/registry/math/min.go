@@ -18,6 +18,7 @@ func minFunc() types.Func {
 		},
 		ReturnType: types.NumberType,
 		Fn:         minImpl,
+		Pure:       true,
 	}
 }
 

@@ -27,6 +27,7 @@ func groupBy() types.Func {
 		},
 		ReturnType: types.ObjectType,
 		Fn:         groupByImpl,
+		Pure:       true,
 	}
 }
 

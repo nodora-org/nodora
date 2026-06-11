@@ -17,6 +17,7 @@ func sub() types.Func {
 		},
 		ReturnType: types.NumberType,
 		Fn:         subImpl,
+		Pure:       true,
 	}
 }
 

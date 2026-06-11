@@ -18,6 +18,7 @@ func endOf() types.Func {
 		},
 		ReturnType: types.NumberType,
 		Fn:         endOfImpl,
+		Pure:       true,
 	}
 }
 

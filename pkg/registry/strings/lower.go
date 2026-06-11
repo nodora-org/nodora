@@ -22,6 +22,7 @@ func lower() types.Func {
 		},
 		ReturnType: types.StringType,
 		Fn:         lowerImpl,
+		Pure:       true,
 	}
 }
 

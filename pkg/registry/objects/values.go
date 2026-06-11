@@ -15,6 +15,7 @@ func values() types.Func {
 		Args:        []types.ArgSpec{{Name: "obj", Description: "The object to extract values from.", Type: types.ObjectType, Required: true}},
 		ReturnType:  types.NewArrayType(types.AnyType),
 		Fn:          valuesImpl,
+		Pure:        true,
 	}
 }
 

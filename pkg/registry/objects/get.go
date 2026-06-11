@@ -17,6 +17,7 @@ func get() types.Func {
 			{Name: "default", Description: "The value to return if the key is not found.", Type: types.AnyType, Required: true}},
 		ReturnType: types.AnyType,
 		Fn:         getImpl,
+		Pure:       true,
 	}
 }
 

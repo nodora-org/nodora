@@ -15,6 +15,7 @@ func isValid() types.Func {
 		Args:        []types.ArgSpec{{Name: "version", Description: "The version string to validate.", Type: types.StringType, Required: true}},
 		ReturnType:  types.BoolType,
 		Fn:          isValidImpl,
+		Pure:        true,
 	}
 }
 

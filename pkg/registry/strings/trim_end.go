@@ -28,6 +28,7 @@ func trimEnd() types.Func {
 		},
 		ReturnType: types.StringType,
 		Fn:         trimEndImpl,
+		Pure:       true,
 	}
 }
 

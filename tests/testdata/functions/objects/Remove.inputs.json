@@ -5,7 +5,8 @@
     },
     "expected": {
       "outputs": {
-        "obj": { "c": 3 }
+        "data": { "a": 1, "b": 2, "c": 3 },
+        "result": { "c": 3 }
       }
     }
   },
@@ -15,7 +16,8 @@
     },
     "expected": {
       "outputs": {
-        "obj": {}
+        "data": { "a": 1, "b": 2 },
+        "result": {}
       }
     }
   },
@@ -25,7 +27,8 @@
     },
     "expected": {
       "outputs": {
-        "obj": { "c": 2 }
+        "data": { "a": 1, "c": 2 },
+        "result": { "c": 2 }
       }
     }
   }

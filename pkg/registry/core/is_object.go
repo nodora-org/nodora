@@ -17,6 +17,7 @@ func isObject() types.Func {
 		}},
 		ReturnType: types.BoolType,
 		Fn:         isObjectImpl,
+		Pure:       true,
 	}
 }
 

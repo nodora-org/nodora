@@ -19,6 +19,7 @@ func product() types.Func {
 		}},
 		ReturnType: types.NumberType,
 		Fn:         productImpl,
+		Pure:       true,
 	}
 }
 

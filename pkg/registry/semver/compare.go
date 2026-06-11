@@ -18,6 +18,7 @@ func compare() types.Func {
 		},
 		ReturnType: types.NumberType,
 		Fn:         compareImpl,
+		Pure:       true,
 	}
 }
 

@@ -28,6 +28,7 @@ func endsWith() types.Func {
 		},
 		ReturnType: types.BoolType,
 		Fn:         endsWithImpl,
+		Pure:       true,
 	}
 }
 

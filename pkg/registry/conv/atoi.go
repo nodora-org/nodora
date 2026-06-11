@@ -20,6 +20,7 @@ func atoi() types.Func {
 		}},
 		ReturnType: types.NumberType,
 		Fn:         atoiImpl,
+		Pure:       true,
 	}
 }
 

@@ -21,6 +21,7 @@ type Func struct {
 	Description string
 	ReturnType  Type
 	Fn          func([]core.Value) (core.Value, error)
+	Pure        bool
 }
 
 func (f *Func) RequiredArgCount() (n int) {

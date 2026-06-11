@@ -17,6 +17,7 @@ func concat() types.Func {
 		},
 		ReturnType: types.NewArrayType(types.AnyType),
 		Fn:         concatImpl,
+		Pure:       true,
 	}
 }
 

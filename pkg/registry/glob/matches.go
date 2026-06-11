@@ -18,6 +18,7 @@ func matches() types.Func {
 		},
 		ReturnType: types.BoolType,
 		Fn:         matchesImpl,
+		Pure:       true,
 	}
 }
 

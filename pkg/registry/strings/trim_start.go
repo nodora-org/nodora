@@ -28,6 +28,7 @@ func trimStart() types.Func {
 		},
 		ReturnType: types.StringType,
 		Fn:         trimStartImpl,
+		Pure:       true,
 	}
 }
 
