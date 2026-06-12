@@ -1,0 +1,10 @@
+// strict top-down: a rule cannot reference a const declared below it
+rule UsesLater {
+    out a = LATER       // ERROR: undefined symbol 'LATER'
+}
+
+const LATER = 10
+
+// a const may not be redeclared
+const DUP = 1
+const DUP = 2           // ERROR: symbol 'DUP' already declared

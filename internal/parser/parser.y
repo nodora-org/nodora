@@ -10,10 +10,8 @@ import (
 
 %union {
     str     string
-    node     ast.Node
-    nodes    []ast.Node
-    signal  *ast.Signal
-    rule    *ast.Rule
+    node    ast.Node
+    nodes   []ast.Node
     param   ast.Param
     params  []ast.Param
     stmt    ast.Statement
@@ -28,16 +26,14 @@ import (
 }
 
 %token <str> IDENT STRING NUMBER
-%token <span> TRUE FALSE SIGNAL RULE EMIT WHEN OUT IN IF THEN ELSE MATCH
+%token <span> TRUE FALSE SIGNAL RULE CONST EMIT WHEN OUT IN IF THEN ELSE MATCH
 %token <span> LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET COLON COMMA QMARK DOT NAMESPACE
 %token <span> PLUS MINUS STAR SLASH MOD
 %token <span> GT LT GTE LTE EQ NEQ AND OR NOT ASSIGN FATARROW
 %token <span> PIPE
 
-%type <node> decl
+%type <node> decl signal_decl rule_decl const_decl
 %type <nodes> decl_list
-%type <signal> signal_decl
-%type <rule> rule_decl
 %type <param> param
 %type <params> param_list params_opt
 %type <stmt> stmt assign_stmt emit_stmt
@@ -79,21 +75,34 @@ decl
         { $$ = $1 }
     | rule_decl
         { $$ = $1 }
+    | const_decl
+        { $$ = $1 }
     ;
 
 signal_decl
     : SIGNAL IDENT LPAREN params_opt RPAREN
-        { 
-          $$ = &ast.Signal{Name: $2, Params: $4}
-          $$.Span = $1.Merge($5)
+        {
+          s := &ast.Signal{Name: $2, Params: $4}
+          s.Span = $1.Merge($5)
+          $$ = s
         }
     ;
 
 rule_decl
     : RULE IDENT LBRACE stmt_list RBRACE
-        { 
-          $$ = &ast.Rule{Name: $2, Statements: $4}
-          $$.Span = $1.Merge($5)
+        {
+          r := &ast.Rule{Name: $2, Statements: $4}
+          r.Span = $1.Merge($5)
+          $$ = r
+        }
+    ;
+
+const_decl
+    : CONST IDENT ASSIGN expr
+        {
+          c := &ast.Const{Name: $2, Value: $4}
+          c.Span = $1.Merge($4.GetSpan())
+          $$ = c
         }
     ;
 

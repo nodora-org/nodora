@@ -4,6 +4,7 @@ type Visitor interface {
 	VisitProgram(p *Program) error
 	VisitSignal(s *Signal) error
 	VisitRule(r *Rule) error
+	VisitConst(c *Const) error
 	VisitAssignment(a *Assignment) error
 	VisitEmitStatement(es *EmitStatement) error
 	VisitBinaryExpr(be *BinaryExpr) error
@@ -36,6 +37,10 @@ func (bv *BaseVisitor) VisitProgram(p *Program) error {
 }
 
 func (bv *BaseVisitor) VisitSignal(s *Signal) error { return nil }
+
+func (bv *BaseVisitor) VisitConst(c *Const) error {
+	return c.Value.(Node).Accept(bv)
+}
 
 func (bv *BaseVisitor) VisitRule(r *Rule) error {
 	for _, stmt := range r.Statements {

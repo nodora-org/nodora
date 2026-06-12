@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"nodora.org/nodora/internal/parser"
+	_ "nodora.org/nodora/pkg/registry/all"
 )
 
 func TestSemantics(t *testing.T) {

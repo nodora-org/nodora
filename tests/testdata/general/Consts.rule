@@ -1,0 +1,17 @@
+const MAX = 100
+const LIMIT = MAX / 2
+const NAMES = ["alice", "bob"]
+const CFG = { retries: 3 }
+const THRESH = math::abs(-5)
+const NUMS = [5, 15, 25]
+
+signal Alert(score)
+
+rule ConstsRule {
+    out over = input.score > LIMIT
+    out names = NAMES
+    out retries = CFG.retries
+    out doubled = THRESH * 2
+    out idx = arrays::find_index(NUMS, |n| n > THRESH)
+    emit Alert(input.score) when input.score > MAX
+}

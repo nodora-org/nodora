@@ -18,6 +18,7 @@ type lexer struct {
 var keywords = map[string]int{
 	"signal": SIGNAL,
 	"rule":   RULE,
+	"const":  CONST,
 	"emit":   EMIT,
 	"when":   WHEN,
 	"out":    OUT,

@@ -53,6 +53,21 @@ func (s *Signal) String() string {
 	return fmt.Sprintf("signal %s(%s)", s.Name, strings.Join(params, ", "))
 }
 
+type Const struct {
+	Typed
+	Span
+	Name  string
+	Value Expr
+}
+
+func (c *Const) Accept(visitor Visitor) error {
+	return visitor.VisitConst(c)
+}
+
+func (c *Const) String() string {
+	return fmt.Sprintf("const %s = %v", c.Name, c.Value)
+}
+
 type Rule struct {
 	Span
 	Name       string

@@ -14,6 +14,7 @@ const (
 	symbolKindSignal   = "signal"
 	symbolKindRule     = "rule"
 	symbolKindVar      = "var"
+	symbolKindConst    = "const"
 	symbolKindReserved = "reserved"
 )
 
@@ -291,6 +292,10 @@ func (sc *SemanticAnalyzer) typesCompatible(a, b types.Type) bool {
 func (sc *SemanticAnalyzer) Analyze(program *ast.Program) error {
 	for _, decl := range program.Decls {
 		switch d := decl.(type) {
+		case *ast.Const:
+			if err := d.Accept(sc); err != nil {
+				sc.addError(err)
+			}
 		case *ast.Signal:
 			if err := d.Accept(sc); err != nil {
 				sc.addError(err)
@@ -318,6 +323,76 @@ func (sc *SemanticAnalyzer) VisitSignal(s *ast.Signal) error {
 		sc.addError(err)
 	}
 	return nil
+}
+
+func (sc *SemanticAnalyzer) VisitConst(c *ast.Const) error {
+	if err := c.Value.Accept(sc); err != nil {
+		sc.addError(err)
+	}
+
+	if !sc.isConstantExpression(c.Value) {
+		sc.addError(sc.errorAt(c.Value, "const '%s' must be a constant expression", c.Name))
+	}
+
+	ty := sc.inferType(c.Value)
+	c.Annotate(ty)
+
+	if err := sc.declareSymbol(c.Name, ty, symbolKindConst, c.Value, c.Span); err != nil {
+		sc.addError(err)
+	}
+
+	return nil
+}
+
+// reports whether expr can be fully evaluated at compile time
+// without access to any runtime value
+func (sc *SemanticAnalyzer) isConstantExpression(expr ast.Expr) bool {
+	switch e := expr.(type) {
+	case *ast.NumberLiteral, *ast.StringLiteral, *ast.BoolLiteral:
+		return true
+	case *ast.ArrayLiteral:
+		for _, elem := range e.Elements {
+			if !sc.isConstantExpression(elem) {
+				return false
+			}
+		}
+		return true
+	case *ast.ObjectLiteral:
+		for _, prop := range e.Properties {
+			if !sc.isConstantExpression(prop.Value) {
+				return false
+			}
+		}
+		return true
+	case *ast.UnaryExpr:
+		return sc.isConstantExpression(e.Expr)
+	case *ast.BinaryExpr:
+		return sc.isConstantExpression(e.Left) && sc.isConstantExpression(e.Right)
+	case *ast.ConditionalExpr:
+		return sc.isConstantExpression(e.Cond) &&
+			sc.isConstantExpression(e.Then) &&
+			sc.isConstantExpression(e.Else)
+	case *ast.IndexExpr:
+		return sc.isConstantExpression(e.Expr) && sc.isConstantExpression(e.Index)
+	case *ast.SelectorExpr:
+		return sc.isConstantExpression(e.Expr)
+	case *ast.Identifier:
+		sym, err := sc.lookupSymbol(e.Name, e)
+		return err == nil && sym.Kind == symbolKindConst
+	case *ast.CallExpr:
+		fn, ok := registry.Global().Get(e.Namespace, e.Name)
+		if !ok || !fn.Pure {
+			return false
+		}
+		for _, arg := range e.Args {
+			if !sc.isConstantExpression(arg) {
+				return false
+			}
+		}
+		return true
+	default:
+		return false
+	}
 }
 
 func (sc *SemanticAnalyzer) VisitRule(r *ast.Rule) error {

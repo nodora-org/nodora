@@ -55,6 +55,7 @@ type Builder struct {
 	symbols  map[string]int
 	symIndex int
 	outputs  map[string]bool
+	consts   []*ast.Const
 	ops      []Op
 }
 
@@ -77,6 +78,8 @@ func (b *Builder) Build(program *ast.Program) (*Program, error) {
 
 	for _, decl := range program.Decls {
 		switch node := decl.(type) {
+		case *ast.Const:
+			b.consts = append(b.consts, node)
 		case *ast.Signal:
 			result.Signals[node.Name] = Signal{
 				Params: b.buildParams(node.Params),
@@ -108,6 +111,8 @@ func (b *Builder) buildRule(rule *ast.Rule) (Rule, error) {
 		Symslots: 1,
 		Ops:      make([]Op, 0),
 	}
+
+	b.injectConsts()
 
 	for _, stmt := range rule.Statements {
 		if err := b.buildStatement(stmt); err != nil {
@@ -164,6 +169,24 @@ func (b *Builder) buildAssignment(assign *ast.Assignment) error {
 
 	b.symbols[assign.Name] = targetSym
 	return nil
+}
+
+// lowers the top-level consts visible to the current rule into its symbol space,
+// in declaration order, at the top of the rule's op stream so references resolve
+// like ordinary symbols
+func (b *Builder) injectConsts() {
+	for _, c := range b.consts {
+		result := b.buildExpr(c.Value)
+
+		var targetSym int
+		if symExpr, ok := result.expr.(*SymExpr); ok && !result.isImmediate {
+			targetSym = symExpr.Index
+		} else {
+			targetSym = b.materialize(result)
+		}
+
+		b.symbols[c.Name] = targetSym
+	}
 }
 
 func (b *Builder) materialize(expr exprResult) int {

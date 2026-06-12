@@ -1,0 +1,21 @@
+// valid constant expressions
+const MAX = 100
+const LIMIT = MAX * 2
+const NAMES = ["a", "b"]
+const CFG = { retries: 3 }
+const THRESH = math::abs(-5)
+const FLAG = MAX > 50
+
+// invalid: a const may not read the input object
+const BAD_INPUT = input.x        // ERROR: const 'BAD_INPUT' must be a constant expression
+
+// invalid: a const may not call an impure function
+const BAD_IMPURE = time::now()   // ERROR: const 'BAD_IMPURE' must be a constant expression
+
+rule UsesConsts {
+    out over = input.score > LIMIT
+    out names = NAMES
+    out retries = CFG.retries
+    out doubled = THRESH * 2
+    out flagged = FLAG
+}

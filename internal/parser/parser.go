@@ -18,8 +18,6 @@ type yySymType struct {
 	str    string
 	node   ast.Node
 	nodes  []ast.Node
-	signal *ast.Signal
-	rule   *ast.Rule
 	param  ast.Param
 	params []ast.Param
 	stmt   ast.Statement
@@ -40,42 +38,43 @@ const TRUE = 57349
 const FALSE = 57350
 const SIGNAL = 57351
 const RULE = 57352
-const EMIT = 57353
-const WHEN = 57354
-const OUT = 57355
-const IN = 57356
-const IF = 57357
-const THEN = 57358
-const ELSE = 57359
-const MATCH = 57360
-const LPAREN = 57361
-const RPAREN = 57362
-const LBRACE = 57363
-const RBRACE = 57364
-const LBRACKET = 57365
-const RBRACKET = 57366
-const COLON = 57367
-const COMMA = 57368
-const QMARK = 57369
-const DOT = 57370
-const NAMESPACE = 57371
-const PLUS = 57372
-const MINUS = 57373
-const STAR = 57374
-const SLASH = 57375
-const MOD = 57376
-const GT = 57377
-const LT = 57378
-const GTE = 57379
-const LTE = 57380
-const EQ = 57381
-const NEQ = 57382
-const AND = 57383
-const OR = 57384
-const NOT = 57385
-const ASSIGN = 57386
-const FATARROW = 57387
-const PIPE = 57388
+const CONST = 57353
+const EMIT = 57354
+const WHEN = 57355
+const OUT = 57356
+const IN = 57357
+const IF = 57358
+const THEN = 57359
+const ELSE = 57360
+const MATCH = 57361
+const LPAREN = 57362
+const RPAREN = 57363
+const LBRACE = 57364
+const RBRACE = 57365
+const LBRACKET = 57366
+const RBRACKET = 57367
+const COLON = 57368
+const COMMA = 57369
+const QMARK = 57370
+const DOT = 57371
+const NAMESPACE = 57372
+const PLUS = 57373
+const MINUS = 57374
+const STAR = 57375
+const SLASH = 57376
+const MOD = 57377
+const GT = 57378
+const LT = 57379
+const GTE = 57380
+const LTE = 57381
+const EQ = 57382
+const NEQ = 57383
+const AND = 57384
+const OR = 57385
+const NOT = 57386
+const ASSIGN = 57387
+const FATARROW = 57388
+const PIPE = 57389
 
 var yyToknames = [...]string{
 	"$end",
@@ -88,6 +87,7 @@ var yyToknames = [...]string{
 	"FALSE",
 	"SIGNAL",
 	"RULE",
+	"CONST",
 	"EMIT",
 	"WHEN",
 	"OUT",
@@ -132,7 +132,7 @@ const yyEofCode = 1
 const yyErrCode = 2
 const yyInitialStackSize = 16
 
-//line ./parser.y:539
+//line ./parser.y:548
 
 type ParserError struct {
 	Pos     *ast.Position `json:"pos"`
@@ -166,122 +166,123 @@ var yyExca = [...]int8{
 
 const yyPrivate = 57344
 
-const yyLast = 218
+const yyLast = 223
 
 var yyAct = [...]uint8{
-	85, 33, 43, 130, 83, 44, 88, 40, 39, 37,
-	94, 153, 19, 163, 57, 41, 45, 28, 60, 63,
-	49, 51, 50, 52, 53, 100, 65, 66, 34, 31,
-	127, 35, 95, 61, 38, 56, 62, 55, 125, 54,
-	141, 74, 75, 76, 152, 14, 61, 47, 67, 68,
-	69, 70, 79, 80, 72, 73, 82, 91, 92, 46,
-	120, 96, 32, 93, 78, 84, 81, 64, 118, 77,
-	19, 97, 99, 101, 102, 108, 109, 122, 59, 114,
-	110, 111, 112, 103, 104, 105, 106, 116, 107, 49,
-	51, 50, 52, 53, 150, 121, 126, 138, 151, 128,
-	35, 117, 24, 38, 56, 119, 55, 12, 54, 26,
-	162, 25, 89, 90, 140, 124, 47, 123, 139, 142,
-	20, 18, 145, 146, 58, 15, 142, 144, 46, 148,
-	143, 32, 11, 149, 132, 135, 133, 136, 137, 132,
-	135, 133, 136, 137, 155, 27, 71, 98, 156, 147,
-	154, 157, 158, 160, 161, 159, 49, 51, 50, 52,
-	53, 134, 6, 7, 164, 115, 134, 35, 89, 90,
-	38, 56, 113, 55, 16, 54, 30, 49, 51, 50,
-	52, 53, 29, 47, 49, 51, 50, 52, 53, 10,
-	9, 1, 56, 129, 55, 46, 54, 3, 86, 56,
-	8, 55, 87, 54, 47, 48, 42, 131, 36, 17,
-	23, 22, 21, 13, 5, 4, 46, 2,
+	83, 24, 34, 131, 81, 35, 86, 31, 30, 28,
+	40, 42, 41, 43, 44, 32, 36, 22, 19, 49,
+	167, 156, 26, 125, 91, 29, 47, 60, 46, 116,
+	45, 143, 16, 61, 99, 63, 64, 58, 38, 94,
+	72, 73, 74, 77, 78, 70, 71, 80, 89, 142,
+	37, 128, 59, 23, 155, 59, 120, 79, 118, 95,
+	65, 66, 67, 68, 25, 49, 122, 121, 90, 96,
+	98, 100, 101, 107, 108, 82, 139, 113, 109, 110,
+	111, 102, 103, 104, 105, 115, 106, 117, 76, 54,
+	18, 119, 124, 75, 62, 127, 15, 56, 129, 55,
+	40, 42, 41, 43, 44, 153, 87, 88, 50, 154,
+	165, 159, 26, 141, 57, 29, 47, 140, 46, 144,
+	45, 123, 147, 148, 48, 145, 149, 146, 38, 126,
+	151, 150, 40, 42, 41, 43, 44, 14, 152, 97,
+	37, 69, 166, 144, 26, 158, 157, 29, 47, 114,
+	46, 112, 45, 93, 160, 92, 163, 164, 162, 20,
+	38, 40, 42, 41, 43, 44, 13, 168, 169, 7,
+	8, 9, 37, 87, 88, 23, 12, 47, 11, 46,
+	1, 45, 130, 133, 136, 134, 137, 138, 84, 38,
+	133, 136, 134, 137, 138, 85, 40, 42, 41, 43,
+	44, 37, 161, 3, 39, 33, 10, 132, 27, 21,
+	53, 135, 47, 52, 46, 51, 45, 17, 135, 2,
+	6, 5, 4,
 }
 
 var yyPact = [...]int16{
-	153, -1000, 153, -1000, -1000, -1000, 186, 185, -1000, 113,
-	86, 170, -1000, 101, 44, -1000, -1000, 98, -1000, 170,
-	-1000, -1000, -1000, -1000, -27, 178, 172, -1000, 85, -30,
-	105, -1000, 170, -1000, -9, 85, -1000, -22, 173, -13,
-	13, 132, 24, 9, -1000, 41, 173, 173, -1000, 37,
-	-1000, -1000, -1000, -1000, 85, 164, 85, 85, 85, -14,
-	85, 173, 131, 173, 4, 173, 173, 173, 173, 173,
-	173, 180, 173, 173, 173, 173, 173, 168, 85, -1000,
-	-1000, 161, 85, 77, 42, -1000, 83, 34, -1000, 70,
-	52, 97, -1000, 95, 12, 85, 5, -22, 85, -13,
-	135, 13, 13, 132, 132, 132, 132, 41, 9, 9,
-	-1000, -1000, -1000, -1000, 73, 99, 94, -1000, 16, -1000,
-	108, 85, 85, -1000, 137, 85, -1000, 152, 116, 72,
-	-1000, -1, -1000, -1000, 144, -1000, -1000, -1000, -1000, 85,
-	-1000, -1000, -1000, -1000, -1000, -1000, -1000, 85, -1000, 152,
-	-1000, 130, 85, 85, -1000, 90, -1000, -1000, -1000, -1000,
-	-1000, -32, -1000, 85, -1000,
+	160, -1000, 160, -1000, -1000, -1000, -1000, 174, 172, 162,
+	-1000, 117, 74, -13, 155, -1000, 128, 103, 38, -1000,
+	-1000, 85, -1000, 155, -1000, 9, 128, -1000, -9, 157,
+	-5, 24, 126, 14, 7, -1000, 64, 157, 157, -1000,
+	27, -1000, -1000, -1000, -1000, 128, 169, 128, -1000, 155,
+	-1000, -1000, -1000, -1000, -21, 151, 149, -8, 128, 157,
+	122, 157, 12, 157, 157, 157, 157, 157, 157, 192,
+	157, 157, 157, 157, 157, 147, 128, -1000, -1000, 145,
+	128, 62, 31, -1000, 68, 29, -1000, 41, 40, 100,
+	-1000, 128, -22, 109, 128, 25, -9, 128, -5, 186,
+	24, 24, 126, 126, 126, 126, 64, 7, 7, -1000,
+	-1000, -1000, -1000, 51, 97, 92, 22, -1000, 6, -1000,
+	102, 128, 128, -1000, -1000, 128, 128, -1000, 96, 120,
+	82, -1000, 8, -1000, -1000, 140, -1000, -1000, -1000, -1000,
+	128, -1000, 128, -1000, -1000, -1000, -1000, -1000, -1000, -1000,
+	90, -1000, 96, -1000, 179, 128, 128, -1000, 89, 129,
+	-1000, -1000, -1000, -1000, -26, -1000, 128, 128, -1000, -1000,
 }
 
 var yyPgo = [...]uint8{
-	0, 197, 217, 215, 214, 125, 45, 213, 212, 211,
-	210, 209, 0, 1, 208, 207, 28, 9, 8, 7,
-	15, 206, 2, 5, 16, 205, 10, 4, 6, 202,
-	198, 3, 193, 191,
+	0, 203, 222, 221, 220, 219, 18, 90, 217, 215,
+	213, 210, 209, 0, 1, 208, 207, 64, 9, 8,
+	7, 15, 205, 2, 5, 16, 204, 29, 4, 6,
+	195, 188, 3, 182, 180,
 }
 
 var yyR1 = [...]int8{
-	0, 33, 2, 2, 1, 1, 3, 4, 5, 6,
-	6, 7, 7, 11, 11, 8, 8, 9, 9, 10,
-	10, 12, 12, 13, 13, 13, 13, 14, 14, 32,
-	32, 31, 31, 15, 15, 15, 15, 15, 15, 16,
-	16, 17, 17, 18, 18, 18, 19, 19, 19, 19,
-	19, 20, 20, 21, 21, 21, 22, 22, 22, 22,
-	23, 23, 23, 24, 24, 24, 24, 24, 25, 25,
-	25, 25, 25, 25, 25, 25, 25, 25, 27, 27,
-	26, 26, 28, 28, 30, 30, 29, 29,
+	0, 34, 5, 5, 1, 1, 1, 2, 3, 4,
+	6, 7, 7, 8, 8, 12, 12, 9, 9, 10,
+	10, 11, 11, 13, 13, 14, 14, 14, 14, 15,
+	15, 33, 33, 32, 32, 16, 16, 16, 16, 16,
+	16, 17, 17, 18, 18, 19, 19, 19, 20, 20,
+	20, 20, 20, 21, 21, 22, 22, 22, 23, 23,
+	23, 23, 24, 24, 24, 25, 25, 25, 25, 25,
+	26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
+	28, 28, 27, 27, 29, 29, 31, 31, 30, 30,
 }
 
 var yyR2 = [...]int8{
-	0, 1, 2, 1, 1, 1, 5, 5, 1, 1,
-	3, 0, 1, 0, 2, 1, 1, 3, 4, 7,
-	5, 4, 1, 1, 6, 5, 1, 5, 6, 1,
-	3, 3, 5, 1, 1, 2, 1, 1, 1, 3,
-	1, 3, 1, 3, 3, 1, 3, 3, 3, 3,
-	1, 3, 1, 3, 3, 1, 3, 3, 3, 1,
-	1, 2, 2, 1, 6, 4, 3, 4, 1, 1,
-	1, 1, 1, 3, 4, 3, 4, 3, 0, 1,
-	1, 3, 3, 3, 0, 1, 1, 3,
+	0, 1, 2, 1, 1, 1, 1, 5, 5, 4,
+	1, 1, 3, 0, 1, 0, 2, 1, 1, 3,
+	4, 7, 5, 4, 1, 1, 6, 5, 1, 5,
+	6, 1, 3, 3, 5, 1, 1, 2, 1, 1,
+	1, 3, 1, 3, 1, 3, 3, 1, 3, 3,
+	3, 3, 1, 3, 1, 3, 3, 1, 3, 3,
+	3, 1, 1, 2, 2, 1, 6, 4, 3, 4,
+	1, 1, 1, 1, 1, 3, 4, 3, 4, 3,
+	0, 1, 1, 3, 3, 3, 0, 1, 1, 3,
 }
 
 var yyChk = [...]int16{
-	-1000, -33, -2, -1, -3, -4, 9, 10, -1, 4,
-	4, 19, 21, -7, -6, -5, 4, -11, 20, 26,
-	22, -8, -9, -10, 4, 13, 11, -5, 44, 4,
-	4, -12, 46, -13, -16, 15, -14, -17, 18, -18,
-	-19, -20, -21, -22, -23, -24, 43, 31, -25, 4,
-	6, 5, 7, 8, 23, 21, 19, 44, 19, -6,
-	27, 42, -12, 41, -16, 39, 40, 35, 36, 37,
-	38, 14, 30, 31, 32, 33, 34, 28, 23, -23,
-	-23, 29, 19, -27, -26, -12, -30, -29, -28, 4,
-	5, -12, -12, -27, -26, 46, -12, -17, 16, -18,
-	21, -19, -19, -20, -20, -20, -20, -24, -22, -22,
-	-23, -23, -23, 4, -12, 4, -27, 24, 26, 22,
-	26, 25, 25, 20, 20, 26, -12, 25, -12, -32,
-	-31, -15, 4, 6, 31, 5, 7, 8, 24, 19,
-	20, 24, -12, 22, -28, -12, -12, 12, -13, 17,
-	22, 26, 45, 12, 6, -27, -12, -13, 22, -31,
-	-12, -12, 20, 45, -12,
+	-1000, -34, -5, -1, -2, -3, -4, 9, 10, 11,
+	-1, 4, 4, 4, 20, 22, 45, -8, -7, -6,
+	4, -12, -13, 47, -14, -17, 16, -15, -18, 19,
+	-19, -20, -21, -22, -23, -24, -25, 44, 32, -26,
+	4, 6, 5, 7, 8, 24, 22, 20, 21, 27,
+	23, -9, -10, -11, 4, 14, 12, -7, 28, 43,
+	-13, 42, -17, 40, 41, 36, 37, 38, 39, 15,
+	31, 32, 33, 34, 35, 29, 24, -24, -24, 30,
+	20, -28, -27, -13, -31, -30, -29, 4, 5, -13,
+	-6, 45, 4, 4, 47, -13, -18, 17, -19, 22,
+	-20, -20, -21, -21, -21, -21, -25, -23, -23, -24,
+	-24, -24, 4, -13, 4, -28, -27, 25, 27, 23,
+	27, 26, 26, 21, -13, 45, 20, -13, 26, -13,
+	-33, -32, -16, 4, 6, 32, 5, 7, 8, 25,
+	20, 21, 27, 25, -13, 23, -29, -13, -13, -13,
+	-28, -14, 18, 23, 27, 46, 13, 6, -28, 21,
+	-14, 23, -32, -13, -13, 21, 13, 46, -13, -13,
 }
 
 var yyDef = [...]int8{
-	0, -2, 1, 3, 4, 5, 0, 0, 2, 0,
-	0, 11, 13, 0, 12, 9, 8, 0, 6, 0,
-	7, 14, 15, 16, 0, 0, 0, 10, 0, 0,
-	0, 17, 0, 22, 23, 0, 26, 40, 0, 42,
-	45, 50, 52, 55, 59, 60, 0, 0, 63, 68,
-	69, 70, 71, 72, 78, 84, 0, 0, 78, 0,
+	0, -2, 1, 3, 4, 5, 6, 0, 0, 0,
+	2, 0, 0, 0, 13, 15, 0, 0, 14, 11,
+	10, 0, 9, 0, 24, 25, 0, 28, 42, 0,
+	44, 47, 52, 54, 57, 61, 62, 0, 0, 65,
+	70, 71, 72, 73, 74, 80, 86, 0, 7, 0,
+	8, 16, 17, 18, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 61,
-	62, 0, 78, 0, 79, 80, 0, 85, 86, 0,
-	0, 0, 18, 0, 79, 0, 0, 39, 0, 41,
-	0, 43, 44, 46, 47, 48, 49, 51, 53, 54,
-	56, 57, 58, 66, 0, 0, 0, 73, 0, 75,
-	0, 0, 0, 77, 20, 0, 21, 0, 0, 0,
-	29, 0, 33, 34, 0, 36, 37, 38, 67, 78,
-	65, 74, 81, 76, 87, 82, 83, 0, 25, 0,
-	27, 0, 0, 0, 35, 0, 19, 24, 28, 30,
-	31, 0, 64, 0, 32,
+	0, 0, 0, 0, 0, 0, 0, 63, 64, 0,
+	80, 0, 81, 82, 0, 87, 88, 0, 0, 0,
+	12, 0, 0, 0, 0, 0, 41, 0, 43, 0,
+	45, 46, 48, 49, 50, 51, 53, 55, 56, 58,
+	59, 60, 68, 0, 0, 0, 81, 75, 0, 77,
+	0, 0, 0, 79, 19, 0, 80, 23, 0, 0,
+	0, 31, 0, 35, 36, 0, 38, 39, 40, 69,
+	80, 67, 0, 76, 83, 78, 89, 84, 85, 20,
+	0, 27, 0, 29, 0, 0, 0, 37, 0, 22,
+	26, 30, 32, 33, 0, 66, 0, 0, 21, 34,
 }
 
 var yyTok1 = [...]int8{
@@ -293,7 +294,7 @@ var yyTok2 = [...]int8{
 	12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
 	22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
 	32, 33, 34, 35, 36, 37, 38, 39, 40, 41,
-	42, 43, 44, 45, 46,
+	42, 43, 44, 45, 46, 47,
 }
 
 var yyTok3 = [...]int8{
@@ -639,240 +640,256 @@ yydefault:
 
 	case 1:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./parser.y:67
+//line ./parser.y:63
 		{
 			yylex.(*lexer).result = &ast.Program{Decls: yyDollar[1].nodes}
 		}
 	case 2:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line ./parser.y:72
+//line ./parser.y:68
 		{
 			yyVAL.nodes = append(yyDollar[1].nodes, yyDollar[2].node)
 		}
 	case 3:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./parser.y:74
+//line ./parser.y:70
 		{
 			yyVAL.nodes = []ast.Node{yyDollar[1].node}
 		}
 	case 4:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./parser.y:79
+//line ./parser.y:75
 		{
-			yyVAL.node = yyDollar[1].signal
+			yyVAL.node = yyDollar[1].node
 		}
 	case 5:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./parser.y:81
+//line ./parser.y:77
 		{
-			yyVAL.node = yyDollar[1].rule
+			yyVAL.node = yyDollar[1].node
 		}
 	case 6:
-		yyDollar = yyS[yypt-5 : yypt+1]
-//line ./parser.y:86
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line ./parser.y:79
 		{
-			yyVAL.signal = &ast.Signal{Name: yyDollar[2].str, Params: yyDollar[4].params}
-			yyVAL.signal.Span = yyDollar[1].span.Merge(yyDollar[5].span)
+			yyVAL.node = yyDollar[1].node
 		}
 	case 7:
 		yyDollar = yyS[yypt-5 : yypt+1]
-//line ./parser.y:94
+//line ./parser.y:84
 		{
-			yyVAL.rule = &ast.Rule{Name: yyDollar[2].str, Statements: yyDollar[4].stmts}
-			yyVAL.rule.Span = yyDollar[1].span.Merge(yyDollar[5].span)
+			s := &ast.Signal{Name: yyDollar[2].str, Params: yyDollar[4].params}
+			s.Span = yyDollar[1].span.Merge(yyDollar[5].span)
+			yyVAL.node = s
 		}
 	case 8:
-		yyDollar = yyS[yypt-1 : yypt+1]
+		yyDollar = yyS[yypt-5 : yypt+1]
+//line ./parser.y:93
+		{
+			r := &ast.Rule{Name: yyDollar[2].str, Statements: yyDollar[4].stmts}
+			r.Span = yyDollar[1].span.Merge(yyDollar[5].span)
+			yyVAL.node = r
+		}
+	case 9:
+		yyDollar = yyS[yypt-4 : yypt+1]
 //line ./parser.y:102
+		{
+			c := &ast.Const{Name: yyDollar[2].str, Value: yyDollar[4].expr}
+			c.Span = yyDollar[1].span.Merge(yyDollar[4].expr.GetSpan())
+			yyVAL.node = c
+		}
+	case 10:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line ./parser.y:111
 		{
 			yyVAL.param = ast.Param{Name: yyDollar[1].str}
 			yyVAL.param.Span = yyDollar[1].span
 		}
-	case 9:
-		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./parser.y:110
-		{
-			yyVAL.params = []ast.Param{yyDollar[1].param}
-		}
-	case 10:
-		yyDollar = yyS[yypt-3 : yypt+1]
-//line ./parser.y:112
-		{
-			yyVAL.params = append(yyDollar[1].params, yyDollar[3].param)
-		}
 	case 11:
-		yyDollar = yyS[yypt-0 : yypt+1]
-//line ./parser.y:117
-		{
-			yyVAL.params = []ast.Param{}
-		}
-	case 12:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line ./parser.y:119
 		{
-			yyVAL.params = yyDollar[1].params
+			yyVAL.params = []ast.Param{yyDollar[1].param}
+		}
+	case 12:
+		yyDollar = yyS[yypt-3 : yypt+1]
+//line ./parser.y:121
+		{
+			yyVAL.params = append(yyDollar[1].params, yyDollar[3].param)
 		}
 	case 13:
 		yyDollar = yyS[yypt-0 : yypt+1]
-//line ./parser.y:124
+//line ./parser.y:126
+		{
+			yyVAL.params = []ast.Param{}
+		}
+	case 14:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line ./parser.y:128
+		{
+			yyVAL.params = yyDollar[1].params
+		}
+	case 15:
+		yyDollar = yyS[yypt-0 : yypt+1]
+//line ./parser.y:133
 		{
 			yyVAL.stmts = []ast.Statement{}
 		}
-	case 14:
+	case 16:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line ./parser.y:126
+//line ./parser.y:135
 		{
 			yyVAL.stmts = append(yyDollar[1].stmts, yyDollar[2].stmt)
 		}
-	case 15:
-		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./parser.y:131
-		{
-			yyVAL.stmt = yyDollar[1].stmt
-		}
-	case 16:
-		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./parser.y:133
-		{
-			yyVAL.stmt = yyDollar[1].stmt
-		}
 	case 17:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line ./parser.y:140
+		{
+			yyVAL.stmt = yyDollar[1].stmt
+		}
+	case 18:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line ./parser.y:142
+		{
+			yyVAL.stmt = yyDollar[1].stmt
+		}
+	case 19:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line ./parser.y:138
+//line ./parser.y:147
 		{
 			a := &ast.Assignment{Name: yyDollar[1].str, Expr: yyDollar[3].expr, IsOut: false}
 			a.Span = yyDollar[1].span.Merge(yyDollar[3].expr.GetSpan())
 			yyVAL.stmt = a
 		}
-	case 18:
+	case 20:
 		yyDollar = yyS[yypt-4 : yypt+1]
-//line ./parser.y:144
+//line ./parser.y:153
 		{
 			a := &ast.Assignment{Name: yyDollar[2].str, Expr: yyDollar[4].expr, IsOut: true}
 			a.Span = yyDollar[1].span.Merge(yyDollar[4].expr.GetSpan())
 			yyVAL.stmt = a
 		}
-	case 19:
+	case 21:
 		yyDollar = yyS[yypt-7 : yypt+1]
-//line ./parser.y:153
+//line ./parser.y:162
 		{
 			e := &ast.EmitStatement{Signal: yyDollar[2].str, Args: yyDollar[4].exprs, Condition: yyDollar[7].expr}
 			e.Span = yyDollar[1].span.Merge(yyDollar[7].expr.GetSpan())
 			yyVAL.stmt = e
 		}
-	case 20:
+	case 22:
 		yyDollar = yyS[yypt-5 : yypt+1]
-//line ./parser.y:159
+//line ./parser.y:168
 		{
 			e := &ast.EmitStatement{Signal: yyDollar[2].str, Args: yyDollar[4].exprs}
 			e.Span = yyDollar[1].span.Merge(yyDollar[5].span)
 			yyVAL.stmt = e
 		}
-	case 21:
+	case 23:
 		yyDollar = yyS[yypt-4 : yypt+1]
-//line ./parser.y:168
+//line ./parser.y:177
 		{
 			le := &ast.LambdaExpr{Params: yyDollar[2].params, Body: yyDollar[4].expr}
 			le.Span = yyDollar[1].span.Merge(yyDollar[4].expr.GetSpan())
 			yyVAL.expr = le
 		}
-	case 22:
-		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./parser.y:174
-		{
-			yyVAL.expr = yyDollar[1].expr
-		}
-	case 23:
-		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./parser.y:179
-		{
-			yyVAL.expr = yyDollar[1].expr
-		}
 	case 24:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line ./parser.y:183
+		{
+			yyVAL.expr = yyDollar[1].expr
+		}
+	case 25:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line ./parser.y:188
+		{
+			yyVAL.expr = yyDollar[1].expr
+		}
+	case 26:
 		yyDollar = yyS[yypt-6 : yypt+1]
-//line ./parser.y:181
+//line ./parser.y:190
 		{
 			c := &ast.ConditionalExpr{Cond: yyDollar[2].expr, Then: yyDollar[4].expr, Else: yyDollar[6].expr}
 			c.Span = yyDollar[1].span.Merge(yyDollar[6].expr.GetSpan())
 			yyVAL.expr = c
 		}
-	case 25:
+	case 27:
 		yyDollar = yyS[yypt-5 : yypt+1]
-//line ./parser.y:187
+//line ./parser.y:196
 		{
 			c := &ast.ConditionalExpr{Cond: yyDollar[1].expr, Then: yyDollar[3].expr, Else: yyDollar[5].expr}
 			c.Span = yyDollar[1].expr.GetSpan().Merge(yyDollar[5].expr.GetSpan())
 			yyVAL.expr = c
 		}
-	case 26:
+	case 28:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./parser.y:193
+//line ./parser.y:202
 		{
 			yyVAL.expr = yyDollar[1].expr
 		}
-	case 27:
+	case 29:
 		yyDollar = yyS[yypt-5 : yypt+1]
-//line ./parser.y:198
+//line ./parser.y:207
 		{
 			m := &ast.MatchExpr{Value: yyDollar[2].expr, Arms: yyDollar[4].arms}
 			m.Span = yyDollar[1].span.Merge(yyDollar[5].span)
 			yyVAL.expr = m
 		}
-	case 28:
+	case 30:
 		yyDollar = yyS[yypt-6 : yypt+1]
-//line ./parser.y:204
+//line ./parser.y:213
 		{
 			m := &ast.MatchExpr{Value: yyDollar[2].expr, Arms: yyDollar[4].arms}
 			m.Span = yyDollar[1].span.Merge(yyDollar[6].span)
 			yyVAL.expr = m
 		}
-	case 29:
+	case 31:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./parser.y:213
+//line ./parser.y:222
 		{
 			yyVAL.arms = []*ast.MatchArm{yyDollar[1].arm}
 		}
-	case 30:
+	case 32:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line ./parser.y:215
+//line ./parser.y:224
 		{
 			yyVAL.arms = append(yyDollar[1].arms, yyDollar[3].arm)
 		}
-	case 31:
+	case 33:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line ./parser.y:220
+//line ./parser.y:229
 		{
 			a := &ast.MatchArm{Pattern: yyDollar[1].expr, Body: yyDollar[3].expr}
 			a.Span = yyDollar[1].expr.GetSpan().Merge(yyDollar[3].expr.GetSpan())
 			yyVAL.arm = a
 		}
-	case 32:
+	case 34:
 		yyDollar = yyS[yypt-5 : yypt+1]
-//line ./parser.y:226
+//line ./parser.y:235
 		{
 			a := &ast.MatchArm{Pattern: yyDollar[1].expr, Guard: yyDollar[3].expr, Body: yyDollar[5].expr}
 			a.Span = yyDollar[1].expr.GetSpan().Merge(yyDollar[5].expr.GetSpan())
 			yyVAL.arm = a
 		}
-	case 33:
+	case 35:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./parser.y:235
+//line ./parser.y:244
 		{
 			i := &ast.Identifier{Name: yyDollar[1].str}
 			i.Span = yyDollar[1].span
 			yyVAL.expr = i
 		}
-	case 34:
+	case 36:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./parser.y:241
+//line ./parser.y:250
 		{
 			n := &ast.NumberLiteral{Raw: yyDollar[1].str}
 			n.Span = yyDollar[1].span
 			yyVAL.expr = n
 		}
-	case 35:
+	case 37:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line ./parser.y:247
+//line ./parser.y:256
 		{
 			n := &ast.NumberLiteral{Raw: yyDollar[2].str}
 			n.Span = yyDollar[2].span
@@ -880,383 +897,383 @@ yydefault:
 			u.Span = yyDollar[1].span.Merge(yyDollar[2].span)
 			yyVAL.expr = u
 		}
-	case 36:
+	case 38:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./parser.y:255
+//line ./parser.y:264
 		{
 			s := &ast.StringLiteral{Value: yyDollar[1].str}
 			s.Span = yyDollar[1].span
 			yyVAL.expr = s
 		}
-	case 37:
+	case 39:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./parser.y:261
+//line ./parser.y:270
 		{
 			b := &ast.BoolLiteral{Value: true}
 			b.Span = yyDollar[1].span
 			yyVAL.expr = b
 		}
-	case 38:
+	case 40:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./parser.y:267
+//line ./parser.y:276
 		{
 			b := &ast.BoolLiteral{Value: false}
 			b.Span = yyDollar[1].span
 			yyVAL.expr = b
 		}
-	case 39:
+	case 41:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line ./parser.y:276
+//line ./parser.y:285
 		{
 			b := &ast.BinaryExpr{Left: yyDollar[1].expr, Op: "||", Right: yyDollar[3].expr}
 			b.Span = yyDollar[1].expr.GetSpan().Merge(yyDollar[3].expr.GetSpan())
 			yyVAL.expr = b
 		}
-	case 40:
-		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./parser.y:282
-		{
-			yyVAL.expr = yyDollar[1].expr
-		}
-	case 41:
-		yyDollar = yyS[yypt-3 : yypt+1]
-//line ./parser.y:287
-		{
-			b := &ast.BinaryExpr{Left: yyDollar[1].expr, Op: "&&", Right: yyDollar[3].expr}
-			b.Span = yyDollar[1].expr.GetSpan().Merge(yyDollar[3].expr.GetSpan())
-			yyVAL.expr = b
-		}
 	case 42:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./parser.y:293
+//line ./parser.y:291
 		{
 			yyVAL.expr = yyDollar[1].expr
 		}
 	case 43:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line ./parser.y:298
+//line ./parser.y:296
+		{
+			b := &ast.BinaryExpr{Left: yyDollar[1].expr, Op: "&&", Right: yyDollar[3].expr}
+			b.Span = yyDollar[1].expr.GetSpan().Merge(yyDollar[3].expr.GetSpan())
+			yyVAL.expr = b
+		}
+	case 44:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line ./parser.y:302
+		{
+			yyVAL.expr = yyDollar[1].expr
+		}
+	case 45:
+		yyDollar = yyS[yypt-3 : yypt+1]
+//line ./parser.y:307
 		{
 			b := &ast.BinaryExpr{Left: yyDollar[1].expr, Op: "==", Right: yyDollar[3].expr}
 			b.Span = yyDollar[1].expr.GetSpan().Merge(yyDollar[3].expr.GetSpan())
 			yyVAL.expr = b
 		}
-	case 44:
+	case 46:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line ./parser.y:304
+//line ./parser.y:313
 		{
 			b := &ast.BinaryExpr{Left: yyDollar[1].expr, Op: "!=", Right: yyDollar[3].expr}
 			b.Span = yyDollar[1].expr.GetSpan().Merge(yyDollar[3].expr.GetSpan())
 			yyVAL.expr = b
 		}
-	case 45:
+	case 47:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./parser.y:310
+//line ./parser.y:319
 		{
 			yyVAL.expr = yyDollar[1].expr
 		}
-	case 46:
+	case 48:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line ./parser.y:315
+//line ./parser.y:324
 		{
 			b := &ast.BinaryExpr{Left: yyDollar[1].expr, Op: ">", Right: yyDollar[3].expr}
 			b.Span = yyDollar[1].expr.GetSpan().Merge(yyDollar[3].expr.GetSpan())
 			yyVAL.expr = b
 		}
-	case 47:
+	case 49:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line ./parser.y:321
+//line ./parser.y:330
 		{
 			b := &ast.BinaryExpr{Left: yyDollar[1].expr, Op: "<", Right: yyDollar[3].expr}
 			b.Span = yyDollar[1].expr.GetSpan().Merge(yyDollar[3].expr.GetSpan())
 			yyVAL.expr = b
 		}
-	case 48:
+	case 50:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line ./parser.y:327
+//line ./parser.y:336
 		{
 			b := &ast.BinaryExpr{Left: yyDollar[1].expr, Op: ">=", Right: yyDollar[3].expr}
 			b.Span = yyDollar[1].expr.GetSpan().Merge(yyDollar[3].expr.GetSpan())
 			yyVAL.expr = b
 		}
-	case 49:
+	case 51:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line ./parser.y:333
+//line ./parser.y:342
 		{
 			b := &ast.BinaryExpr{Left: yyDollar[1].expr, Op: "<=", Right: yyDollar[3].expr}
 			b.Span = yyDollar[1].expr.GetSpan().Merge(yyDollar[3].expr.GetSpan())
 			yyVAL.expr = b
 		}
-	case 50:
-		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./parser.y:339
-		{
-			yyVAL.expr = yyDollar[1].expr
-		}
-	case 51:
-		yyDollar = yyS[yypt-3 : yypt+1]
-//line ./parser.y:344
-		{
-			b := &ast.BinaryExpr{Left: yyDollar[1].expr, Op: "in", Right: yyDollar[3].expr}
-			b.Span = yyDollar[1].expr.GetSpan().Merge(yyDollar[3].expr.GetSpan())
-			yyVAL.expr = b
-		}
 	case 52:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./parser.y:350
+//line ./parser.y:348
 		{
 			yyVAL.expr = yyDollar[1].expr
 		}
 	case 53:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line ./parser.y:355
+//line ./parser.y:353
+		{
+			b := &ast.BinaryExpr{Left: yyDollar[1].expr, Op: "in", Right: yyDollar[3].expr}
+			b.Span = yyDollar[1].expr.GetSpan().Merge(yyDollar[3].expr.GetSpan())
+			yyVAL.expr = b
+		}
+	case 54:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line ./parser.y:359
+		{
+			yyVAL.expr = yyDollar[1].expr
+		}
+	case 55:
+		yyDollar = yyS[yypt-3 : yypt+1]
+//line ./parser.y:364
 		{
 			b := &ast.BinaryExpr{Left: yyDollar[1].expr, Op: "+", Right: yyDollar[3].expr}
 			b.Span = yyDollar[1].expr.GetSpan().Merge(yyDollar[3].expr.GetSpan())
 			yyVAL.expr = b
 		}
-	case 54:
+	case 56:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line ./parser.y:361
+//line ./parser.y:370
 		{
 			b := &ast.BinaryExpr{Left: yyDollar[1].expr, Op: "-", Right: yyDollar[3].expr}
 			b.Span = yyDollar[1].expr.GetSpan().Merge(yyDollar[3].expr.GetSpan())
 			yyVAL.expr = b
 		}
-	case 55:
+	case 57:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./parser.y:367
+//line ./parser.y:376
 		{
 			yyVAL.expr = yyDollar[1].expr
 		}
-	case 56:
+	case 58:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line ./parser.y:372
+//line ./parser.y:381
 		{
 			b := &ast.BinaryExpr{Left: yyDollar[1].expr, Op: "*", Right: yyDollar[3].expr}
 			b.Span = yyDollar[1].expr.GetSpan().Merge(yyDollar[3].expr.GetSpan())
 			yyVAL.expr = b
 		}
-	case 57:
+	case 59:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line ./parser.y:378
+//line ./parser.y:387
 		{
 			b := &ast.BinaryExpr{Left: yyDollar[1].expr, Op: "/", Right: yyDollar[3].expr}
 			b.Span = yyDollar[1].expr.GetSpan().Merge(yyDollar[3].expr.GetSpan())
 			yyVAL.expr = b
 		}
-	case 58:
+	case 60:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line ./parser.y:384
+//line ./parser.y:393
 		{
 			b := &ast.BinaryExpr{Left: yyDollar[1].expr, Op: "%", Right: yyDollar[3].expr}
 			b.Span = yyDollar[1].expr.GetSpan().Merge(yyDollar[3].expr.GetSpan())
 			yyVAL.expr = b
 		}
-	case 59:
-		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./parser.y:390
-		{
-			yyVAL.expr = yyDollar[1].expr
-		}
-	case 60:
-		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./parser.y:395
-		{
-			yyVAL.expr = yyDollar[1].expr
-		}
 	case 61:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line ./parser.y:399
+		{
+			yyVAL.expr = yyDollar[1].expr
+		}
+	case 62:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line ./parser.y:404
+		{
+			yyVAL.expr = yyDollar[1].expr
+		}
+	case 63:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line ./parser.y:397
+//line ./parser.y:406
 		{
 			u := &ast.UnaryExpr{Op: "!", Expr: yyDollar[2].expr}
 			u.Span = yyDollar[1].span.Merge(yyDollar[2].expr.GetSpan())
 			yyVAL.expr = u
 		}
-	case 62:
+	case 64:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line ./parser.y:403
+//line ./parser.y:412
 		{
 			u := &ast.UnaryExpr{Op: "-", Expr: yyDollar[2].expr}
 			u.Span = yyDollar[1].span.Merge(yyDollar[2].expr.GetSpan())
 			yyVAL.expr = u
 		}
-	case 63:
+	case 65:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./parser.y:412
+//line ./parser.y:421
 		{
 			yyVAL.expr = yyDollar[1].expr
 		}
-	case 64:
+	case 66:
 		yyDollar = yyS[yypt-6 : yypt+1]
-//line ./parser.y:414
+//line ./parser.y:423
 		{
 			c := &ast.CallExpr{Namespace: yyDollar[1].str, Name: yyDollar[3].str, Args: yyDollar[5].exprs}
 			c.Span = yyDollar[1].span.Merge(yyDollar[6].span)
 			yyVAL.expr = c
 		}
-	case 65:
+	case 67:
 		yyDollar = yyS[yypt-4 : yypt+1]
-//line ./parser.y:420
+//line ./parser.y:429
 		{
 			c := &ast.CallExpr{Name: yyDollar[1].str, Args: yyDollar[3].exprs}
 			c.Span = yyDollar[1].span.Merge(yyDollar[4].span)
 			yyVAL.expr = c
 		}
-	case 66:
+	case 68:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line ./parser.y:426
+//line ./parser.y:435
 		{
 			s := &ast.SelectorExpr{Expr: yyDollar[1].expr, Field: yyDollar[3].str}
 			s.Span = yyDollar[1].expr.GetSpan().Merge(yyDollar[3].span)
 			yyVAL.expr = s
 		}
-	case 67:
+	case 69:
 		yyDollar = yyS[yypt-4 : yypt+1]
-//line ./parser.y:432
+//line ./parser.y:441
 		{
 			i := &ast.IndexExpr{Expr: yyDollar[1].expr, Index: yyDollar[3].expr}
 			i.Span = yyDollar[1].expr.GetSpan().Merge(yyDollar[4].span)
 			yyVAL.expr = i
 		}
-	case 68:
+	case 70:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./parser.y:441
+//line ./parser.y:450
 		{
 			i := &ast.Identifier{Name: yyDollar[1].str}
 			i.Span = yyDollar[1].span
 			yyVAL.expr = i
 		}
-	case 69:
+	case 71:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./parser.y:447
+//line ./parser.y:456
 		{
 			n := &ast.NumberLiteral{Raw: yyDollar[1].str}
 			n.Span = yyDollar[1].span
 			yyVAL.expr = n
 		}
-	case 70:
+	case 72:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./parser.y:453
+//line ./parser.y:462
 		{
 			s := &ast.StringLiteral{Value: yyDollar[1].str}
 			s.Span = yyDollar[1].span
 			yyVAL.expr = s
 		}
-	case 71:
+	case 73:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./parser.y:459
+//line ./parser.y:468
 		{
 			b := &ast.BoolLiteral{Value: true}
 			b.Span = yyDollar[1].span
 			yyVAL.expr = b
 		}
-	case 72:
+	case 74:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./parser.y:465
+//line ./parser.y:474
 		{
 			b := &ast.BoolLiteral{Value: false}
 			b.Span = yyDollar[1].span
 			yyVAL.expr = b
 		}
-	case 73:
+	case 75:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line ./parser.y:471
+//line ./parser.y:480
 		{
 			a := &ast.ArrayLiteral{Elements: yyDollar[2].exprs}
 			a.Span = yyDollar[1].span.Merge(yyDollar[3].span)
 			yyVAL.expr = a
 		}
-	case 74:
+	case 76:
 		yyDollar = yyS[yypt-4 : yypt+1]
-//line ./parser.y:477
+//line ./parser.y:486
 		{
 			a := &ast.ArrayLiteral{Elements: yyDollar[2].exprs}
 			a.Span = yyDollar[1].span.Merge(yyDollar[4].span)
 			yyVAL.expr = a
 		}
-	case 75:
+	case 77:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line ./parser.y:483
+//line ./parser.y:492
 		{
 			ol := &ast.ObjectLiteral{Properties: yyDollar[2].props}
 			ol.Span = yyDollar[1].span.Merge(yyDollar[3].span)
 			yyVAL.expr = ol
 		}
-	case 76:
+	case 78:
 		yyDollar = yyS[yypt-4 : yypt+1]
-//line ./parser.y:488
+//line ./parser.y:497
 		{
 			ol := &ast.ObjectLiteral{Properties: yyDollar[2].props}
 			ol.Span = yyDollar[1].span.Merge(yyDollar[4].span)
 			yyVAL.expr = ol
 		}
-	case 77:
+	case 79:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line ./parser.y:493
+//line ./parser.y:502
 		{
 			yyVAL.expr = yyDollar[2].expr
 		}
-	case 78:
+	case 80:
 		yyDollar = yyS[yypt-0 : yypt+1]
-//line ./parser.y:498
+//line ./parser.y:507
 		{
 			yyVAL.exprs = []ast.Expr{}
 		}
-	case 79:
+	case 81:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./parser.y:500
+//line ./parser.y:509
 		{
 			yyVAL.exprs = yyDollar[1].exprs
 		}
-	case 80:
+	case 82:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./parser.y:505
+//line ./parser.y:514
 		{
 			yyVAL.exprs = []ast.Expr{yyDollar[1].expr}
 		}
-	case 81:
+	case 83:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line ./parser.y:507
+//line ./parser.y:516
 		{
 			yyVAL.exprs = append(yyDollar[1].exprs, yyDollar[3].expr)
 		}
-	case 82:
-		yyDollar = yyS[yypt-3 : yypt+1]
-//line ./parser.y:512
-		{
-			p := ast.ObjectProperty{Key: yyDollar[1].str, Value: yyDollar[3].expr}
-			p.Span = yyDollar[1].span.Merge(yyDollar[3].expr.GetSpan())
-			yyVAL.prop = p
-		}
-	case 83:
-		yyDollar = yyS[yypt-3 : yypt+1]
-//line ./parser.y:518
-		{
-			p := ast.ObjectProperty{Key: yyDollar[1].str, Value: yyDollar[3].expr}
-			p.Span = yyDollar[1].span.Merge(yyDollar[3].expr.GetSpan())
-			yyVAL.prop = p
-		}
 	case 84:
-		yyDollar = yyS[yypt-0 : yypt+1]
+		yyDollar = yyS[yypt-3 : yypt+1]
+//line ./parser.y:521
+		{
+			p := ast.ObjectProperty{Key: yyDollar[1].str, Value: yyDollar[3].expr}
+			p.Span = yyDollar[1].span.Merge(yyDollar[3].expr.GetSpan())
+			yyVAL.prop = p
+		}
+	case 85:
+		yyDollar = yyS[yypt-3 : yypt+1]
 //line ./parser.y:527
+		{
+			p := ast.ObjectProperty{Key: yyDollar[1].str, Value: yyDollar[3].expr}
+			p.Span = yyDollar[1].span.Merge(yyDollar[3].expr.GetSpan())
+			yyVAL.prop = p
+		}
+	case 86:
+		yyDollar = yyS[yypt-0 : yypt+1]
+//line ./parser.y:536
 		{
 			yyVAL.props = []ast.ObjectProperty{}
 		}
-	case 85:
+	case 87:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./parser.y:529
+//line ./parser.y:538
 		{
 			yyVAL.props = yyDollar[1].props
 		}
-	case 86:
+	case 88:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line ./parser.y:534
+//line ./parser.y:543
 		{
 			yyVAL.props = []ast.ObjectProperty{yyDollar[1].prop}
 		}
-	case 87:
+	case 89:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line ./parser.y:536
+//line ./parser.y:545
 		{
 			yyVAL.props = append(yyDollar[1].props, yyDollar[3].prop)
 		}

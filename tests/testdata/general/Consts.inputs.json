@@ -1,0 +1,45 @@
+[
+  {
+    "input": {
+      "score": 80
+    },
+    "expected": {
+      "outputs": {
+        "over": true,
+        "names": ["alice", "bob"],
+        "retries": 3,
+        "doubled": 10,
+        "idx": 1
+      }
+    }
+  },
+  {
+    "input": {
+      "score": 120
+    },
+    "expected": {
+      "outputs": {
+        "over": true,
+        "names": ["alice", "bob"],
+        "retries": 3,
+        "doubled": 10,
+        "idx": 1
+      },
+      "emitted_signals": [{ "name": "Alert", "args": [120] }]
+    }
+  },
+  {
+    "input": {
+      "score": 10
+    },
+    "expected": {
+      "outputs": {
+        "over": false,
+        "names": ["alice", "bob"],
+        "retries": 3,
+        "doubled": 10,
+        "idx": 1
+      }
+    }
+  }
+]
