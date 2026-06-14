@@ -1,0 +1,18 @@
+// 'any' is the top type (result of json::unmarshal, etc.). It opts
+// out of static checking: index/property access and operators against it are
+// accepted and defer to runtime. None of these should produce errors.
+
+rule UnmarshalIndex {
+    obj = json::unmarshal(input.a)
+    out approved = obj["c"] <= 10
+}
+
+rule UnmarshalSelector {
+    obj = json::unmarshal(input.a)
+    out approved = obj.c <= 10
+}
+
+rule ChainedAnyAccess {
+    obj = json::unmarshal(input.a)
+    out approved = obj["c"]["d"] <= 10
+}

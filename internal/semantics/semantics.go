@@ -271,7 +271,8 @@ func (sc *SemanticAnalyzer) inferArrayType(al *ast.ArrayLiteral) types.Type {
 }
 
 func (sc *SemanticAnalyzer) isType(actualType types.Type, expectedTypes ...types.Type) bool {
-	if actualType.Equals(types.UnknownType) {
+	// 'any' and 'unknown' types defer validation to runtime
+	if actualType.Equals(types.UnknownType) || actualType.Equals(types.AnyType) {
 		return true
 	}
 	for _, expected := range expectedTypes {
@@ -730,6 +731,11 @@ func (sc *SemanticAnalyzer) VisitSelectorExpr(se *ast.SelectorExpr) error {
 		return nil
 	}
 
+	if baseType.Equals(types.AnyType) {
+		se.Annotate(types.AnyType)
+		return nil
+	}
+
 	if !sc.isType(baseType, types.ObjectType) {
 		sc.addError(sc.errorAt(se, "cannot access property '%s' on type %s", se.Field, baseType.String()))
 		se.Annotate(types.UnknownType)
@@ -859,6 +865,11 @@ func (sc *SemanticAnalyzer) VisitIndexExpr(ie *ast.IndexExpr) error {
 
 	if baseType.Equals(types.UnknownType) || indexType.Equals(types.UnknownType) {
 		ie.Annotate(types.UnknownType)
+		return nil
+	}
+
+	if baseType.Equals(types.AnyType) {
+		ie.Annotate(types.AnyType)
 		return nil
 	}
 
