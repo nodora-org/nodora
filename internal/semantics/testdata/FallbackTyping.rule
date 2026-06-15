@@ -1,0 +1,28 @@
+rule NarrowsToFallbackType {
+    // input.risk is dynamic, the fallback is a number -> result is number
+    risk = fallback(input.risk, 0)
+    out approved = risk <= 10
+}
+
+rule MatchingConcreteTypes {
+    // both args concrete and the same type -> unifies to string
+    name = fallback("guest", "anon")
+    out greeting = name + "!"
+}
+
+rule NarrowedResultIsChecked {
+    // result narrows to string, so a later numeric comparison must be rejected
+    name = fallback(input.name, "anon")
+    out bad = name <= 10 // ERROR: operator '<=' cannot be applied to 'string' and 'number'
+}
+
+rule ConflictingArgsCaught {
+    // both args concrete but different types -> unification fails
+    out bad = fallback("a", 0) // ERROR: arguments bound to type 'T' must have the same type, got 'string' and 'number'
+}
+
+rule StaysDynamicWhenUnknown {
+    // both arguments dynamic -> result stays 'any', no false positive
+    x = fallback(input.a, input.b)
+    out v = x <= 10
+}

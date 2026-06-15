@@ -1,0 +1,23 @@
+// objects::get() narrows its return type from the `default` argument, so
+// static checking is preserved through it (the looked-up value's type can't be
+// known statically)
+
+rule NarrowsToDefaultType {
+    n = objects::get(input.obj, "count", 0)
+    out approved = n <= 10
+}
+
+rule StringDefault {
+    name = objects::get(input.obj, "name", "anon")
+    out greeting = name + "!"
+}
+
+rule MismatchIsCaught {
+    name = objects::get(input.obj, "name", "anon")
+    out bad = name <= 10 // ERROR: operator '<=' cannot be applied to 'string' and 'number'
+}
+
+rule DynamicDefaultStaysAny {
+    x = objects::get(input.obj, "k", input.other)
+    out v = x <= 10
+}

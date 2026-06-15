@@ -301,3 +301,31 @@ func IsUnion(t Type) bool {
 	_, ok := t.(*UnionType)
 	return ok
 }
+
+type TypeVar struct {
+	Name string
+}
+
+func (t *TypeVar) String() string { return t.Name }
+
+func (t *TypeVar) Equals(other Type) bool {
+	if tv, ok := other.(*TypeVar); ok {
+		return t.Name == tv.Name
+	}
+	return false
+}
+
+func (t *TypeVar) IsAssignableFrom(other Type) bool {
+	return other != nil
+}
+
+func (t *TypeVar) Kind() TypeKind { return AnyKind }
+
+func NewTypeVar(name string) *TypeVar {
+	return &TypeVar{Name: name}
+}
+
+func IsTypeVar(t Type) bool {
+	_, ok := t.(*TypeVar)
+	return ok
+}

@@ -223,6 +223,9 @@ func (sc *SemanticAnalyzer) inferType(expr ast.Expr) types.Type {
 			return e.Type
 		}
 		if fn, ok := registry.Global().Get(e.Namespace, e.Name); ok {
+			if types.IsTypeVar(fn.ReturnType) {
+				return types.AnyType
+			}
 			return fn.ReturnType
 		}
 		return types.UnknownType
@@ -602,9 +605,9 @@ func (sc *SemanticAnalyzer) isMatchExhaustive(scrutType types.Type, arms []*ast.
 			return true
 		}
 	}
-	// Bool exhaustiveness: both true and false literal arms with no guards
-	// cover every bool value. Only applied when the scrutinee is statically
-	// known to be bool — an unknown type might be anything at runtime.
+	// bool exhaustiveness
+	// both true and false literal arms with no guards cover every bool value
+	// only applied when the scrutinee is statically known to be bool
 	if scrutType != nil && scrutType.Equals(types.BoolType) {
 		hasTrue, hasFalse := false, false
 		for _, arm := range arms {
@@ -1027,6 +1030,11 @@ func (sc *SemanticAnalyzer) VisitCallExpr(ce *ast.CallExpr) error {
 		))
 	}
 
+	// typeVars records, per type-variable name, the first concrete type bound to
+	// it and the argument that bound it, so cross-argument conflicts (e.g.
+	// fallback("a", 0) where both share 'T') can be reported.
+	typeVars := map[string]boundTypeVar{}
+
 	for i, arg := range ce.Args {
 		if err := arg.Accept(sc); err != nil {
 			sc.addError(err)
@@ -1036,6 +1044,11 @@ func (sc *SemanticAnalyzer) VisitCallExpr(ce *ast.CallExpr) error {
 		if i < len(fn.Args) {
 			argType := sc.inferType(arg)
 			fnArg := fn.Args[i]
+
+			if tv, ok := fnArg.Type.(*types.TypeVar); ok {
+				sc.unifyTypeVar(typeVars, tv, argType, arg)
+				continue
+			}
 
 			if !sc.isType(argType, fnArg.Type) {
 				sc.addError(sc.errorAt(
@@ -1050,11 +1063,49 @@ func (sc *SemanticAnalyzer) VisitCallExpr(ce *ast.CallExpr) error {
 		}
 	}
 
-	ce.Annotate(sc.narrowReturnType(fn, ce.Args))
+	ce.Annotate(sc.resolveReturnType(fn, ce.Args, typeVars))
 	return nil
 }
 
-// narrowReturnType attempts to narrow a union return type based on actual argument types
+type boundTypeVar struct {
+	typ types.Type
+	arg ast.Expr
+}
+
+// binds a concrete argument type to a type variable and reports a conflict
+// if the variable was already bound to a different concrete type
+// dynamic arguments (any/unknown) carry no static information and never bind
+func (sc *SemanticAnalyzer) unifyTypeVar(bindings map[string]boundTypeVar, tv *types.TypeVar, argType types.Type, arg ast.Expr) {
+	if argType.Equals(types.AnyType) || argType.Equals(types.UnknownType) {
+		return
+	}
+	prev, seen := bindings[tv.Name]
+	if !seen {
+		bindings[tv.Name] = boundTypeVar{typ: argType, arg: arg}
+		return
+	}
+	if !prev.typ.Equals(argType) {
+		sc.addError(sc.errorAt(arg,
+			"arguments bound to type '%s' must have the same type, got '%s' and '%s'",
+			tv.Name, prev.typ.String(), argType.String(),
+		))
+	}
+}
+
+// determines a call's static return type; a type-variable return
+// resolves to whatever its variable was bound to (or 'any' if nothing
+// concrete bound it); otherwise it falls back to union-return narrowing
+func (sc *SemanticAnalyzer) resolveReturnType(fn *types.Func, args []ast.Expr, typeVars map[string]boundTypeVar) types.Type {
+	if tv, ok := fn.ReturnType.(*types.TypeVar); ok {
+		if bound, seen := typeVars[tv.Name]; seen {
+			return bound.typ
+		}
+		return types.AnyType
+	}
+	return sc.narrowReturnType(fn, args)
+}
+
+// attempts to narrow a union return type based on actual argument types
 func (sc *SemanticAnalyzer) narrowReturnType(fn *types.Func, args []ast.Expr) types.Type {
 	retUnion, ok := fn.ReturnType.(*types.UnionType)
 	if !ok {

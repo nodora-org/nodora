@@ -6,6 +6,7 @@ import (
 )
 
 func fallback() types.Func {
+	t := types.NewTypeVar("T")
 	return types.Func{
 		Name:        "fallback",
 		Description: "Returns the value if defined, otherwise returns the fallback value.",
@@ -13,16 +14,16 @@ func fallback() types.Func {
 			{
 				Name:        "value",
 				Description: "The value to return if defined.",
-				Type:        types.AnyType,
+				Type:        t,
 				Required:    true,
 			},
 			{
 				Name:        "fb",
 				Description: "The value to return if `value` is undefined.",
-				Type:        types.AnyType,
+				Type:        t,
 				Required:    true,
 			}},
-		ReturnType: types.AnyType,
+		ReturnType: t,
 		Fn:         fallbackImpl,
 		Pure:       true,
 	}
