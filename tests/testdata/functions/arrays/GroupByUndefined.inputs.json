@@ -1,0 +1,20 @@
+[
+  {
+    "input": {
+      "bucket": "all"
+    },
+    "expected": {
+      "outputs": {
+        "result": {
+          "all": [1, 2, 3]
+        }
+      }
+    }
+  },
+  {
+    "input": {},
+    "expected": {
+      "outputs": {}
+    }
+  }
+]

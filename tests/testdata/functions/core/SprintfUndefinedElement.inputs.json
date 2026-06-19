@@ -1,0 +1,18 @@
+[
+  {
+    "input": {
+      "missing": "hi"
+    },
+    "expected": {
+      "outputs": {
+        "formatted": "x=hi"
+      }
+    }
+  },
+  {
+    "input": {},
+    "expected": {
+      "outputs": {}
+    }
+  }
+]

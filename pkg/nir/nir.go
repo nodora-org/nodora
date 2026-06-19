@@ -291,6 +291,16 @@ func (c *CallExpr) Evaluate(ctx *EvaluationContext) (core.Value, error) {
 		)
 	}
 
+	// short-circuit to undefined if any required argument is undefined
+	// skip functions that intentionally consume undefined
+	if !fn.AcceptsUndefined {
+		for i, arg := range args {
+			if arg.Undefined && i < len(fn.Args) && fn.Args[i].Required {
+				return core.U(), nil
+			}
+		}
+	}
+
 	val, err := fn.Fn(args)
 	if err != nil {
 		return core.U(), fmt.Errorf("%v: %v", fn.FullPath(), err)

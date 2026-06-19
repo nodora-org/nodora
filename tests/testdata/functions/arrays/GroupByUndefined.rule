@@ -1,0 +1,3 @@
+rule GroupByUndefinedRule {
+    out result = arrays::group_by([1, 2, 3], |x| input.bucket)
+}

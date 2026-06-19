@@ -35,6 +35,9 @@ func sprintfImpl(args []core.Value) (core.Value, error) {
 	arrVal := make([]core.Value, 0)
 	if len(args) > 1 {
 		args := args[1]
+		if args.Undefined {
+			return core.U(), nil
+		}
 		arrVal, ok = args.Raw.([]core.Value)
 		if !ok {
 			return core.U(), fmt.Errorf(
@@ -47,6 +50,11 @@ func sprintfImpl(args []core.Value) (core.Value, error) {
 
 	interfaceArgs := make([]any, len(arrVal))
 	for i, v := range arrVal {
+		// an undefined substitution value propagates rather than rendering as
+		// the literal "%!s(<nil>)" Go would otherwise produce
+		if v.Undefined {
+			return core.U(), nil
+		}
 		// format compatibility
 		if f, ok := v.Raw.(float64); ok && f == math.Trunc(f) && !math.IsInf(f, 0) {
 			interfaceArgs[i] = int64(f)

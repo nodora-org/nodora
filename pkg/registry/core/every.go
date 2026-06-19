@@ -65,6 +65,9 @@ func everyImpl(args []core.Value) (core.Value, error) {
 		if err != nil {
 			return core.U(), err
 		}
+		if r.Undefined {
+			return core.U(), nil
+		}
 		boolVal, ok := r.Raw.(bool)
 		if !ok {
 			return core.U(), fmt.Errorf(

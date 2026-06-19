@@ -1,0 +1,3 @@
+rule EveryUndefinedRule {
+    out result = every([1, 2, 3], |x| x > input.threshold)
+}

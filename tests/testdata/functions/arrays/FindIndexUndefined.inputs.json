@@ -1,29 +1,23 @@
 [
   {
     "input": {
-      "version": "v1.0.0"
+      "threshold": 1
     },
     "expected": {
       "outputs": {
-        "valid": true
+        "index": 1
       }
     }
   },
   {
     "input": {
-      "version": "1"
+      "threshold": 5
     },
     "expected": {
       "outputs": {
-        "valid": false
+        "index": -1
       }
     }
-  },
-  {
-    "input": {
-      "version": 1
-    },
-    "err": true
   },
   {
     "input": {},

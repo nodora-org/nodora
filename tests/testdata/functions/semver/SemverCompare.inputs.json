@@ -38,5 +38,11 @@
       "w": 2
     },
     "err": true
+  },
+  {
+    "input": {},
+    "expected": {
+      "outputs": {}
+    }
   }
 ]

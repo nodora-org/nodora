@@ -10,9 +10,10 @@ func isDefined() types.Func {
 		Name:        "is_defined",
 		Description: "Returns true if the value is defined (not undefined).",
 		Args:        []types.ArgSpec{{Name: "value", Description: "The value to check.", Type: types.AnyType, Required: true}},
-		ReturnType:  types.BoolType,
-		Fn:          isDefinedImpl,
-		Pure:        true,
+		ReturnType:       types.BoolType,
+		Fn:               isDefinedImpl,
+		Pure:             true,
+		AcceptsUndefined: true,
 	}
 }
 

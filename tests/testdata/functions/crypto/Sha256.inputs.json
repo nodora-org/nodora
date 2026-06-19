@@ -14,5 +14,11 @@
       "data": 123
     },
     "err": true
+  },
+  {
+    "input": {},
+    "expected": {
+      "outputs": {}
+    }
   }
 ]

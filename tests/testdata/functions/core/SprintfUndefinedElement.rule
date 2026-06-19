@@ -1,0 +1,5 @@
+rule SprintfUndefinedElementRule {
+    // an undefined substitution value propagates rather than rendering as the
+    // literal "%!s(<nil>)" that Go's fmt would otherwise produce
+    out formatted = sprintf("x=%s", [input.missing])
+}

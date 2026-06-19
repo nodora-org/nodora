@@ -23,9 +23,10 @@ func fallback() types.Func {
 				Type:        t,
 				Required:    true,
 			}},
-		ReturnType: t,
-		Fn:         fallbackImpl,
-		Pure:       true,
+		ReturnType:       t,
+		Fn:               fallbackImpl,
+		Pure:             true,
+		AcceptsUndefined: true,
 	}
 }
 

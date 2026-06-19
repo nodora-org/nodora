@@ -42,5 +42,13 @@
         "formatted": "No args"
       }
     }
+  },
+  {
+    "input": {
+      "args": ["World"]
+    },
+    "expected": {
+      "outputs": {}
+    }
   }
 ]

@@ -22,6 +22,9 @@ type Func struct {
 	ReturnType  Type
 	Fn          func([]core.Value) (core.Value, error)
 	Pure        bool
+	// opts the function out of automatic undefined
+	// propagation at the call site
+	AcceptsUndefined bool
 }
 
 func (f *Func) RequiredArgCount() (n int) {

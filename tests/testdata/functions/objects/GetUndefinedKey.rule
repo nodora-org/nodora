@@ -1,0 +1,5 @@
+rule GetUndefinedKeyRule {
+    // the object is present but the key is undefined; the required argument
+    // propagates rather than crashing the evaluation
+    out result = objects::get(input.data, input.key, 0)
+}

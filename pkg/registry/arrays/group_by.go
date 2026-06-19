@@ -65,6 +65,9 @@ func groupByImpl(args []core.Value) (core.Value, error) {
 		if err != nil {
 			return core.U(), err
 		}
+		if r.Undefined {
+			return core.U(), nil
+		}
 		key := fmt.Sprintf("%v", r.ToRaw())
 		if group, ok := result[key]; ok {
 			result[key] = core.V(append(group.Raw.([]core.Value), v))
