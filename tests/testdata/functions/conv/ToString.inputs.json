@@ -1,31 +1,41 @@
 [
   {
     "input": {
-      "data": ["a", "b"]
+      "x": 42
     },
     "expected": {
       "outputs": {
-        "arr": ["a", "b", "c", "d"]
+        "result": "42"
       }
     }
   },
   {
     "input": {
-      "data": [1, 2]
+      "x": 3.14
     },
     "expected": {
       "outputs": {
-        "arr": [1, 2, "c", "d"]
+        "result": "3.14"
       }
     }
   },
   {
     "input": {
-      "data": []
+      "x": true
     },
     "expected": {
       "outputs": {
-        "arr": ["c", "d"]
+        "result": "true"
+      }
+    }
+  },
+  {
+    "input": {
+      "x": "hi"
+    },
+    "expected": {
+      "outputs": {
+        "result": "hi"
       }
     }
   }

@@ -1,0 +1,20 @@
+rule StaticThreading {
+    // filter: array<number> -> array<number>, accepted by sum
+    out filter_sum = sum(arrays::filter([1, 2, 3, 4], |x| x > 2))            // 7
+
+    // map: element type follows the lambda return (number -> string)
+    out map_join = strings::concat(",", arrays::map([1, 2, 3], |x| conv::to_string(x)))  // "1,2,3"
+
+    // unique: array<string> -> array<string>, accepted by strings::concat
+    out unique_join = strings::concat("-", arrays::unique(["a", "a", "b", "c", "b"]))     // "a-b-c"
+
+    // slice / reverse: array<number> -> array<number>, threaded into sum
+    out slice_sum   = sum(arrays::slice([10, 20, 30, 40], 1, 3))             // 50
+    out reverse_sum = sum(arrays::reverse([5, 10, 15]))                      // 30
+
+    // reduce: |U, T| -> U with a number accumulator
+    out reduce_total = arrays::reduce([1, 2, 3, 4], |acc, x| acc + x, 0)     // 10
+
+    // reduce: a string accumulator (init "" pins U = string)
+    out reduce_str = arrays::reduce([1, 2, 3], |acc, x| acc + conv::to_string(x), "")     // "123"
+}

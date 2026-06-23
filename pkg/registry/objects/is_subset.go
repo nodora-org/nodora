@@ -15,7 +15,7 @@ func isSubset() types.Func {
 			{Name: "super", Description: "The superset object.", Type: types.ObjectType, Required: true},
 			{Name: "sub", Description: "The subset object to check against.", Type: types.ObjectType, Required: true},
 		},
-		ReturnType: types.ObjectType,
+		ReturnType: types.BoolType,
 		Fn:         isSubsetImpl,
 		Pure:       true,
 	}

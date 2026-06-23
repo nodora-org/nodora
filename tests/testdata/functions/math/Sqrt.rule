@@ -1,0 +1,3 @@
+rule SqrtRule {
+    out result = math::sqrt(input.x)
+}

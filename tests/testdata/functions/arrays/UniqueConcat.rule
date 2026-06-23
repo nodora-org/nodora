@@ -1,0 +1,3 @@
+rule UniqueConcatRule {
+    out result = strings::concat(",", arrays::unique(input.arr))
+}

@@ -1,0 +1,3 @@
+rule ToStringRule {
+    out result = conv::to_string(input.x)
+}

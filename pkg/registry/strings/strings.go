@@ -19,6 +19,7 @@ func init() {
 		trimEnd,
 		split,
 		replace,
+		substring,
 		minLength,
 		maxLength,
 	)

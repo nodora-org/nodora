@@ -1,0 +1,3 @@
+rule MapConcatRule {
+    out result = strings::concat(",", arrays::map(input.arr, |x| conv::to_string(x)))
+}

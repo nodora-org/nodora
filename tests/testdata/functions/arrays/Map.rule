@@ -1,0 +1,3 @@
+rule MapRule {
+    out result = arrays::map(input.nums, |x| x * 2)
+}

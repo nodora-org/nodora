@@ -1,0 +1,3 @@
+rule FilterSumRule {
+    out result = sum(arrays::filter([1, 2, 3], |x| x > 0))
+}

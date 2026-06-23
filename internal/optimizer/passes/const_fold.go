@@ -56,6 +56,12 @@ func (cf *ConstantFolding) foldOp(op *nir.Op) (bool, error) {
 
 	result := evalCtx.Slots[*op.Out]
 
+	// undefined result cannot be represented as an immediate:
+	// leave the op to evaluate at runtime, where undefined is handled correctly
+	if result.Undefined {
+		return changed, nil
+	}
+
 	// replace with a copy op containing the constant result
 	op.Kind = nir.OpCopy
 	op.Args = []nir.RawExpr{{Expr: &nir.ImmExpr{Value: result}}}
@@ -69,6 +75,9 @@ func (cf *ConstantFolding) foldExpr(expr nir.RawExpr) (*nir.RawExpr, bool) {
 	}
 	val, err := expr.Evaluate(&nir.EvaluationContext{})
 	if err != nil {
+		return nil, false
+	}
+	if val.Undefined {
 		return nil, false
 	}
 	immExpr := nir.RawExpr{Expr: &nir.ImmExpr{Value: val}}

@@ -1,0 +1,3 @@
+rule RoundDecimalsRule {
+    out result = math::round(input.x, input.decimals)
+}

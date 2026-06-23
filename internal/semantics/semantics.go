@@ -1031,8 +1031,7 @@ func (sc *SemanticAnalyzer) VisitCallExpr(ce *ast.CallExpr) error {
 	}
 
 	// typeVars records, per type-variable name, the first concrete type bound to
-	// it and the argument that bound it, so cross-argument conflicts (e.g.
-	// fallback("a", 0) where both share 'T') can be reported.
+	// it and the argument that bound it, so cross-argument conflicts can be reported.
 	typeVars := map[string]boundTypeVar{}
 
 	for i, arg := range ce.Args {
@@ -1045,12 +1044,10 @@ func (sc *SemanticAnalyzer) VisitCallExpr(ce *ast.CallExpr) error {
 			argType := sc.inferType(arg)
 			fnArg := fn.Args[i]
 
-			if tv, ok := fnArg.Type.(*types.TypeVar); ok {
-				sc.unifyTypeVar(typeVars, tv, argType, arg)
-				continue
-			}
-
-			if !sc.isType(argType, fnArg.Type) {
+			// structural unification binds any type variables in the parameter
+			// (including ones nested inside array<T> / |T| -> U) and falls back
+			// to a plain assignability check for non-variable shapes
+			if !sc.unify(fnArg.Type, argType, typeVars, arg) {
 				sc.addError(sc.errorAt(
 					arg,
 					"%v requires '%v' to be of type %v, got %v",
@@ -1070,6 +1067,99 @@ func (sc *SemanticAnalyzer) VisitCallExpr(ce *ast.CallExpr) error {
 type boundTypeVar struct {
 	typ types.Type
 	arg ast.Expr
+}
+
+// structurally matches a parameter type against an argument type,
+// binding any type variables it encounters (directly, or nested inside an array<T> / lambda |T| -> U)
+func (sc *SemanticAnalyzer) unify(param, arg types.Type, bindings map[string]boundTypeVar, argExpr ast.Expr) bool {
+	switch p := param.(type) {
+	case *types.TypeVar:
+		sc.unifyTypeVar(bindings, p, arg, argExpr)
+		return true
+	case *types.ArrayType:
+		if a, ok := arg.(*types.ArrayType); ok {
+			return sc.unify(p.Element, a.Element, bindings, argExpr)
+		}
+		// argument isn't an array; defer to isType so any/unknown still pass
+		return sc.isType(arg, param)
+	case *types.LambdaType:
+		a, ok := arg.(*types.LambdaType)
+		if !ok {
+			return sc.isType(arg, param)
+		}
+		if len(p.Params) != len(a.Params) {
+			return false
+		}
+		for i := range p.Params {
+			if !sc.unify(p.Params[i], a.Params[i], bindings, argExpr) {
+				return false
+			}
+		}
+		if p.ReturnType == nil || a.ReturnType == nil {
+			return true
+		}
+		return sc.unify(p.ReturnType, a.ReturnType, bindings, argExpr)
+	default:
+		return sc.isType(arg, param)
+	}
+}
+
+// rebuilds a type, replacing every bound type variable with the concrete type it was bound to
+// unbound variables become 'any' (deferred to runtime), matching the behaviour of a dynamic argument
+func (sc *SemanticAnalyzer) substitute(t types.Type, bindings map[string]boundTypeVar) types.Type {
+	switch ty := t.(type) {
+	case *types.TypeVar:
+		if bound, ok := bindings[ty.Name]; ok {
+			return bound.typ
+		}
+		return types.AnyType
+	case *types.ArrayType:
+		return types.NewArrayType(sc.substitute(ty.Element, bindings))
+	case *types.LambdaType:
+		params := make([]types.Type, len(ty.Params))
+		for i, p := range ty.Params {
+			params[i] = sc.substitute(p, bindings)
+		}
+		var ret types.Type
+		if ty.ReturnType != nil {
+			ret = sc.substitute(ty.ReturnType, bindings)
+		}
+		return types.NewLambdaType(params, ret)
+	case *types.UnionType:
+		members := make([]types.Type, len(ty.Types))
+		for i, m := range ty.Types {
+			members[i] = sc.substitute(m, bindings)
+		}
+		return types.NewUnionType(members...)
+	default:
+		return t
+	}
+}
+
+// reports whether a type contains any type variable (directly or nested)
+func containsTypeVar(t types.Type) bool {
+	switch ty := t.(type) {
+	case *types.TypeVar:
+		return true
+	case *types.ArrayType:
+		return containsTypeVar(ty.Element)
+	case *types.LambdaType:
+		for _, p := range ty.Params {
+			if containsTypeVar(p) {
+				return true
+			}
+		}
+		return ty.ReturnType != nil && containsTypeVar(ty.ReturnType)
+	case *types.UnionType:
+		for _, m := range ty.Types {
+			if containsTypeVar(m) {
+				return true
+			}
+		}
+		return false
+	default:
+		return false
+	}
 }
 
 // binds a concrete argument type to a type variable and reports a conflict
@@ -1092,15 +1182,13 @@ func (sc *SemanticAnalyzer) unifyTypeVar(bindings map[string]boundTypeVar, tv *t
 	}
 }
 
-// determines a call's static return type; a type-variable return
-// resolves to whatever its variable was bound to (or 'any' if nothing
-// concrete bound it); otherwise it falls back to union-return narrowing
+// determines a call's static return type; a return type that contains a type
+// variable (directly, or nested inside array<T>) is resolved by substituting
+// the bound variables, leaving unbound ones as 'any'; otherwise it falls back
+// to union-return narrowing
 func (sc *SemanticAnalyzer) resolveReturnType(fn *types.Func, args []ast.Expr, typeVars map[string]boundTypeVar) types.Type {
-	if tv, ok := fn.ReturnType.(*types.TypeVar); ok {
-		if bound, seen := typeVars[tv.Name]; seen {
-			return bound.typ
-		}
-		return types.AnyType
+	if containsTypeVar(fn.ReturnType) {
+		return sc.substitute(fn.ReturnType, typeVars)
 	}
 	return sc.narrowReturnType(fn, args)
 }

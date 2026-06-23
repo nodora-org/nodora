@@ -8,15 +8,16 @@ import (
 )
 
 func slice() types.Func {
+	t := types.NewTypeVar("T")
 	return types.Func{
 		Name:        "slice",
 		Description: "Returns a portion of an array from start index to stop index.",
 		Args: []types.ArgSpec{
-			{Name: "arr", Description: "The array to slice.", Type: types.NewArrayType(types.AnyType), Required: true},
+			{Name: "arr", Description: "The array to slice.", Type: types.NewArrayType(t), Required: true},
 			{Name: "start", Description: "The start index (inclusive).", Type: types.NumberType, Required: true},
 			{Name: "stop", Description: "The stop index (exclusive). Defaults to array length.", Type: types.NumberType, Required: false},
 		},
-		ReturnType: types.NewArrayType(types.AnyType),
+		ReturnType: types.NewArrayType(t),
 		Fn:         sliceImpl,
 		Pure:       true,
 	}

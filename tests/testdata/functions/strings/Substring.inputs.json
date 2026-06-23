@@ -1,0 +1,46 @@
+[
+  {
+    "input": {
+      "str": "hello world",
+      "from": 6
+    },
+    "expected": {
+      "outputs": {
+        "head": "hello",
+        "tail": "world"
+      }
+    }
+  },
+  {
+    "input": {
+      "str": "hi",
+      "from": 0
+    },
+    "expected": {
+      "outputs": {
+        "head": "hi",
+        "tail": "hi"
+      }
+    }
+  },
+  {
+    "input": {
+      "str": "abc",
+      "from": 10
+    },
+    "expected": {
+      "outputs": {
+        "head": "abc",
+        "tail": ""
+      }
+    }
+  },
+  {
+    "input": {
+      "from": 0
+    },
+    "expected": {
+      "outputs": {}
+    }
+  }
+]

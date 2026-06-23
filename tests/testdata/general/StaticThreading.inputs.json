@@ -1,0 +1,16 @@
+[
+  {
+    "input": {},
+    "expected": {
+      "outputs": {
+        "filter_sum": 7,
+        "map_join": "1,2,3",
+        "unique_join": "a-b-c",
+        "slice_sum": 50,
+        "reverse_sum": 30,
+        "reduce_total": 10,
+        "reduce_str": "123"
+      }
+    }
+  }
+]

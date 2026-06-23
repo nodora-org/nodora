@@ -1,0 +1,63 @@
+rule FilterIntoSum {
+    // filter preserves array<number>, so the result flows into sum
+    out total = sum(arrays::filter([1, 2, 3], |x| x > 0))
+}
+
+rule MapIntoConcat {
+    // map's element type follows the lambda return (string)
+    out joined = strings::concat(",", arrays::map([1, 2, 3], |x| conv::to_string(x)))
+}
+
+rule UniquePreservesElement {
+    // unique keeps array<string>, accepted by concat
+    out joined = strings::concat(",", arrays::unique(["a", "a", "b"]))
+}
+
+rule FilterStringIntoSumRejected {
+    // a filtered array<string> must not flow into sum (array<number>)
+    out bad = sum(arrays::filter(["a", "b"], |x| true)) // ERROR: requires 'arr' to be of type array<number>, got array<string>
+}
+
+rule MapStringIntoSumRejected {
+    // a mapped array<string> must not flow into sum either
+    out bad = sum(arrays::map([1, 2, 3], |x| conv::to_string(x))) // ERROR: requires 'arr' to be of type array<number>, got array<string>
+}
+
+rule SliceAndReversePreserveElement {
+    // slice and reverse pass the element type straight through into sum
+    out total = sum(arrays::reverse(arrays::slice([1, 2, 3], 0, 2)))
+}
+
+rule ReverseStringIntoSumRejected {
+    // a reversed array<string> must not flow into sum
+    out bad = sum(arrays::reverse(["a", "b"])) // ERROR: requires 'arr' to be of type array<number>, got array<string>
+}
+
+rule StaticThreading {
+    // filter: array<number> -> array<number>, accepted by sum
+    out filter_sum = sum(arrays::filter([1, 2, 3, 4], |x| x > 2))
+
+    // map: element type follows the lambda return (number -> string)
+    out map_join = strings::concat(",", arrays::map([1, 2, 3], |x| conv::to_string(x)))
+
+    // unique: array<string> -> array<string>, accepted by strings::concat
+    out unique_join = strings::concat("-", arrays::unique(["a", "a", "b", "c", "b"])) 
+
+    // slice / reverse: array<number> -> array<number>, threaded into sum
+    out slice_sum   = sum(arrays::slice([10, 20, 30, 40], 1, 3))
+    out reverse_sum = sum(arrays::reverse([5, 10, 15]))
+
+    // reduce: |U, T| -> U with a number accumulator
+    out reduce_total = arrays::reduce([1, 2, 3, 4], |acc, x| acc + x, 0)
+
+    // reduce: a string accumulator (init "" pins U = string)
+    out reduce_str = arrays::reduce([1, 2, 3], |acc, x| acc + conv::to_string(x), "")
+}
+
+rule DynamicDefersToRuntime {
+    // arrays::filter(input.nums, ...) -> array<any> -> sum (runtime-checked)
+    out dyn_filter_sum = sum(arrays::filter(input.nums, |x| x > 0))
+
+    // objects::values -> array<any> -> sum (runtime-checked)
+    out dyn_values_sum = sum(objects::values(input.scores))
+}

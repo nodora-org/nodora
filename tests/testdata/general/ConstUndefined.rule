@@ -1,0 +1,7 @@
+// constant expressions that evaluate to undefined are preserved to match runtime behavior
+rule ConstUndefinedRule {
+    out from_div = 1 / 0
+    out from_mod = 5 % 0
+    out from_sqrt = math::sqrt(-4)
+    out present = 1 + 1
+}

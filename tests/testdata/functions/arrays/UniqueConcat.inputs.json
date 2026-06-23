@@ -1,0 +1,12 @@
+[
+  {
+    "input": {
+      "arr": ["a", "a", "b"]
+    },
+    "expected": {
+      "outputs": {
+        "result": "a,b"
+      }
+    }
+  }
+]

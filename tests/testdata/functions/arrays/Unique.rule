@@ -1,0 +1,3 @@
+rule UniqueRule {
+    out result = arrays::unique(input.items)
+}

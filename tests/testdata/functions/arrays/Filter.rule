@@ -1,0 +1,3 @@
+rule FilterRule {
+    out result = arrays::filter(input.nums, |x| x >= input.min)
+}

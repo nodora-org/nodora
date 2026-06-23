@@ -5,5 +5,5 @@ import (
 )
 
 func init() {
-	registry.Global().Register("conv", atoi, atof)
+	registry.Global().Register("conv", atoi, atof, toString)
 }

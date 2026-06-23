@@ -1,31 +1,34 @@
 [
   {
     "input": {
-      "data": ["a", "b"]
+      "x": 3.14159,
+      "decimals": 2
     },
     "expected": {
       "outputs": {
-        "arr": ["a", "b", "c", "d"]
+        "result": 3.14
       }
     }
   },
   {
     "input": {
-      "data": [1, 2]
+      "x": 123.456,
+      "decimals": 1
     },
     "expected": {
       "outputs": {
-        "arr": [1, 2, "c", "d"]
+        "result": 123.5
       }
     }
   },
   {
     "input": {
-      "data": []
+      "x": 3.7,
+      "decimals": 0
     },
     "expected": {
       "outputs": {
-        "arr": ["c", "d"]
+        "result": 4
       }
     }
   }

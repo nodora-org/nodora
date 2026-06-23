@@ -62,5 +62,6 @@ func main() {
 
 	if err := cmd.Run(context.Background(), os.Args); err != nil {
 		fmt.Printf("(>_<) %v\n", err)
+		os.Exit(1)
 	}
 }

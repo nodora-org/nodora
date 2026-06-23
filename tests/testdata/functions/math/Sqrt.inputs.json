@@ -1,32 +1,40 @@
 [
   {
     "input": {
-      "data": ["a", "b"]
+      "x": 144
     },
     "expected": {
       "outputs": {
-        "arr": ["a", "b", "c", "d"]
+        "result": 12
       }
     }
   },
   {
     "input": {
-      "data": [1, 2]
+      "x": 0
     },
     "expected": {
       "outputs": {
-        "arr": [1, 2, "c", "d"]
+        "result": 0
       }
     }
   },
   {
     "input": {
-      "data": []
+      "x": 2
     },
     "expected": {
       "outputs": {
-        "arr": ["c", "d"]
+        "result": 1.4142135623730951
       }
+    }
+  },
+  {
+    "input": {
+      "x": -4
+    },
+    "expected": {
+      "outputs": {}
     }
   }
 ]

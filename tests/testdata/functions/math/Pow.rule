@@ -1,0 +1,3 @@
+rule PowRule {
+    out result = math::pow(input.x, input.y)
+}

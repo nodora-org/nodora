@@ -1,0 +1,4 @@
+rule SubstringRule {
+    out head = strings::substring(input.str, 0, 5)
+    out tail = strings::substring(input.str, input.from)
+}

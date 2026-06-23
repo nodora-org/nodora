@@ -1,0 +1,3 @@
+rule ReduceRule {
+    out result = arrays::reduce(input.nums, |acc, x| acc + x, input.init)
+}

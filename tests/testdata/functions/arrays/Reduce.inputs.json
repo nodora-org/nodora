@@ -1,32 +1,32 @@
 [
   {
     "input": {
-      "data": ["a", "b"]
+      "nums": [1, 2, 3, 4],
+      "init": 0
     },
     "expected": {
       "outputs": {
-        "arr": ["a", "b", "c", "d"]
+        "result": 10
       }
     }
   },
   {
     "input": {
-      "data": [1, 2]
+      "nums": [],
+      "init": 5
     },
     "expected": {
       "outputs": {
-        "arr": [1, 2, "c", "d"]
+        "result": 5
       }
     }
   },
   {
     "input": {
-      "data": []
+      "init": 0
     },
     "expected": {
-      "outputs": {
-        "arr": ["c", "d"]
-      }
+      "outputs": {}
     }
   }
 ]
