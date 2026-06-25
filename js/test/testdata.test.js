@@ -54,8 +54,7 @@ for (const { testName, rulePath, inputsPath } of testFiles) {
     const testSamples = JSON.parse(inputsContent);
 
     const program = await compile(ruleContent);
-    const programObj = JSON.parse(program);
-    const ruleNames = Object.keys(programObj.rules || {});
+    const ruleNames = Object.keys(program.rules || {});
 
     expect(ruleNames.length).toBeGreaterThan(0);
 

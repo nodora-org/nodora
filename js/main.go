@@ -52,7 +52,7 @@ func compile(this js.Value, args []js.Value) any {
 		return errorObject(err.Error())
 	}
 
-	return js.ValueOf(string(jsonBytes))
+	return js.Global().Get("JSON").Call("parse", string(jsonBytes))
 }
 
 func createEvaluator(this js.Value, args []js.Value) any {

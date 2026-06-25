@@ -8,6 +8,11 @@ export type EvaluationResult = {
   emitted_signals: EmittedSignal[];
 };
 
+/**
+ * A compiled Nodora program, as returned by compile().
+ */
+export type Program = Record<string, any>;
+
 export interface Evaluator {
   /**
    * Get evaluator id
@@ -49,17 +54,18 @@ export interface Evaluator {
 
 /**
  * Create a new evaluator
- * @param programJSON - JSON string containing the compiled NIR program
+ * @param program - The compiled program, either as the object returned by
+ *   compile() or as a JSON string
  * @returns Promise resolving to an Evaluator instance
  */
-export function createEvaluator(programJSON: string): Promise<Evaluator>;
+export function createEvaluator(program: Program | string): Promise<Evaluator>;
 
 /**
  * Compile a rule
  * @param src - Source code
- * @returns Promise resolving to a JSON string containing the compiled NIR program
+ * @returns Promise resolving to the compiled program
  */
-export function compile(src: string): Promise<string>;
+export function compile(src: string): Promise<Program>;
 
 type BaseType = "string" | "number" | "bool" | "object" | "any";
 type ArrayType = `array<${string}>`;

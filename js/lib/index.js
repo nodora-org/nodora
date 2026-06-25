@@ -67,10 +67,13 @@ class Evaluator {
   }
 }
 
-async function createEvaluator(programJSON) {
+async function createEvaluator(program) {
   if (!wasmInstance) {
     await init();
   }
+
+  const programJSON =
+    typeof program === "string" ? program : JSON.stringify(program);
 
   const result = globalThis.__nodoraCreateEvaluator(programJSON);
   if (result.error) {

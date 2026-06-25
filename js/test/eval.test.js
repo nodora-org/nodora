@@ -1,6 +1,6 @@
 import { expect, test, mock } from "bun:test";
 
-test("eval", async () => {
+test("compile-to-evaluate pipeline", async () => {
   const { compile, createEvaluator } = require("../lib/index.js");
   const testProgram = await compile(
     `
@@ -40,5 +40,17 @@ test("eval", async () => {
     ],
   });
 
+  evaluator.destroy();
+});
+
+test("accepts a program serialized to JSON", async () => {
+  const { compile, createEvaluator } = require("../lib/index.js");
+  const program = await compile("rule TestRule { out result = 123 }");
+
+  // the CLI writes the compiled program to disk as a JSON string
+  const evaluator = await createEvaluator(JSON.stringify(program));
+  const result = await evaluator.evaluateAsync("TestRule", {});
+
+  expect(result.outputs.result).toEqual(123);
   evaluator.destroy();
 });
