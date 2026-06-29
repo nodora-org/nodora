@@ -163,6 +163,8 @@ func (sc *SemanticAnalyzer) inferType(expr ast.Expr) types.Type {
 		return types.StringType
 	case *ast.BoolLiteral:
 		return types.BoolType
+	case *ast.NullLiteral:
+		return types.NullType
 	case *ast.ArrayLiteral:
 		return sc.inferArrayType(e)
 	case *ast.ObjectLiteral:
@@ -352,7 +354,7 @@ func (sc *SemanticAnalyzer) VisitConst(c *ast.Const) error {
 // without access to any runtime value
 func (sc *SemanticAnalyzer) isConstantExpression(expr ast.Expr) bool {
 	switch e := expr.(type) {
-	case *ast.NumberLiteral, *ast.StringLiteral, *ast.BoolLiteral:
+	case *ast.NumberLiteral, *ast.StringLiteral, *ast.BoolLiteral, *ast.NullLiteral:
 		return true
 	case *ast.ArrayLiteral:
 		for _, elem := range e.Elements {
@@ -511,7 +513,10 @@ func (sc *SemanticAnalyzer) VisitBinaryExpr(be *ast.BinaryExpr) error {
 		}
 		be.Annotate(types.NumberType)
 	case "==", "!=":
-		if !sc.typesCompatible(leftType, rightType) {
+		// null is comparable against any type, so '!= null' / '== null' checks
+		// are always well-typed regardless of the other operand's type
+		isNull := leftType.Equals(types.NullType) || rightType.Equals(types.NullType)
+		if !isNull && !sc.typesCompatible(leftType, rightType) {
 			sc.addError(sc.errorAt(be, "cannot compare '%s' with '%s' using '%s'", leftType.String(), rightType.String(), be.Op))
 		}
 		be.Annotate(types.BoolType)
@@ -599,6 +604,10 @@ func (sc *SemanticAnalyzer) VisitBoolLiteral(bl *ast.BoolLiteral) error {
 	return nil
 }
 
+func (sc *SemanticAnalyzer) VisitNullLiteral(nl *ast.NullLiteral) error {
+	return nil
+}
+
 func (sc *SemanticAnalyzer) isMatchExhaustive(scrutType types.Type, arms []*ast.MatchArm) bool {
 	for _, arm := range arms {
 		if arm.IsCatchAll() {
@@ -655,7 +664,8 @@ func (sc *SemanticAnalyzer) VisitMatchExpr(m *ast.MatchExpr) error {
 				sc.addError(err)
 			}
 			patType := sc.inferType(arm.Pattern)
-			if !sc.typesCompatible(scrutType, patType) {
+			// a null pattern is an equality check, allowed against any scrutinee
+			if !patType.Equals(types.NullType) && !sc.typesCompatible(scrutType, patType) {
 				sc.addError(sc.errorAt(arm.Pattern, "match pattern type '%s' is incompatible with scrutinee type '%s'", patType.String(), scrutType.String()))
 			}
 		}

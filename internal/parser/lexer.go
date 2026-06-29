@@ -28,6 +28,7 @@ var keywords = map[string]int{
 	"else":   ELSE,
 	"true":   TRUE,
 	"false":  FALSE,
+	"null":   NULL,
 	"match":  MATCH,
 }
 

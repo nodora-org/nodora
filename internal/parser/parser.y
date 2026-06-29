@@ -26,7 +26,7 @@ import (
 }
 
 %token <str> IDENT STRING NUMBER
-%token <span> TRUE FALSE SIGNAL RULE CONST EMIT WHEN OUT IN IF THEN ELSE MATCH
+%token <span> TRUE FALSE NULL SIGNAL RULE CONST EMIT WHEN OUT IN IF THEN ELSE MATCH
 %token <span> LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET COLON COMMA QMARK DOT NAMESPACE
 %token <span> PLUS MINUS STAR SLASH MOD
 %token <span> GT LT GTE LTE EQ NEQ AND OR NOT ASSIGN FATARROW
@@ -278,6 +278,12 @@ match_pattern
           b.Span = $1
           $$ = b
         }
+    | NULL
+        {
+          n := &ast.NullLiteral{}
+          n.Span = $1
+          $$ = n
+        }
     ;
 
 logical_or_expr
@@ -471,10 +477,16 @@ primary_expr
           $$ = b
         }
     | FALSE
-        { 
+        {
           b := &ast.BoolLiteral{Value: false}
           b.Span = $1
           $$ = b
+        }
+    | NULL
+        {
+          n := &ast.NullLiteral{}
+          n.Span = $1
+          $$ = n
         }
     | LBRACKET args_opt RBRACKET
         {

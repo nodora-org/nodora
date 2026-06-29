@@ -14,6 +14,7 @@ const (
 	ObjectKind
 	AnyKind
 	LambdaKind
+	NullKind
 	UnknownKind
 )
 
@@ -24,6 +25,7 @@ var typeKindNames = map[TypeKind]string{
 	ObjectKind:  "object",
 	AnyKind:     "any",
 	LambdaKind:  "lambda",
+	NullKind:    "null",
 	UnknownKind: "?",
 }
 
@@ -86,6 +88,7 @@ var (
 	BoolType    = &SimpleType{kind: BoolKind}
 	ObjectType  = &SimpleType{kind: ObjectKind}
 	AnyType     = &SimpleType{kind: AnyKind}
+	NullType    = &SimpleType{kind: NullKind}
 	UnknownType = &SimpleType{kind: UnknownKind}
 )
 

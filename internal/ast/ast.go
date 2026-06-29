@@ -272,6 +272,19 @@ func (bl *BoolLiteral) String() string {
 	return fmt.Sprintf("%v", bl.Value)
 }
 
+type NullLiteral struct {
+	Typed
+	Span
+}
+
+func (nl *NullLiteral) Accept(visitor Visitor) error {
+	return visitor.VisitNullLiteral(nl)
+}
+
+func (nl *NullLiteral) String() string {
+	return "null"
+}
+
 type ConditionalExpr struct {
 	Typed
 	Span

@@ -1,0 +1,33 @@
+[
+  {
+    "input": {
+      "field": "x"
+    },
+    "expected": {
+      "outputs": {
+        "not_null": true,
+        "is_null": false
+      },
+      "emitted_signals": [
+        { "name": "Flag", "args": ["field"] }
+      ]
+    }
+  },
+  {
+    "input": {
+      "field": null
+    },
+    "expected": {
+      "outputs": {
+        "not_null": false,
+        "is_null": true
+      }
+    }
+  },
+  {
+    "input": {},
+    "expected": {
+      "outputs": {}
+    }
+  }
+]

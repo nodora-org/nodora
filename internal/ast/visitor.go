@@ -15,6 +15,7 @@ type Visitor interface {
 	VisitNumberLiteral(nl *NumberLiteral) error
 	VisitStringLiteral(sl *StringLiteral) error
 	VisitBoolLiteral(bl *BoolLiteral) error
+	VisitNullLiteral(nl *NullLiteral) error
 	VisitConditionalExpr(ce *ConditionalExpr) error
 	VisitArrayLiteral(al *ArrayLiteral) error
 	VisitObjectLiteral(ol *ObjectLiteral) error
@@ -103,6 +104,8 @@ func (bv *BaseVisitor) VisitNumberLiteral(nl *NumberLiteral) error { return nil 
 func (bv *BaseVisitor) VisitStringLiteral(sl *StringLiteral) error { return nil }
 
 func (bv *BaseVisitor) VisitBoolLiteral(bl *BoolLiteral) error { return nil }
+
+func (bv *BaseVisitor) VisitNullLiteral(nl *NullLiteral) error { return nil }
 
 func (bv *BaseVisitor) VisitConditionalExpr(ce *ConditionalExpr) error {
 	if err := ce.Cond.(Node).Accept(bv); err != nil {

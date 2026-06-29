@@ -1,0 +1,15 @@
+rule NullComparison {
+    // null is comparable against any operand type, so these are well-typed
+    ok1 = input.x != null
+    ok2 = input.x == null
+
+    name = "alice"
+    ok3 = name == null   // typed value vs null is allowed
+
+    out raw = null       // null is a valid (non-undefined) value
+
+    // null has no arithmetic/logical behaviour
+    bad1 = null + 1      // ERROR: operator '+' cannot be applied to 'null' and 'number'
+    bad2 = !null         // ERROR: operand of '!' must be a 'bool', got null
+    bad3 = null < 2      // ERROR: operator '<' cannot be applied to 'null' and 'number'
+}

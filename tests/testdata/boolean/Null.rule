@@ -1,0 +1,7 @@
+signal Flag(field)
+
+rule NullRule {
+    out not_null = input.field != null
+    out is_null  = input.field == null
+    emit Flag("field") when input.field != null
+}

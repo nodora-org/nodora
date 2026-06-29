@@ -243,6 +243,9 @@ func (b *Builder) buildExpr(expr ast.Expr) exprResult {
 	case *ast.BoolLiteral:
 		return immResult(e.Value)
 
+	case *ast.NullLiteral:
+		return immResult(nil)
+
 	case *ast.Identifier:
 		if e.Name == "input" {
 			return symResult(0)
