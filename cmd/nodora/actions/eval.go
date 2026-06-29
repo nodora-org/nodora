@@ -34,17 +34,17 @@ func formatDuration(d time.Duration) string {
 func Eval(ctx context.Context, cmd *cli.Command) error {
 	filePath := cmd.String("file")
 
-	var programRaw []byte
+	var raw []byte
 	if filePath != "" {
 		data, err := os.ReadFile(filePath)
 		if err != nil {
 			return fmt.Errorf("error reading file: %v", err)
 		}
-		programRaw = data
+		raw = data
 	}
 
-	var p nir.Program
-	err := json.Unmarshal([]byte(programRaw), &p)
+	var ruleset nir.Ruleset
+	err := json.Unmarshal([]byte(raw), &ruleset)
 	if err != nil {
 		return err
 	}
@@ -79,7 +79,7 @@ func Eval(ctx context.Context, cmd *cli.Command) error {
 	}
 
 	var wg sync.WaitGroup
-	evaluator := evaluator.NewEvaluator(&p)
+	evaluator := evaluator.NewEvaluator(&ruleset)
 	evaluator.Debug = cmd.Bool("debug")
 
 	execFlags := cmd.StringSlice("exec")

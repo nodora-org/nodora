@@ -8,7 +8,7 @@ import (
 )
 
 func TestConstantPropagation(t *testing.T) {
-	p := &nir.Program{
+	ruleset := &nir.Ruleset{
 		Rules: map[string]nir.Rule{
 			"Test": {
 				Ops: []nir.Op{
@@ -33,9 +33,9 @@ func TestConstantPropagation(t *testing.T) {
 	}
 
 	cp := NewConstantPropagation()
-	_, _ = cp.Run(p)
+	_, _ = cp.Run(ruleset)
 
-	rule := p.Rules["Test"]
+	rule := ruleset.Rules["Test"]
 	op := rule.Ops[1]
 
 	imm, ok := op.Args[0].Expr.(*nir.ImmExpr)
@@ -50,7 +50,7 @@ func TestConstantPropagation(t *testing.T) {
 
 // ensures that constants from one rule don't leak into another
 func TestConstantPropagationRuleIsolation(t *testing.T) {
-	p := &nir.Program{
+	ruleset := &nir.Ruleset{
 		Rules: map[string]nir.Rule{
 			"RuleA": {
 				Ops: []nir.Op{
@@ -98,7 +98,7 @@ func TestConstantPropagationRuleIsolation(t *testing.T) {
 	}
 
 	rp := NewRepeatedPass(10, NewConstantFolding(), NewConstantPropagation())
-	if _, err := rp.Run(p); err != nil {
+	if _, err := rp.Run(ruleset); err != nil {
 		t.Errorf("optimizer returned error due to cross-rule constant leak: %v", err)
 	}
 }

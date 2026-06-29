@@ -14,7 +14,7 @@ func NewCompiler() *Compiler {
 	return &Compiler{}
 }
 
-func (c *Compiler) Compile(src string) (*nir.Program, error) {
+func (c *Compiler) Compile(src string) (*nir.Ruleset, error) {
 	p, err := parser.Parse(src)
 	if err != nil {
 		return nil, err
@@ -26,7 +26,7 @@ func (c *Compiler) Compile(src string) (*nir.Program, error) {
 	}
 
 	builder := nir.NewBuilder()
-	prog, err := builder.Build(p)
+	ruleset, err := builder.Build(p)
 	if err != nil {
 		return nil, err
 	}
@@ -36,9 +36,9 @@ func (c *Compiler) Compile(src string) (*nir.Program, error) {
 	opt.AddPass(passes.NewDeadCodeElimination())
 	opt.AddPass(passes.NewSymbolRemap())
 
-	if err := opt.Run(prog); err != nil {
+	if err := opt.Run(ruleset); err != nil {
 		return nil, err
 	}
 
-	return prog, nil
+	return ruleset, nil
 }

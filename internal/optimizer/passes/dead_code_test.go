@@ -90,23 +90,23 @@ func TestDeadCodeElimination_UnusedSignals(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			p := &nir.Program{
+			ruleset := &nir.Ruleset{
 				Signals: tt.signals,
 				Rules:   tt.rules,
 			}
 
 			dce := NewDeadCodeElimination()
-			_, err := dce.Run(p)
+			_, err := dce.Run(ruleset)
 			if err != nil {
 				t.Fatalf("Run() returned error: %v", err)
 			}
 
-			if len(p.Signals) != len(tt.expectedSignals) {
-				t.Errorf("Expected %d signals, got %d", len(tt.expectedSignals), len(p.Signals))
+			if len(ruleset.Signals) != len(tt.expectedSignals) {
+				t.Errorf("Expected %d signals, got %d", len(tt.expectedSignals), len(ruleset.Signals))
 			}
 
 			for _, expected := range tt.expectedSignals {
-				if _, exists := p.Signals[expected]; !exists {
+				if _, exists := ruleset.Signals[expected]; !exists {
 					t.Errorf("Expected signal %q to exist", expected)
 				}
 			}
@@ -287,7 +287,7 @@ func TestDeadCodeElimination_DeadOperations(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			p := &nir.Program{
+			ruleset := &nir.Ruleset{
 				Signals: map[string]nir.Signal{},
 				Rules: map[string]nir.Rule{
 					"Test": tt.rule,
@@ -295,12 +295,12 @@ func TestDeadCodeElimination_DeadOperations(t *testing.T) {
 			}
 
 			dce := NewDeadCodeElimination()
-			_, err := dce.Run(p)
+			_, err := dce.Run(ruleset)
 			if err != nil {
 				t.Fatalf("Run() returned error: %v", err)
 			}
 
-			rule := p.Rules["Test"]
+			rule := ruleset.Rules["Test"]
 			if len(rule.Ops) != tt.expectedOpCount {
 				t.Errorf("Expected %d ops, got %d", tt.expectedOpCount, len(rule.Ops))
 			}
@@ -591,7 +591,7 @@ func TestDeadCodeElimination_ComplexExpressions(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			p := &nir.Program{
+			ruleset := &nir.Ruleset{
 				Signals: map[string]nir.Signal{},
 				Rules: map[string]nir.Rule{
 					"Test": tt.rule,
@@ -599,12 +599,12 @@ func TestDeadCodeElimination_ComplexExpressions(t *testing.T) {
 			}
 
 			dce := NewDeadCodeElimination()
-			_, err := dce.Run(p)
+			_, err := dce.Run(ruleset)
 			if err != nil {
 				t.Fatalf("Run() returned error: %v", err)
 			}
 
-			rule := p.Rules["Test"]
+			rule := ruleset.Rules["Test"]
 			if len(rule.Ops) != tt.expectedOpCount {
 				t.Errorf("Expected %d ops, got %d", tt.expectedOpCount, len(rule.Ops))
 			}
@@ -613,7 +613,7 @@ func TestDeadCodeElimination_ComplexExpressions(t *testing.T) {
 }
 
 func TestDeadCodeElimination_MultipleRules(t *testing.T) {
-	p := &nir.Program{
+	ruleset := &nir.Ruleset{
 		Signals: map[string]nir.Signal{
 			"usedInRule1": {Params: []nir.Param{{Name: "x"}}},
 			"usedInRule2": {Params: []nir.Param{{Name: "y"}}},
@@ -666,34 +666,34 @@ func TestDeadCodeElimination_MultipleRules(t *testing.T) {
 	}
 
 	dce := NewDeadCodeElimination()
-	_, err := dce.Run(p)
+	_, err := dce.Run(ruleset)
 	if err != nil {
 		t.Fatalf("Run() returned error: %v", err)
 	}
 
 	// Check signals
-	if len(p.Signals) != 2 {
-		t.Errorf("Expected 2 signals, got %d", len(p.Signals))
+	if len(ruleset.Signals) != 2 {
+		t.Errorf("Expected 2 signals, got %d", len(ruleset.Signals))
 	}
-	if _, exists := p.Signals["usedInRule1"]; !exists {
+	if _, exists := ruleset.Signals["usedInRule1"]; !exists {
 		t.Error("Expected usedInRule1 signal to exist")
 	}
-	if _, exists := p.Signals["usedInRule2"]; !exists {
+	if _, exists := ruleset.Signals["usedInRule2"]; !exists {
 		t.Error("Expected usedInRule2 signal to exist")
 	}
-	if _, exists := p.Signals["unused"]; exists {
+	if _, exists := ruleset.Signals["unused"]; exists {
 		t.Error("Expected unused signal to be removed")
 	}
 
 	// Check rules still exist
-	if len(p.Rules) != 2 {
-		t.Errorf("Expected 2 rules, got %d", len(p.Rules))
+	if len(ruleset.Rules) != 2 {
+		t.Errorf("Expected 2 rules, got %d", len(ruleset.Rules))
 	}
 
 	// Check op count in each rule
-	for n, r := range p.Rules {
+	for n, r := range ruleset.Rules {
 		if len(r.Ops) != 2 {
-			t.Errorf("%s: Expected 2 ops, got %d", n, len(p.Rules))
+			t.Errorf("%s: Expected 2 ops, got %d", n, len(ruleset.Rules))
 		}
 	}
 }

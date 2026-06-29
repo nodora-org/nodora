@@ -53,16 +53,16 @@ for (const { testName, rulePath, inputsPath } of testFiles) {
     const inputsContent = readFileSync(inputsPath, "utf8");
     const testSamples = JSON.parse(inputsContent);
 
-    const program = await compile(ruleContent);
-    const ruleNames = Object.keys(program.rules || {});
+    const ruleset = await compile(ruleContent);
+    const ruleNames = Object.keys(ruleset.rules || {});
 
     expect(ruleNames.length).toBeGreaterThan(0);
 
     test.each(testSamples.map((tc, i) => [i, tc]))(
       "sample_%i",
       async (_, tc) => {
-        const program = await compile(ruleContent);
-        const evaluator = await createEvaluator(program);
+        const ruleset = await compile(ruleContent);
+        const evaluator = await createEvaluator(ruleset);
 
         try {
           if (tc.err) {

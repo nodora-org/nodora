@@ -23,7 +23,7 @@ func (f SignalListenerFunc) Invoke(args []any) error {
 }
 
 type Evaluator struct {
-	program         *nir.Program
+	ruleset         *nir.Ruleset
 	signalListeners map[string][]SignalListener
 	Debug           bool
 	signalWG        *sync.WaitGroup
@@ -34,8 +34,8 @@ type EvaluationResult struct {
 	Signals []nir.EmittedSignal `json:"emitted_signals"`
 }
 
-func NewEvaluator(program *nir.Program) *Evaluator {
-	return &Evaluator{program: program, signalListeners: make(map[string][]SignalListener)}
+func NewEvaluator(ruleset *nir.Ruleset) *Evaluator {
+	return &Evaluator{ruleset: ruleset, signalListeners: make(map[string][]SignalListener)}
 }
 
 func (e *Evaluator) SetWaitGroup(wg *sync.WaitGroup) {
@@ -47,9 +47,9 @@ func (e *Evaluator) OnSignal(signalName string, listener func([]any) error) {
 }
 
 func (e *Evaluator) OnSignalNamed(signalName string, listener func(map[string]any) error) error {
-	signal, ok := e.program.GetSignal(signalName)
+	signal, ok := e.ruleset.GetSignal(signalName)
 	if !ok {
-		keys := maps.Keys(e.program.Signals)
+		keys := maps.Keys(e.ruleset.Signals)
 		return fmt.Errorf("unknown signal %q (available signals: %s)",
 			signalName,
 			strings.Join(slices.Collect(keys), ", "),
@@ -71,7 +71,7 @@ func (e *Evaluator) OnSignalNamed(signalName string, listener func(map[string]an
 }
 
 func (e *Evaluator) EvaluateRule(ruleName string, input core.ValueMap) (*EvaluationResult, error) {
-	rule, ok := e.program.GetRule(ruleName)
+	rule, ok := e.ruleset.GetRule(ruleName)
 	if !ok {
 		return nil, fmt.Errorf("rule not found: %s", ruleName)
 	}
@@ -142,16 +142,16 @@ func (e *Evaluator) invokeListeners(
 }
 
 func (e *Evaluator) GetRuleNames() []string {
-	names := make([]string, 0, len(e.program.Rules))
-	for name := range e.program.Rules {
+	names := make([]string, 0, len(e.ruleset.Rules))
+	for name := range e.ruleset.Rules {
 		names = append(names, name)
 	}
 	return names
 }
 
 func (e *Evaluator) GetSignalNames() []string {
-	names := make([]string, 0, len(e.program.Signals))
-	for name := range e.program.Signals {
+	names := make([]string, 0, len(e.ruleset.Signals))
+	for name := range e.ruleset.Signals {
 		names = append(names, name)
 	}
 	return names

@@ -14,7 +14,7 @@ func NewConstantPropagation() *ConstantPropagation {
 	}
 }
 
-func (cp *ConstantPropagation) Run(p *nir.Program) (bool, error) {
+func (cp *ConstantPropagation) Run(p *nir.Ruleset) (bool, error) {
 	changed := false
 	for ruleName, rule := range p.Rules {
 		cp.constants = make(map[int]*nir.RawExpr)

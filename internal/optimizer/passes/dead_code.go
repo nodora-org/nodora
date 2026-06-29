@@ -12,7 +12,7 @@ func NewDeadCodeElimination() *DeadCodeElimination {
 	return &DeadCodeElimination{}
 }
 
-func (dce *DeadCodeElimination) Run(p *nir.Program) (bool, error) {
+func (dce *DeadCodeElimination) Run(p *nir.Ruleset) (bool, error) {
 	changed := false
 
 	// collect used signals by scanning all rules
@@ -38,7 +38,7 @@ func (dce *DeadCodeElimination) Run(p *nir.Program) (bool, error) {
 	return changed, nil
 }
 
-func (dce *DeadCodeElimination) collectUsedSignals(p *nir.Program) map[string]bool {
+func (dce *DeadCodeElimination) collectUsedSignals(p *nir.Ruleset) map[string]bool {
 	usedSignals := make(map[string]bool)
 	for _, r := range p.Rules {
 		for _, op := range r.Ops {

@@ -68,9 +68,9 @@ func NewBuilder() *Builder {
 	}
 }
 
-func (b *Builder) Build(program *ast.Program) (*Program, error) {
+func (b *Builder) Build(program *ast.Program) (*Ruleset, error) {
 	meta := Metadata{"version": version.Version}
-	result := &Program{
+	result := &Ruleset{
 		Metadata: meta,
 		Signals:  make(map[string]Signal),
 		Rules:    make(map[string]Rule),

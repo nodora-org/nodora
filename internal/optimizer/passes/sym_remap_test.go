@@ -108,19 +108,19 @@ func TestSymbolRemap_BasicRemapping(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			p := &nir.Program{
+			ruleset := &nir.Ruleset{
 				Rules: map[string]nir.Rule{
 					"Test": tt.rule,
 				},
 			}
 
 			sr := NewSymbolRemap()
-			_, err := sr.Run(p)
+			_, err := sr.Run(ruleset)
 			if err != nil {
 				t.Fatalf("Run() returned an error: %v", err)
 			}
 
-			rule := p.Rules["Test"]
+			rule := ruleset.Rules["Test"]
 
 			// Check symslots
 			if rule.Symslots != tt.expectedSymslots {
@@ -222,19 +222,19 @@ func TestSymbolRemap_SymExprRemapping(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			p := &nir.Program{
+			ruleset := &nir.Ruleset{
 				Rules: map[string]nir.Rule{
 					"Test": tt.rule,
 				},
 			}
 
 			sr := NewSymbolRemap()
-			_, err := sr.Run(p)
+			_, err := sr.Run(ruleset)
 			if err != nil {
 				t.Fatalf("Run() returned an error: %v", err)
 			}
 
-			rule := p.Rules["Test"]
+			rule := ruleset.Rules["Test"]
 
 			// Check that SymExpr indices are remapped correctly
 			for _, op := range rule.Ops {
@@ -565,26 +565,26 @@ func TestSymbolRemap_ComplexExpressions(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			p := &nir.Program{
+			ruleset := &nir.Ruleset{
 				Rules: map[string]nir.Rule{
 					"Test": tt.rule,
 				},
 			}
 
 			sr := NewSymbolRemap()
-			_, err := sr.Run(p)
+			_, err := sr.Run(ruleset)
 			if err != nil {
 				t.Fatalf("Run() returned an error: %v", err)
 			}
 
-			rule := p.Rules["Test"]
+			rule := ruleset.Rules["Test"]
 			tt.check(t, rule)
 		})
 	}
 }
 
 func TestSymbolRemap_MultipleRules(t *testing.T) {
-	p := &nir.Program{
+	ruleset := &nir.Ruleset{
 		Rules: map[string]nir.Rule{
 			"Rule1": {
 				Outputs: map[string]nir.Output{
@@ -620,13 +620,13 @@ func TestSymbolRemap_MultipleRules(t *testing.T) {
 	}
 
 	sr := NewSymbolRemap()
-	_, err := sr.Run(p)
+	_, err := sr.Run(ruleset)
 	if err != nil {
 		t.Fatalf("Run() returned an error: %v", err)
 	}
 
 	// Check Rule1
-	rule1 := p.Rules["Rule1"]
+	rule1 := ruleset.Rules["Rule1"]
 	if rule1.Symslots != 2 {
 		t.Errorf("Rule1: Expected Symslots=2, got %d", rule1.Symslots)
 	}
@@ -638,7 +638,7 @@ func TestSymbolRemap_MultipleRules(t *testing.T) {
 	}
 
 	// Check Rule2
-	rule2 := p.Rules["Rule2"]
+	rule2 := ruleset.Rules["Rule2"]
 	if rule2.Symslots != 2 {
 		t.Errorf("Rule2: Expected Symslots=2, got %d", rule2.Symslots)
 	}
@@ -669,20 +669,20 @@ func TestSymbolRemap_NilHandling(t *testing.T) {
 		},
 	}
 
-	p := &nir.Program{
+	ruleset := &nir.Ruleset{
 		Rules: map[string]nir.Rule{
 			"Test": rule,
 		},
 	}
 
 	sr := NewSymbolRemap()
-	_, err := sr.Run(p)
+	_, err := sr.Run(ruleset)
 	if err != nil {
 		t.Fatalf("Run() returned an error: %v", err)
 	}
 
 	// Just verify it doesn't panic
-	r := p.Rules["Test"]
+	r := ruleset.Rules["Test"]
 	if len(r.Ops) != 1 {
 		t.Errorf("Expected 1 op, got %d", len(r.Ops))
 	}

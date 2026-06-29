@@ -27,7 +27,7 @@ func Compile(ctx context.Context, cmd *cli.Command) error {
 	}
 
 	c := compiler.NewCompiler()
-	nir, err := c.Compile(string(input))
+	ruleset, err := c.Compile(string(input))
 
 	if err != nil {
 		switch ce := err.(type) {
@@ -48,7 +48,7 @@ func Compile(ctx context.Context, cmd *cli.Command) error {
 		}
 	}
 
-	nirEncoded, err := json.Marshal(nir)
+	rulesetEncoded, err := json.Marshal(ruleset)
 	if err != nil {
 		return fmt.Errorf("json encoding failed: %v", err)
 	}
@@ -58,7 +58,7 @@ func Compile(ctx context.Context, cmd *cli.Command) error {
 		outputPath = strings.TrimSuffix(filePath, filepath.Ext(filePath)) + ".json"
 	}
 
-	if err := os.WriteFile(outputPath, nirEncoded, 0644); err != nil {
+	if err := os.WriteFile(outputPath, rulesetEncoded, 0644); err != nil {
 		return fmt.Errorf("failed to write output file: %v", err)
 	}
 

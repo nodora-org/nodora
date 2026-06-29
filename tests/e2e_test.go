@@ -69,12 +69,12 @@ func runTest(t *testing.T, rulePath, inputsPath, testName string) {
 	}
 
 	compiler := compiler.NewCompiler()
-	program, err := compiler.Compile(string(ruleContent))
+	ruleset, err := compiler.Compile(string(ruleContent))
 	if err != nil {
 		t.Fatalf("Failed to convert rule %s: %v", testName, err)
 	}
 
-	ev := evaluator.NewEvaluator(program)
+	ev := evaluator.NewEvaluator(ruleset)
 
 	inputsContent, err := os.ReadFile(inputsPath)
 	if err != nil {

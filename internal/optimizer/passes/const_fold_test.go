@@ -46,7 +46,7 @@ func TestConstantFolding(t *testing.T) {
 			for _, v := range tt.args {
 				args = append(args, nir.RawExpr{Expr: &nir.ImmExpr{Value: v}})
 			}
-			p := &nir.Program{
+			ruleset := &nir.Ruleset{
 				Rules: map[string]nir.Rule{
 					"Test": {
 						Ops: []nir.Op{
@@ -61,9 +61,9 @@ func TestConstantFolding(t *testing.T) {
 			}
 
 			cf := NewConstantFolding()
-			_, _ = cf.Run(p)
+			_, _ = cf.Run(ruleset)
 
-			rule := p.Rules["Test"]
+			rule := ruleset.Rules["Test"]
 			if len(rule.Ops) != 1 {
 				t.Fatalf("Expected 1 op, got %d", len(rule.Ops))
 			}
@@ -90,7 +90,7 @@ func TestConstantFolding(t *testing.T) {
 }
 
 func TestConstantFolding_NoFold(t *testing.T) {
-	p := &nir.Program{
+	ruleset := &nir.Ruleset{
 		Rules: map[string]nir.Rule{
 			"Test": {
 				Ops: []nir.Op{
@@ -108,9 +108,9 @@ func TestConstantFolding_NoFold(t *testing.T) {
 	}
 
 	cf := NewConstantFolding()
-	_, _ = cf.Run(p)
+	_, _ = cf.Run(ruleset)
 
-	rule := p.Rules["Test"]
+	rule := ruleset.Rules["Test"]
 	op := rule.Ops[0]
 	if op.Kind != nir.OpAdd {
 		t.Errorf("Expected OpAdd (not folded), got %s", op.Kind)

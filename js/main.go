@@ -42,12 +42,12 @@ func compile(this js.Value, args []js.Value) any {
 	src := args[0].String()
 	c := compiler.NewCompiler()
 
-	prog, err := c.Compile(src)
+	ruleset, err := c.Compile(src)
 	if err != nil {
 		return errorObject(err)
 	}
 
-	jsonBytes, err := json.Marshal(prog)
+	jsonBytes, err := json.Marshal(ruleset)
 	if err != nil {
 		return errorObject(err.Error())
 	}
@@ -57,17 +57,17 @@ func compile(this js.Value, args []js.Value) any {
 
 func createEvaluator(this js.Value, args []js.Value) any {
 	if len(args) < 1 {
-		return errorObject("expected arguments: programJSON")
+		return errorObject("expected arguments: rulesetJSON")
 	}
 
-	programJSON := args[0].String()
+	rulesetJSON := args[0].String()
 
-	var program nir.Program
-	if err := json.Unmarshal([]byte(programJSON), &program); err != nil {
-		return errorObject("failed to parse program: " + err.Error())
+	var ruleset nir.Ruleset
+	if err := json.Unmarshal([]byte(rulesetJSON), &ruleset); err != nil {
+		return errorObject("failed to parse ruleset: " + err.Error())
 	}
 
-	ev := evaluator.NewEvaluator(&program)
+	ev := evaluator.NewEvaluator(&ruleset)
 
 	evaluatorID++
 	id := evaluatorID

@@ -2,7 +2,7 @@ import { expect, test, mock } from "bun:test";
 
 test("compile-to-evaluate pipeline", async () => {
   const { compile, createEvaluator } = require("../lib/index.js");
-  const testProgram = await compile(
+  const testRuleset = await compile(
     `
     signal TestSignal(x, y)
 
@@ -13,7 +13,7 @@ test("compile-to-evaluate pipeline", async () => {
     `,
   );
 
-  const evaluator = await createEvaluator(testProgram);
+  const evaluator = await createEvaluator(testRuleset);
   expect(evaluator.getId()).toBeGreaterThan(0);
 
   const mockCallback = mock((x, y) => {
@@ -43,12 +43,12 @@ test("compile-to-evaluate pipeline", async () => {
   evaluator.destroy();
 });
 
-test("accepts a program serialized to JSON", async () => {
+test("accepts a ruleset serialized to JSON", async () => {
   const { compile, createEvaluator } = require("../lib/index.js");
-  const program = await compile("rule TestRule { out result = 123 }");
+  const ruleset = await compile("rule TestRule { out result = 123 }");
 
-  // the CLI writes the compiled program to disk as a JSON string
-  const evaluator = await createEvaluator(JSON.stringify(program));
+  // the CLI writes the compiled ruleset to disk as a JSON string
+  const evaluator = await createEvaluator(JSON.stringify(ruleset));
   const result = await evaluator.evaluateAsync("TestRule", {});
 
   expect(result.outputs.result).toEqual(123);

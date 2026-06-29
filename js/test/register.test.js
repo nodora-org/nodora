@@ -20,7 +20,7 @@ test("register function", async () => {
     },
   });
 
-  const testProgram = await compile(
+  const testRuleset = await compile(
     `
     rule TestRule { 
         out result = js::add(input.x, input.y) 
@@ -28,7 +28,7 @@ test("register function", async () => {
     `,
   );
 
-  const evaluator = await createEvaluator(testProgram);
+  const evaluator = await createEvaluator(testRuleset);
   const result = await evaluator.evaluateAsync("TestRule", { x: 1, y: 2 });
 
   expect(result).toEqual({
@@ -61,7 +61,7 @@ test("reject async function", async () => {
     },
   });
 
-  const testProgram = await compile(
+  const testRuleset = await compile(
     `
     rule TestRule { 
         out result = js::add_async(input.x, input.y) 
@@ -69,7 +69,7 @@ test("reject async function", async () => {
     `,
   );
 
-  const evaluator = await createEvaluator(testProgram);
+  const evaluator = await createEvaluator(testRuleset);
   expect(evaluator.evaluateAsync("TestRule", { x: 1, y: 2 })).rejects.toThrow(
     /async functions are not supported/,
   );

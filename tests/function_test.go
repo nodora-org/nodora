@@ -23,12 +23,12 @@ rule TestRule {
 }
 `
 	c := compiler.NewCompiler()
-	program, err := c.Compile(source)
+	ruleset, err := c.Compile(source)
 	if err != nil {
 		t.Fatalf("Failed to compile: %v", err)
 	}
 
-	e := evaluator.NewEvaluator(program)
+	e := evaluator.NewEvaluator(ruleset)
 
 	// Test with both fields present
 	result1, err := e.EvaluateRule("TestRule", core.ValueMap{"name": core.V("John"), "age": core.V(30)})

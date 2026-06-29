@@ -12,7 +12,7 @@ func NewConstantFolding() *ConstantFolding {
 	return &ConstantFolding{}
 }
 
-func (cf *ConstantFolding) Run(p *nir.Program) (bool, error) {
+func (cf *ConstantFolding) Run(p *nir.Ruleset) (bool, error) {
 	changed := false
 	for ruleName, rule := range p.Rules {
 		for i := range rule.Ops {

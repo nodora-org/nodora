@@ -9,9 +9,9 @@ export type EvaluationResult = {
 };
 
 /**
- * A compiled Nodora program, as returned by compile().
+ * A compiled Nodora ruleset, as returned by compile().
  */
-export type Program = Record<string, any>;
+export type Ruleset = Record<string, any>;
 
 export interface Evaluator {
   /**
@@ -54,18 +54,18 @@ export interface Evaluator {
 
 /**
  * Create a new evaluator
- * @param program - The compiled program, either as the object returned by
+ * @param ruleset - The compiled ruleset, either as the object returned by
  *   compile() or as a JSON string
  * @returns Promise resolving to an Evaluator instance
  */
-export function createEvaluator(program: Program | string): Promise<Evaluator>;
+export function createEvaluator(ruleset: Ruleset | string): Promise<Evaluator>;
 
 /**
- * Compile a rule
+ * Compile a ruleset
  * @param src - Source code
- * @returns Promise resolving to the compiled program
+ * @returns Promise resolving to the compiled ruleset
  */
-export function compile(src: string): Promise<Program>;
+export function compile(src: string): Promise<Ruleset>;
 
 type BaseType = "string" | "number" | "bool" | "object" | "any";
 type ArrayType = `array<${string}>`;

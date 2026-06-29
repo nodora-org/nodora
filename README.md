@@ -7,7 +7,7 @@
 > This project is under active development. Breaking changes may occur without notice.
 
 Nodora is a declarative rule engine focused on readable, maintainable business rules. 
-Rules are **compiled** to a portable intermediate representation (NIR) and then 
+Source is **compiled** into a portable ruleset and then 
 **evaluated** against JSON input.
 
 [Read the documentation](https://nodora.org/docs) | [Examples](./examples)

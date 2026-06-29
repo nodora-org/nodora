@@ -11,13 +11,13 @@ import (
 
 type Metadata map[string]any
 
-type Program struct {
+type Ruleset struct {
 	Metadata Metadata          `json:"meta"`
 	Signals  map[string]Signal `json:"signals"`
 	Rules    map[string]Rule   `json:"rules"`
 }
 
-func (p *Program) GetSignal(name string) (*Signal, bool) {
+func (p *Ruleset) GetSignal(name string) (*Signal, bool) {
 	signal, exists := p.Signals[name]
 	if !exists {
 		return nil, false
@@ -25,7 +25,7 @@ func (p *Program) GetSignal(name string) (*Signal, bool) {
 	return &signal, true
 }
 
-func (p *Program) GetRule(name string) (*Rule, bool) {
+func (p *Ruleset) GetRule(name string) (*Rule, bool) {
 	rule, exists := p.Rules[name]
 	if !exists {
 		return nil, false

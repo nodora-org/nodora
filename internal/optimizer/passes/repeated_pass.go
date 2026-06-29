@@ -13,7 +13,7 @@ func NewRepeatedPass(maxIters int, passes ...Pass) *RepeatedPass {
 	return &RepeatedPass{passes: passes, maxIters: maxIters}
 }
 
-func (rp *RepeatedPass) Run(p *nir.Program) (bool, error) {
+func (rp *RepeatedPass) Run(p *nir.Ruleset) (bool, error) {
 	everChanged := false
 
 	for range rp.maxIters {

@@ -10,7 +10,7 @@ import (
 )
 
 func TestOptimizer(t *testing.T) {
-	prog := nir.Program{
+	ruleset := nir.Ruleset{
 		Signals: map[string]nir.Signal{
 			"Signal1": {Params: []nir.Param{{Name: "x"}}},
 			"Signal2": {Params: []nir.Param{{Name: "y"}}},
@@ -117,11 +117,11 @@ func TestOptimizer(t *testing.T) {
 	optimizer.AddPass(passes.NewDeadCodeElimination())
 	optimizer.AddPass(passes.NewSymbolRemap())
 
-	if err := optimizer.Run(&prog); err != nil {
+	if err := optimizer.Run(&ruleset); err != nil {
 		t.Fatalf("Optimizer returned an error: %v", err)
 	}
 
-	expectedProg := nir.Program{
+	expectedRuleset := nir.Ruleset{
 		Signals: map[string]nir.Signal{
 			"Signal1": {Params: []nir.Param{{Name: "x"}}},
 			"Signal2": {Params: []nir.Param{{Name: "y"}}},
@@ -195,7 +195,7 @@ func TestOptimizer(t *testing.T) {
 		},
 	}
 
-	if diff := cmp.Diff(expectedProg, prog); diff != "" {
-		t.Errorf("program mismatch (-expected +got):\n%s", diff)
+	if diff := cmp.Diff(expectedRuleset, ruleset); diff != "" {
+		t.Errorf("ruleset mismatch (-expected +got):\n%s", diff)
 	}
 }
