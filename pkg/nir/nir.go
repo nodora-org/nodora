@@ -400,7 +400,21 @@ func (op *Op) Execute(ctx *EvaluationContext) error {
 		if err := validateOp(op, ctx, 1); err != nil {
 			return err
 		}
-		return executeUnaryOp(op, ctx)
+		val, err := op.Args[0].Evaluate(ctx)
+		if err != nil {
+			return err
+		}
+		if val.Undefined {
+			ctx.Slots[*op.Out] = core.U()
+			return nil
+		}
+		b, ok := val.Raw.(bool)
+		if !ok {
+			ctx.Slots[*op.Out] = core.U()
+			return nil
+		}
+		ctx.Slots[*op.Out] = core.V(!b)
+		return nil
 	case OpSelect:
 		if err := validateOp(op, ctx, 3); err != nil {
 			return err
@@ -415,7 +429,8 @@ func (op *Op) Execute(ctx *EvaluationContext) error {
 		}
 		condBool, ok := condVal.Raw.(bool)
 		if !ok {
-			return fmt.Errorf("select condition must be a boolean, got %v", condVal.Type())
+			ctx.Slots[*op.Out] = core.U()
+			return nil
 		}
 		idx := 1
 		if !condBool {
@@ -438,28 +453,6 @@ func (op *Op) Execute(ctx *EvaluationContext) error {
 		return nil
 	}
 	return fmt.Errorf("unknown operation '%s'", op.Kind)
-}
-
-func executeUnaryOp(op *Op, ctx *EvaluationContext) error {
-	val, err := op.Args[0].Evaluate(ctx)
-	if err != nil {
-		return err
-	}
-	if val.Undefined {
-		ctx.Slots[*op.Out] = core.U()
-		return nil
-	}
-	switch op.Kind {
-	case OpNot:
-		b, ok := val.Raw.(bool)
-		if !ok {
-			return fmt.Errorf("invalid unary operand: %v", val.Type())
-		}
-		ctx.Slots[*op.Out] = core.V(!b)
-		return nil
-	default:
-		return fmt.Errorf("invalid unary operation: %s %v", op.Kind, val.Raw)
-	}
 }
 
 func performFloatOp(l, r float64, op *Op, ctx *EvaluationContext) error {
@@ -506,6 +499,15 @@ func executeBinaryOp(op *Op, ctx *EvaluationContext) error {
 		return err
 	}
 
+	switch op.Kind {
+	case OpAnd:
+		ctx.Slots[*op.Out] = kleeneAnd(lval, rval)
+		return nil
+	case OpOr:
+		ctx.Slots[*op.Out] = kleeneOr(lval, rval)
+		return nil
+	}
+
 	// if either side is undefined, result is undefined
 	if lval.Undefined || rval.Undefined {
 		ctx.Slots[*op.Out] = core.U()
@@ -529,28 +531,6 @@ func executeBinaryOp(op *Op, ctx *EvaluationContext) error {
 		return nil
 	}
 
-	// handle boolean operations
-	if l, ok := lval.Raw.(bool); ok {
-		r, ok := rval.Raw.(bool)
-		if !ok {
-			return fmt.Errorf(
-				"operator '%s' requires both operands to be of type bool, got %v and %v",
-				op.Kind,
-				lval.Type(),
-				rval.Type(),
-			)
-		}
-		switch op.Kind {
-		case OpAnd:
-			ctx.Slots[*op.Out] = core.V(l && r)
-		case OpOr:
-			ctx.Slots[*op.Out] = core.V(l || r)
-		default:
-			return fmt.Errorf("operator '%s' is not supported for type bool", op.Kind)
-		}
-		return nil
-	}
-
 	// handle string operations
 	if l, ok := lval.Raw.(string); ok {
 		switch op.Kind {
@@ -558,29 +538,55 @@ func executeBinaryOp(op *Op, ctx *EvaluationContext) error {
 			r, ok := rval.Raw.(string)
 			if !ok {
 				ctx.Slots[*op.Out] = core.U()
-				return fmt.Errorf(
-					"operator '%s' requires both operands to be of type string, got %v and %v",
-					op.Kind,
-					lval.Type(),
-					rval.Type(),
-				)
+				return nil
 			}
 			ctx.Slots[*op.Out] = core.V(l + r)
 			return nil
 		default:
-			return fmt.Errorf("operator '%s' is not supported for type string", op.Kind)
+			ctx.Slots[*op.Out] = core.U()
+			return nil
 		}
 	}
 
 	l, lok := core.ToFloat64(lval)
-	if !lok {
-		return fmt.Errorf("operator '%s' cannot convert left operand to float64: %v", op.Kind, lval.Type())
-	}
 	r, rok := core.ToFloat64(rval)
-	if !rok {
-		return fmt.Errorf("operator '%s' cannot convert right operand to float64: %v", op.Kind, rval.Type())
+	if !lok || !rok {
+		ctx.Slots[*op.Out] = core.U()
+		return nil
 	}
 	return performFloatOp(l, r, op, ctx)
+}
+
+// three-valued logical AND; false dominates (`false && undefined` is false)
+func kleeneAnd(lval, rval core.Value) core.Value {
+	lb, lok := lval.Raw.(bool)
+	rb, rok := rval.Raw.(bool)
+	if (lok && !lb) || (rok && !rb) {
+		return core.V(false)
+	}
+	if lval.Undefined || rval.Undefined {
+		return core.U()
+	}
+	if lok && rok {
+		return core.V(lb && rb)
+	}
+	return core.U()
+}
+
+// three-valued logical OR; true dominates (`true || undefined` is true)
+func kleeneOr(lval, rval core.Value) core.Value {
+	lb, lok := lval.Raw.(bool)
+	rb, rok := rval.Raw.(bool)
+	if (lok && lb) || (rok && rb) {
+		return core.V(true)
+	}
+	if lval.Undefined || rval.Undefined {
+		return core.U()
+	}
+	if lok && rok {
+		return core.V(lb || rb)
+	}
+	return core.U()
 }
 
 func (w RawExpr) MarshalJSON() ([]byte, error) {

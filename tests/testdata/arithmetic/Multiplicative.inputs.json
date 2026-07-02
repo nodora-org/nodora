@@ -33,5 +33,22 @@
         "mul": 0
       }
     }
+  },
+  {
+    "input": {
+      "a": "2",
+      "b": 2
+    },
+    "expected": {
+      "outputs": {}
+    }
+  },
+  {
+    "input": {
+      "a": 2
+    },
+    "expected": {
+      "outputs": {}
+    }
   }
 ]

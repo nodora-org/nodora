@@ -1,0 +1,4 @@
+rule KleeneAndRule {
+    x = input.x
+    out y = is_number(x) && x > 100
+}

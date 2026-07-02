@@ -14,5 +14,9 @@
   {
     "input": { "plan": "unknown" },
     "expected": { "outputs": { "limit": 500 } }
+  },
+  {
+    "input": {},
+    "expected": { "outputs": {} }
   }
 ]

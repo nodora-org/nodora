@@ -1,0 +1,17 @@
+[
+  {
+    "input": { "x": 1, "flag": true },
+    "expected": { "outputs": { "y": true } }
+  },
+  {
+    "input": { "x": 1, "flag": false },
+    "expected": { "outputs": { "y": false } }
+  },
+  {
+    "input": { "x": 1, "flag": "oops" },
+    "expected": { "outputs": { "y": false } }
+  },
+  { "input": { "x": 1, "flag": 5 }, "expected": { "outputs": { "y": false } } },
+  { "input": { "x": 1 }, "expected": { "outputs": { "y": false } } },
+  { "input": { "flag": true }, "expected": { "outputs": {} } }
+]

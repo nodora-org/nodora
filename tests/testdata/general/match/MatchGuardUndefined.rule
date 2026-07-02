@@ -1,0 +1,7 @@
+rule MatchGuardUndefinedRule {
+    out tier = match input.x {
+        n when n > 1000 => "critical",
+        n when n > 100  => "elevated",
+        _               => "normal",
+    }
+}

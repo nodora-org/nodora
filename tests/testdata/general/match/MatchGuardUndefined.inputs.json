@@ -1,0 +1,22 @@
+[
+  {
+    "input": { "x": 5000 },
+    "expected": { "outputs": { "tier": "critical" } }
+  },
+  {
+    "input": { "x": 500 },
+    "expected": { "outputs": { "tier": "elevated" } }
+  },
+  {
+    "input": { "x": 5 },
+    "expected": { "outputs": { "tier": "normal" } }
+  },
+  {
+    "input": { "x": "abc" },
+    "expected": { "outputs": { "tier": "normal" } }
+  },
+  {
+    "input": {},
+    "expected": { "outputs": {} }
+  }
+]

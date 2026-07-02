@@ -1,0 +1,6 @@
+rule MatchFallbackDefaultRule {
+    out tier = match fallback(input.x, 0) {
+        n when n > 1000 => "critical",
+        _               => "normal",
+    }
+}

@@ -1,0 +1,22 @@
+[
+  {
+    "input": { "x": "hello" },
+    "expected": { "outputs": { "y": false } }
+  },
+  {
+    "input": { "x": 50 },
+    "expected": { "outputs": { "y": false } }
+  },
+  {
+    "input": { "x": 150 },
+    "expected": { "outputs": { "y": true } }
+  },
+  {
+    "input": {},
+    "expected": { "outputs": {} }
+  },
+  {
+    "input": { "x": true },
+    "expected": { "outputs": { "y": false } }
+  }
+]

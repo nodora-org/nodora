@@ -1,0 +1,18 @@
+[
+  {
+    "input": { "flag": true },
+    "expected": { "outputs": { "v": "yes" } }
+  },
+  {
+    "input": { "flag": false },
+    "expected": { "outputs": { "v": "no" } }
+  },
+  {
+    "input": {},
+    "expected": { "outputs": {} }
+  },
+  {
+    "input": { "flag": "x" },
+    "expected": { "outputs": {} }
+  }
+]

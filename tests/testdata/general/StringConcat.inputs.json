@@ -17,5 +17,15 @@
         "ab": "ab"
       }
     }
+  },
+  {
+    "input": {
+      "c": 1
+    },
+    "expected": {
+      "outputs": {
+        "ab": "ab"
+      }
+    }
   }
 ]

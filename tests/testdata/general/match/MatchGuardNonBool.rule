@@ -1,0 +1,6 @@
+rule MatchGuardNonBoolRule {
+    out y = match input.x {
+        n when input.flag => true,
+        _                 => false,
+    }
+}

@@ -47,8 +47,25 @@ func idxResult(e exprResult, idx exprResult) exprResult {
 	return exprResult{expr: &IdxExpr{From: e.toRawExpr(), Index: idx.toRawExpr()}}
 }
 
+func callResult(name string, args ...exprResult) exprResult {
+	rawArgs := make([]RawExpr, len(args))
+	for i, a := range args {
+		rawArgs[i] = a.toRawExpr()
+	}
+	return exprResult{expr: &CallExpr{Func: CallFunc{Name: name}, Args: rawArgs}}
+}
+
 func (r exprResult) toRawExpr() RawExpr {
 	return RawExpr{Expr: r.expr}
+}
+
+func isImmBool(r exprResult, want bool) bool {
+	imm, ok := r.expr.(*ImmExpr)
+	if !ok {
+		return false
+	}
+	b, ok := imm.Value.Raw.(bool)
+	return ok && b == want
 }
 
 type Builder struct {
@@ -368,22 +385,63 @@ func (b *Builder) withBinding(name string, sym int, fn func()) {
 	}
 }
 
-func (b *Builder) buildMatchExpr(expr *ast.MatchExpr) exprResult {
-	scrutRes := b.buildExpr(expr.Value)
-	scrutSym := b.materialize(scrutRes)
+func (b *Builder) strictBool(cond exprResult) exprResult {
+	defaulted := callResult("fallback", cond, immResult(false))
+	matchSym := b.allocSymbol()
+	b.addOp(OpEq, []RawExpr{defaulted.toRawExpr(), immResult(true).toRawExpr()}, &matchSym)
+	return symResult(matchSym)
+}
 
-	catchAllIdx := -1
+func (b *Builder) buildArmCondition(arm *ast.MatchArm, scrutSym int) exprResult {
+	var cond exprResult
+	hasLitCond := false
+	if _, isIdent := arm.Pattern.(*ast.Identifier); !isIdent {
+		patRes := b.buildExpr(arm.Pattern)
+		eqSym := b.allocSymbol()
+		b.addOp(OpEq, []RawExpr{symResult(scrutSym).toRawExpr(), patRes.toRawExpr()}, &eqSym)
+		cond = symResult(eqSym)
+		hasLitCond = true
+	}
+
+	if arm.Guard == nil {
+		return cond
+	}
+
+	guard := b.buildExpr(arm.Guard)
+	if hasLitCond {
+		andSym := b.allocSymbol()
+		b.addOp(OpAnd, []RawExpr{cond.toRawExpr(), guard.toRawExpr()}, &andSym)
+		guard = symResult(andSym)
+	}
+	return b.strictBool(guard)
+}
+
+func (b *Builder) foldArm(arm *ast.MatchArm, scrutSym int, elseResult exprResult) exprResult {
+	var cond, body exprResult
+	b.withBinding(arm.BindingName(), scrutSym, func() {
+		cond = b.buildArmCondition(arm, scrutSym)
+		body = b.buildExpr(arm.Body)
+	})
+
+	if isImmBool(body, true) && isImmBool(elseResult, false) {
+		return cond
+	}
+
+	selSym := b.allocSymbol()
+	b.addOp(OpSelect, []RawExpr{cond.toRawExpr(), body.toRawExpr(), elseResult.toRawExpr()}, &selSym)
+	return symResult(selSym)
+}
+
+func (b *Builder) buildMatchExpr(expr *ast.MatchExpr) exprResult {
+	scrutSym := b.materialize(b.buildExpr(expr.Value))
+
+	// use the last arm as the chain's terminal branch
+	catchAllIdx := len(expr.Arms) - 1
 	for i, arm := range expr.Arms {
 		if arm.IsCatchAll() {
 			catchAllIdx = i
 			break
 		}
-	}
-	if catchAllIdx < 0 {
-		// semantics permits this when the arms are structurally exhaustive
-		// e.g. bool scrutinee with both true and false literal arms
-		// use the last arm as the chain's terminal branch
-		catchAllIdx = len(expr.Arms) - 1
 	}
 
 	catchArm := expr.Arms[catchAllIdx]
@@ -393,45 +451,21 @@ func (b *Builder) buildMatchExpr(expr *ast.MatchExpr) exprResult {
 	})
 
 	for i := catchAllIdx - 1; i >= 0; i-- {
-		arm := expr.Arms[i]
-		bindingName := arm.BindingName()
-
-		var condResult exprResult
-		var bodyResult exprResult
-
-		b.withBinding(bindingName, scrutSym, func() {
-			var litCond exprResult
-			hasLitCond := false
-			if _, isIdent := arm.Pattern.(*ast.Identifier); !isIdent {
-				patRes := b.buildExpr(arm.Pattern)
-				eqSym := b.allocSymbol()
-				b.addOp(OpEq, []RawExpr{symResult(scrutSym).toRawExpr(), patRes.toRawExpr()}, &eqSym)
-				litCond = symResult(eqSym)
-				hasLitCond = true
-			}
-
-			if arm.Guard != nil {
-				guardRes := b.buildExpr(arm.Guard)
-				if hasLitCond {
-					andSym := b.allocSymbol()
-					b.addOp(OpAnd, []RawExpr{litCond.toRawExpr(), guardRes.toRawExpr()}, &andSym)
-					condResult = symResult(andSym)
-				} else {
-					condResult = guardRes
-				}
-			} else {
-				condResult = litCond
-			}
-
-			bodyResult = b.buildExpr(arm.Body)
-		})
-
-		selSym := b.allocSymbol()
-		b.addOp(OpSelect, []RawExpr{condResult.toRawExpr(), bodyResult.toRawExpr(), elseResult.toRawExpr()}, &selSym)
-		elseResult = symResult(selSym)
+		elseResult = b.foldArm(expr.Arms[i], scrutSym, elseResult)
 	}
 
-	return elseResult
+	// gate on the scrutinee being defined: a defined value always resolves
+	// through the arm chain (the catch-all is reachable), while an undefined
+	// scrutinee yields undefined instead of falling into the catch-all
+	gateSym := b.allocSymbol()
+	scrutDefined := callResult("is_defined", symResult(scrutSym))
+	b.addOp(OpSelect, []RawExpr{
+		scrutDefined.toRawExpr(),
+		elseResult.toRawExpr(),
+		symResult(scrutSym).toRawExpr(),
+	}, &gateSym)
+
+	return symResult(gateSym)
 }
 
 func (b *Builder) buildConditionalExpr(expr *ast.ConditionalExpr) exprResult {

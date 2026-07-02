@@ -1,0 +1,4 @@
+rule KleeneOrRule {
+    x = input.x
+    out y = is_string(x) || x > 100
+}

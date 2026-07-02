@@ -1,0 +1,3 @@
+rule ConditionalDegradeRule {
+    out v = if input.flag then "yes" else "no"
+}
