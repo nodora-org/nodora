@@ -25,3 +25,6 @@ archives:
           - zip
     files:
       - LICENSE
+
+checksum:
+  name_template: "checksums.txt"
