@@ -20,7 +20,7 @@ func main() {
 				Name:  "version",
 				Usage: "Print version",
 				Action: func(ctx context.Context, c *cli.Command) error {
-					fmt.Println(version.Version)
+					fmt.Println(version.Get())
 					return nil
 				},
 			},

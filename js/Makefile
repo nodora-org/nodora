@@ -1,7 +1,7 @@
 GO ?= go
 BASE := nodora.org/nodora
 VERSION := $(shell git describe --tags --abbrev=0 2>/dev/null)
-LDFLAGS := -ldflags "-w -s $(if $(VERSION),-X $(BASE).Version=$(VERSION))"
+LDFLAGS := -ldflags "-w -s $(if $(VERSION),-X $(BASE).version=$(VERSION))"
 
 .PHONY: all build clean
 

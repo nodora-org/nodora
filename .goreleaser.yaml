@@ -13,7 +13,7 @@ builds:
       - amd64
       - arm64
     ldflags:
-      - -X nodora.org/nodora.Version={{ .Tag }}
+      - -X nodora.org/nodora.version={{ .Tag }}
 
 archives:
   - name_template: "{{ .ProjectName }}-{{ .Tag }}-{{ .Os }}-{{ .Arch }}"

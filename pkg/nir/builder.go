@@ -86,7 +86,7 @@ func NewBuilder() *Builder {
 }
 
 func (b *Builder) Build(program *ast.Program) (*Ruleset, error) {
-	meta := Metadata{"version": version.Version}
+	meta := Metadata{"version": version.Get()}
 	result := &Ruleset{
 		Metadata: meta,
 		Signals:  make(map[string]Signal),

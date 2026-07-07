@@ -5,7 +5,7 @@ MAIN_PACKAGE := ./cmd/nodora
 BUILD_DIR := build
 
 VERSION := $(shell git describe --tags --abbrev=0 2>/dev/null)
-LDFLAGS := $(if $(VERSION),-ldflags "-X $(BASE).Version=$(VERSION)",)
+LDFLAGS := $(if $(VERSION),-ldflags "-X $(BASE).version=$(VERSION)",)
 
 build:
 	@echo Building...
