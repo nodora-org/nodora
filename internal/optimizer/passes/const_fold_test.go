@@ -49,6 +49,7 @@ func TestConstantFolding(t *testing.T) {
 			ruleset := &nir.Ruleset{
 				Rules: map[string]nir.Rule{
 					"Test": {
+						Symslots: outSym + 1,
 						Ops: []nir.Op{
 							{
 								Kind: tt.opKind,
@@ -93,6 +94,7 @@ func TestConstantFolding_NoFold(t *testing.T) {
 	ruleset := &nir.Ruleset{
 		Rules: map[string]nir.Rule{
 			"Test": {
+				Symslots: 3,
 				Ops: []nir.Op{
 					{
 						Kind: nir.OpAdd,

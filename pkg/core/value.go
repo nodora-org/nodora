@@ -10,6 +10,10 @@ type Value struct {
 	Undefined bool
 }
 
+func Num(f float64) Value   { return Value{Raw: f} }
+func Bool(b bool) Value     { return Value{Raw: b} }
+func String(s string) Value { return Value{Raw: s} }
+
 func (v Value) String() string {
 	if v.Undefined {
 		return "undefined"

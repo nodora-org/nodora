@@ -13,6 +13,10 @@ func NewConstantFolding() *ConstantFolding {
 }
 
 func (cf *ConstantFolding) Run(p *nir.Ruleset) (bool, error) {
+	if err := p.Prepare(); err != nil {
+		return false, err
+	}
+
 	changed := false
 	for ruleName, rule := range p.Rules {
 		for i := range rule.Ops {
@@ -45,15 +49,13 @@ func (cf *ConstantFolding) foldOp(op *nir.Op) (bool, error) {
 		}
 	}
 
+	// execute the op in isolation (its args are all const here)
 	evalCtx := nir.EvaluationContext{
 		Slots: make([]core.Value, *op.Out+1),
 	}
-
-	// execute the op
 	if err := op.Execute(&evalCtx); err != nil {
 		return false, err
 	}
-
 	result := evalCtx.Slots[*op.Out]
 
 	// undefined result cannot be represented as an immediate:

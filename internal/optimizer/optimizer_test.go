@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"nodora.org/nodora/internal/optimizer/passes"
 	"nodora.org/nodora/pkg/core"
 	"nodora.org/nodora/pkg/nir"
@@ -195,7 +196,9 @@ func TestOptimizer(t *testing.T) {
 		},
 	}
 
-	if diff := cmp.Diff(expectedRuleset, ruleset); diff != "" {
+	// ignore unexported state
+	opts := cmpopts.IgnoreUnexported(nir.Op{}, nir.CallExpr{}, nir.SelExpr{})
+	if diff := cmp.Diff(expectedRuleset, ruleset, opts); diff != "" {
 		t.Errorf("ruleset mismatch (-expected +got):\n%s", diff)
 	}
 }

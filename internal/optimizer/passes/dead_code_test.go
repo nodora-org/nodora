@@ -22,6 +22,7 @@ func TestDeadCodeElimination_UnusedSignals(t *testing.T) {
 			},
 			rules: map[string]nir.Rule{
 				"Test": {
+					Symslots: 1,
 					Ops: []nir.Op{
 						{
 							Kind: nir.OpEmit,
@@ -42,6 +43,7 @@ func TestDeadCodeElimination_UnusedSignals(t *testing.T) {
 			},
 			rules: map[string]nir.Rule{
 				"Test1": {
+					Symslots: 1,
 					Ops: []nir.Op{
 						{
 							Kind: nir.OpEmit,
@@ -52,6 +54,7 @@ func TestDeadCodeElimination_UnusedSignals(t *testing.T) {
 					},
 				},
 				"Test2": {
+					Symslots: 1,
 					Ops: []nir.Op{
 						{
 							Kind: nir.OpEmit,
@@ -155,7 +158,8 @@ func TestDeadCodeElimination_DeadOperations(t *testing.T) {
 		{
 			name: "keeps operations with side effects",
 			rule: nir.Rule{
-				Outputs: map[string]nir.Output{},
+				Symslots: 1,
+				Outputs:  map[string]nir.Output{},
 				Ops: []nir.Op{
 					{
 						// side effect op (no Out) - should be kept
@@ -262,7 +266,8 @@ func TestDeadCodeElimination_DeadOperations(t *testing.T) {
 		{
 			name: "keeps multiple side effect operations",
 			rule: nir.Rule{
-				Outputs: map[string]nir.Output{},
+				Symslots: 1,
+				Outputs:  map[string]nir.Output{},
 				Ops: []nir.Op{
 					{
 						Kind: nir.OpEmit,

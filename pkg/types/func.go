@@ -38,7 +38,7 @@ func (f *Func) RequiredArgCount() (n int) {
 
 type Namespace struct {
 	Name  string
-	Funcs map[string]Func
+	Funcs map[string]*Func
 }
 
 func (fn *Func) FullPath() string {

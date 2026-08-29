@@ -3,10 +3,9 @@ package nir
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	"nodora.org/nodora/pkg/core"
-	"nodora.org/nodora/pkg/registry"
+	"nodora.org/nodora/pkg/types"
 )
 
 type Metadata map[string]any
@@ -77,13 +76,13 @@ type ArrExpr struct {
 }
 
 func (i *ArrExpr) Evaluate(ctx *EvaluationContext) (core.Value, error) {
-	var vals []core.Value
-	for _, v := range i.Value {
+	vals := make([]core.Value, len(i.Value))
+	for idx, v := range i.Value {
 		ev, err := v.Evaluate(ctx)
 		if err != nil {
 			return core.U(), err
 		}
-		vals = append(vals, ev)
+		vals[idx] = ev
 	}
 	return core.V(vals), nil
 }
@@ -112,9 +111,6 @@ type SymExpr struct {
 }
 
 func (s *SymExpr) Evaluate(ctx *EvaluationContext) (core.Value, error) {
-	if s.Index < 0 || s.Index >= len(ctx.Slots) {
-		return core.U(), fmt.Errorf("symbol index %d out of bounds", s.Index)
-	}
 	return ctx.Slots[s.Index], nil
 }
 
@@ -139,17 +135,19 @@ type SelExpr struct {
 	Path  string    `json:"path"`
 	From  RawExpr   `json:"from"`
 	Exprs []RawExpr `json:"$,omitempty"`
+
+	// pre-split path
+	keys []string
 }
 
 func (s *SelExpr) Evaluate(ctx *EvaluationContext) (core.Value, error) {
-	keys := strings.Split(s.Path, ".")
 	curr, err := s.From.Evaluate(ctx)
 	if err != nil {
 		return core.U(), err
 	}
 
 	exprIdx := 0
-	for _, key := range keys {
+	for _, key := range s.keys {
 		if curr.Undefined {
 			return core.U(), nil // propagate undefined
 		}
@@ -164,7 +162,7 @@ func (s *SelExpr) Evaluate(ctx *EvaluationContext) (core.Value, error) {
 			}
 			exprIdx++
 		} else {
-			curr, err = evaluateAccess(curr, core.V(key))
+			curr, err = evaluateFieldAccess(curr, key)
 			if err != nil {
 				return curr, err
 			}
@@ -172,6 +170,18 @@ func (s *SelExpr) Evaluate(ctx *EvaluationContext) (core.Value, error) {
 	}
 
 	return curr, nil
+}
+
+func evaluateFieldAccess(target core.Value, key string) (core.Value, error) {
+	switch t := target.Raw.(type) {
+	case core.ValueMap:
+		val, exists := t[key]
+		if !exists {
+			return core.U(), nil
+		}
+		return val, nil
+	}
+	return core.U(), fmt.Errorf("cannot access into %v with value of type string", target.Type())
 }
 
 func evaluateAccess(target core.Value, val core.Value) (core.Value, error) {
@@ -262,9 +272,19 @@ type CallFunc struct {
 	Name      string `json:"name"`
 }
 
+func (c *CallFunc) String() string {
+	if c.Namespace == "" {
+		return c.Name
+	}
+	return c.Namespace + "::" + c.Name
+}
+
 type CallExpr struct {
 	Func CallFunc  `json:"call"`
 	Args []RawExpr `json:"args"`
+
+	// resolved function
+	fn *types.Func
 }
 
 func (c *CallExpr) Evaluate(ctx *EvaluationContext) (core.Value, error) {
@@ -276,20 +296,8 @@ func (c *CallExpr) Evaluate(ctx *EvaluationContext) (core.Value, error) {
 		}
 		args[i] = val
 	}
-	fn, ok := registry.Global().Get(c.Func.Namespace, c.Func.Name)
-	if !ok {
-		return core.U(), fmt.Errorf("undefined function '%s'", fn.FullPath())
-	}
 
-	reqArgCount := fn.RequiredArgCount()
-	if len(args) < reqArgCount {
-		return core.U(), fmt.Errorf(
-			"function '%s' expects %d argument(s), got %d",
-			fn.FullPath(),
-			reqArgCount,
-			len(args),
-		)
-	}
+	fn := c.fn
 
 	// short-circuit to undefined if any required argument is undefined
 	// skip functions that intentionally consume undefined
@@ -377,29 +385,23 @@ type Op struct {
 	Kind OpKind    `json:"op"`
 	Args []RawExpr `json:"args"`
 	Out  *int      `json:"out,omitempty"`
+
+	// interned opcode
+	code opCode
 }
 
 func (op *Op) Execute(ctx *EvaluationContext) error {
-	switch op.Kind {
-	case OpCopy:
-		if err := validateOp(op, ctx, 1); err != nil {
-			return err
-		}
+	switch op.code {
+	case opcCopy:
 		val, err := op.Args[0].Evaluate(ctx)
 		if err != nil {
 			return err
 		}
 		ctx.Slots[*op.Out] = val
 		return nil
-	case OpAdd, OpSub, OpMul, OpDiv, OpMod, OpIn, OpAnd, OpOr, OpLt, OpGt, OpLte, OpGte, OpEq, OpNeq:
-		if err := validateOp(op, ctx, 2); err != nil {
-			return err
-		}
+	case opcAdd, opcSub, opcMul, opcDiv, opcMod, opcIn, opcAnd, opcOr, opcLt, opcGt, opcLte, opcGte, opcEq, opcNeq:
 		return executeBinaryOp(op, ctx)
-	case OpNot:
-		if err := validateOp(op, ctx, 1); err != nil {
-			return err
-		}
+	case opcNot:
 		val, err := op.Args[0].Evaluate(ctx)
 		if err != nil {
 			return err
@@ -413,12 +415,9 @@ func (op *Op) Execute(ctx *EvaluationContext) error {
 			ctx.Slots[*op.Out] = core.U()
 			return nil
 		}
-		ctx.Slots[*op.Out] = core.V(!b)
+		ctx.Slots[*op.Out] = core.Bool(!b)
 		return nil
-	case OpSelect:
-		if err := validateOp(op, ctx, 3); err != nil {
-			return err
-		}
+	case opcSelect:
 		condVal, err := op.Args[0].Evaluate(ctx)
 		if err != nil {
 			return err
@@ -442,47 +441,41 @@ func (op *Op) Execute(ctx *EvaluationContext) error {
 		}
 		ctx.Slots[*op.Out] = val
 		return nil
-	case OpEmit:
-		if err := validateArgs(op, 1); err != nil {
-			return err
-		}
+	case opcEmit:
 		_, err := op.Args[0].Evaluate(ctx)
-		if err != nil {
-			return err
-		}
-		return nil
+		return err
 	}
 	return fmt.Errorf("unknown operation '%s'", op.Kind)
 }
 
 func performFloatOp(l, r float64, op *Op, ctx *EvaluationContext) error {
-	switch op.Kind {
-	case OpAdd:
-		ctx.Slots[*op.Out] = core.V(l + r)
-	case OpSub:
-		ctx.Slots[*op.Out] = core.V(l - r)
-	case OpMul:
-		ctx.Slots[*op.Out] = core.V(l * r)
-	case OpDiv:
+	switch op.code {
+	case opcAdd:
+		ctx.Slots[*op.Out] = core.Num(l + r)
+	case opcSub:
+		ctx.Slots[*op.Out] = core.Num(l - r)
+	case opcMul:
+		ctx.Slots[*op.Out] = core.Num(l * r)
+	case opcDiv:
 		if r == 0 {
 			ctx.Slots[*op.Out] = core.U() // div by zero is undefined
 			return nil
 		}
-		ctx.Slots[*op.Out] = core.V(l / r)
-	case OpMod:
+		ctx.Slots[*op.Out] = core.Num(l / r)
+	case opcMod:
 		if r == 0 {
 			ctx.Slots[*op.Out] = core.U() // mod (div) by zero is undefined
 			return nil
 		}
-		ctx.Slots[*op.Out] = core.V(float64(int64(l) % int64(r)))
-	case OpLt:
-		ctx.Slots[*op.Out] = core.V(l < r)
-	case OpGt:
-		ctx.Slots[*op.Out] = core.V(l > r)
-	case OpLte:
-		ctx.Slots[*op.Out] = core.V(l <= r)
-	case OpGte:
-		ctx.Slots[*op.Out] = core.V(l >= r)
+		ctx.Slots[*op.Out] = core.Num(float64(int64(l) % int64(r)))
+	case opcLt:
+		ctx.Slots[*op.Out] = core.Bool(l < r)
+	case opcGt:
+		ctx.Slots[*op.Out] = core.Bool(l > r)
+	case opcLte:
+		ctx.Slots[*op.Out] = core.Bool(l <= r)
+	case opcGte:
+		ctx.Slots[*op.Out] = core.Bool(l >= r)
 	default:
 		return fmt.Errorf("invalid operation: %v %s %v", l, op.Kind, r)
 	}
@@ -499,11 +492,11 @@ func executeBinaryOp(op *Op, ctx *EvaluationContext) error {
 		return err
 	}
 
-	switch op.Kind {
-	case OpAnd:
+	switch op.code {
+	case opcAnd:
 		ctx.Slots[*op.Out] = kleeneAnd(lval, rval)
 		return nil
-	case OpOr:
+	case opcOr:
 		ctx.Slots[*op.Out] = kleeneOr(lval, rval)
 		return nil
 	}
@@ -515,26 +508,26 @@ func executeBinaryOp(op *Op, ctx *EvaluationContext) error {
 	}
 
 	// handle operations that work on any type
-	switch op.Kind {
-	case OpEq:
-		ctx.Slots[*op.Out] = core.V(core.SafeEquals(lval, rval))
+	switch op.code {
+	case opcEq:
+		ctx.Slots[*op.Out] = core.Bool(core.SafeEquals(lval, rval))
 		return nil
-	case OpNeq:
-		ctx.Slots[*op.Out] = core.V(!core.SafeEquals(lval, rval))
+	case opcNeq:
+		ctx.Slots[*op.Out] = core.Bool(!core.SafeEquals(lval, rval))
 		return nil
-	case OpIn:
+	case opcIn:
 		arr, ok := rval.Raw.([]core.Value)
 		if !ok {
 			return fmt.Errorf("right operand of '%v' must be an array, got %v", OpIn, rval.Type())
 		}
-		ctx.Slots[*op.Out] = core.V(contains(arr, lval))
+		ctx.Slots[*op.Out] = core.Bool(contains(arr, lval))
 		return nil
 	}
 
 	// handle string operations
 	if l, ok := lval.Raw.(string); ok {
-		switch op.Kind {
-		case OpAdd:
+		switch op.code {
+		case opcAdd:
 			r, ok := rval.Raw.(string)
 			if !ok {
 				ctx.Slots[*op.Out] = core.U()
@@ -562,13 +555,13 @@ func kleeneAnd(lval, rval core.Value) core.Value {
 	lb, lok := lval.Raw.(bool)
 	rb, rok := rval.Raw.(bool)
 	if (lok && !lb) || (rok && !rb) {
-		return core.V(false)
+		return core.Bool(false)
 	}
 	if lval.Undefined || rval.Undefined {
 		return core.U()
 	}
 	if lok && rok {
-		return core.V(lb && rb)
+		return core.Bool(lb && rb)
 	}
 	return core.U()
 }
@@ -578,13 +571,13 @@ func kleeneOr(lval, rval core.Value) core.Value {
 	lb, lok := lval.Raw.(bool)
 	rb, rok := rval.Raw.(bool)
 	if (lok && lb) || (rok && rb) {
-		return core.V(true)
+		return core.Bool(true)
 	}
 	if lval.Undefined || rval.Undefined {
 		return core.U()
 	}
 	if lok && rok {
-		return core.V(lb || rb)
+		return core.Bool(lb || rb)
 	}
 	return core.U()
 }

@@ -11,6 +11,7 @@ func TestConstantPropagation(t *testing.T) {
 	ruleset := &nir.Ruleset{
 		Rules: map[string]nir.Rule{
 			"Test": {
+				Symslots: 3,
 				Ops: []nir.Op{
 					{
 						Kind: nir.OpCopy,
@@ -53,6 +54,7 @@ func TestConstantPropagationRuleIsolation(t *testing.T) {
 	ruleset := &nir.Ruleset{
 		Rules: map[string]nir.Rule{
 			"RuleA": {
+				Symslots: 3,
 				Ops: []nir.Op{
 					{
 						Kind: nir.OpCopy,
@@ -67,6 +69,7 @@ func TestConstantPropagationRuleIsolation(t *testing.T) {
 				},
 			},
 			"RuleB": {
+				Symslots: 4,
 				Ops: []nir.Op{
 					{
 						Kind: nir.OpCopy,
