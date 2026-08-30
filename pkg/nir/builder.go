@@ -64,7 +64,7 @@ func isImmBool(r exprResult, want bool) bool {
 	if !ok {
 		return false
 	}
-	b, ok := imm.Value.Raw.(bool)
+	b, ok := imm.Value.AsBool()
 	return ok && b == want
 }
 

@@ -35,14 +35,14 @@ func startsWith() types.Func {
 func startsWithImpl(args []core.Value) (core.Value, error) {
 	str := args[0]
 	prefix := args[1]
-	if str.Undefined || prefix.Undefined {
+	if str.IsUndefined() || prefix.IsUndefined() {
 		return core.U(), nil
 	}
-	strVal, ok := str.Raw.(string)
+	strVal, ok := str.AsString()
 	if !ok {
 		return core.U(), fmt.Errorf("expected string for 'str' argument, got %v", str.Type())
 	}
-	prefixVal, ok := prefix.Raw.(string)
+	prefixVal, ok := prefix.AsString()
 	if !ok {
 		return core.U(), fmt.Errorf("expected string for 'prefix' argument, got %v", prefix.Type())
 	}

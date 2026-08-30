@@ -60,7 +60,7 @@ func (cf *ConstantFolding) foldOp(op *nir.Op) (bool, error) {
 
 	// undefined result cannot be represented as an immediate:
 	// leave the op to evaluate at runtime, where undefined is handled correctly
-	if result.Undefined {
+	if result.IsUndefined() {
 		return changed, nil
 	}
 
@@ -79,7 +79,7 @@ func (cf *ConstantFolding) foldExpr(expr nir.RawExpr) (*nir.RawExpr, bool) {
 	if err != nil {
 		return nil, false
 	}
-	if val.Undefined {
+	if val.IsUndefined() {
 		return nil, false
 	}
 	immExpr := nir.RawExpr{Expr: &nir.ImmExpr{Value: val}}

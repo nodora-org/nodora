@@ -25,11 +25,11 @@ func slice() types.Func {
 
 func sliceImpl(args []core.Value) (core.Value, error) {
 	arr := args[0]
-	if arr.Undefined {
+	if arr.IsUndefined() {
 		return core.U(), nil
 	}
 
-	arrVal, ok := arr.Raw.([]core.Value)
+	arrVal, ok := arr.AsArray()
 	if !ok {
 		return core.U(), fmt.Errorf("expected %v for 'arr' argument, got %v",
 			types.NewArrayType(types.AnyType),
@@ -38,7 +38,7 @@ func sliceImpl(args []core.Value) (core.Value, error) {
 	}
 
 	start := args[1]
-	startVal, ok := core.ToInt(start.Raw)
+	startVal, ok := start.AsInt()
 	if !ok {
 		return core.U(), fmt.Errorf("expected number for 'start' argument, got %v",
 			start.Type(),
@@ -50,7 +50,7 @@ func sliceImpl(args []core.Value) (core.Value, error) {
 
 	if len(args) > 2 {
 		stop := args[2]
-		stopVal, ok = core.ToInt(stop.Raw)
+		stopVal, ok = stop.AsInt()
 		if !ok {
 			return core.U(), fmt.Errorf("expected number for 'stop' argument, got %v",
 				stop.Type(),

@@ -23,9 +23,9 @@ func isBool() types.Func {
 
 func isBoolImpl(args []core.Value) (core.Value, error) {
 	value := args[0]
-	if value.Undefined {
+	if value.IsUndefined() {
 		return core.U(), nil
 	}
-	_, ok := value.Raw.(bool)
+	_, ok := value.AsBool()
 	return core.V(ok), nil
 }

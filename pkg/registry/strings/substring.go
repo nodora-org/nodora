@@ -39,16 +39,16 @@ func substring() types.Func {
 
 func substringImpl(args []core.Value) (core.Value, error) {
 	str := args[0]
-	if str.Undefined {
+	if str.IsUndefined() {
 		return core.U(), nil
 	}
-	strVal, ok := str.Raw.(string)
+	strVal, ok := str.AsString()
 	if !ok {
 		return core.U(), fmt.Errorf("expected string for 'str' argument, got %v", str.Type())
 	}
 
 	start := args[1]
-	startVal, ok := core.ToInt(start.Raw)
+	startVal, ok := start.AsInt()
 	if !ok {
 		return core.U(), fmt.Errorf("expected number for 'start' argument, got %v", start.Type())
 	}
@@ -58,7 +58,7 @@ func substringImpl(args []core.Value) (core.Value, error) {
 
 	if len(args) > 2 {
 		stop := args[2]
-		stopVal, ok = core.ToInt(stop.Raw)
+		stopVal, ok = stop.AsInt()
 		if !ok {
 			return core.U(), fmt.Errorf("expected number for 'stop' argument, got %v", stop.Type())
 		}

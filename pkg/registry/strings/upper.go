@@ -28,10 +28,10 @@ func upper() types.Func {
 
 func upperImpl(args []core.Value) (core.Value, error) {
 	str := args[0]
-	if str.Undefined {
+	if str.IsUndefined() {
 		return core.U(), nil
 	}
-	strVal, ok := str.Raw.(string)
+	strVal, ok := str.AsString()
 	if !ok {
 		return core.U(), fmt.Errorf("expected string for 'str' argument, got %v", str.Type())
 	}

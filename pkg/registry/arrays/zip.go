@@ -24,11 +24,11 @@ func zip() types.Func {
 
 func zipImpl(args []core.Value) (core.Value, error) {
 	x := args[0]
-	if x.Undefined {
+	if x.IsUndefined() {
 		return core.U(), nil
 	}
 
-	arr1, ok := x.Raw.([]core.Value)
+	arr1, ok := x.AsArray()
 	if !ok {
 		return core.U(), fmt.Errorf("expected %v for 'x' argument, got %v",
 			types.NewArrayType(types.AnyType),
@@ -37,11 +37,11 @@ func zipImpl(args []core.Value) (core.Value, error) {
 	}
 
 	y := args[1]
-	if y.Undefined {
+	if y.IsUndefined() {
 		return core.U(), nil
 	}
 
-	arr2, ok := y.Raw.([]core.Value)
+	arr2, ok := y.AsArray()
 	if !ok {
 		return core.U(), fmt.Errorf("expected %v for 'y' argument, got %v",
 			types.NewArrayType(types.AnyType),
@@ -52,10 +52,10 @@ func zipImpl(args []core.Value) (core.Value, error) {
 	strictMode := false
 	if len(args) > 2 {
 		strict := args[2]
-		if strict.Undefined {
+		if strict.IsUndefined() {
 			return core.U(), nil
 		}
-		strictMode, ok = strict.Raw.(bool)
+		strictMode, ok = strict.AsBool()
 		if !ok {
 			return core.U(), fmt.Errorf("expected bool for 'strict' argument, got %v", strict.Type())
 		}

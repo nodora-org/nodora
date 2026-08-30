@@ -21,7 +21,7 @@ func decode() types.Func {
 
 func decodeImpl(args []core.Value) (core.Value, error) {
 	str := args[0]
-	strVal, ok := str.Raw.(string)
+	strVal, ok := str.AsString()
 	if !ok {
 		return core.U(), fmt.Errorf("expected string for 'str' argument, got %v", str.Type())
 	}

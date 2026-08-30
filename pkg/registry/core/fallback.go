@@ -31,7 +31,7 @@ func fallback() types.Func {
 }
 
 func fallbackImpl(args []core.Value) (core.Value, error) {
-	if args[0].Undefined {
+	if args[0].IsUndefined() {
 		return args[1], nil
 	}
 	return args[0], nil

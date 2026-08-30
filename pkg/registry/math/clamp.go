@@ -26,18 +26,18 @@ func clampImpl(args []core.Value) (core.Value, error) {
 	x := args[0]
 	min := args[1]
 	max := args[2]
-	if x.Undefined || min.Undefined || max.Undefined {
+	if x.IsUndefined() || min.IsUndefined() || max.IsUndefined() {
 		return core.U(), nil
 	}
-	xx, ok := core.ToFloat64(x.Raw)
+	xx, ok := x.AsFloat()
 	if !ok {
 		return core.U(), fmt.Errorf("expected number for 'x' argument, got %v", x.Type())
 	}
-	minV, ok := core.ToFloat64(min.Raw)
+	minV, ok := min.AsFloat()
 	if !ok {
 		return core.U(), fmt.Errorf("expected number for 'min' argument, got %v", min.Type())
 	}
-	maxV, ok := core.ToFloat64(max.Raw)
+	maxV, ok := max.AsFloat()
 	if !ok {
 		return core.U(), fmt.Errorf("expected number for 'max' argument, got %v", max.Type())
 	}

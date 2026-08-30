@@ -98,7 +98,7 @@ func (i *ObjExpr) Evaluate(ctx *EvaluationContext) (core.Value, error) {
 		if err != nil {
 			return core.U(), err
 		}
-		if ev.Undefined {
+		if ev.IsUndefined() {
 			return core.U(), nil
 		}
 		obj[k] = ev
@@ -148,7 +148,7 @@ func (s *SelExpr) Evaluate(ctx *EvaluationContext) (core.Value, error) {
 
 	exprIdx := 0
 	for _, key := range s.keys {
-		if curr.Undefined {
+		if curr.IsUndefined() {
 			return core.U(), nil // propagate undefined
 		}
 		if key == "$" {
@@ -173,39 +173,39 @@ func (s *SelExpr) Evaluate(ctx *EvaluationContext) (core.Value, error) {
 }
 
 func evaluateFieldAccess(target core.Value, key string) (core.Value, error) {
-	switch t := target.Raw.(type) {
-	case core.ValueMap:
-		val, exists := t[key]
-		if !exists {
-			return core.U(), nil
-		}
-		return val, nil
+	obj, ok := target.AsObject()
+	if !ok {
+		return core.U(), fmt.Errorf("cannot access into %v with value of type string", target.Type())
 	}
-	return core.U(), fmt.Errorf("cannot access into %v with value of type string", target.Type())
+	val, exists := obj[key]
+	if !exists {
+		return core.U(), nil
+	}
+	return val, nil
 }
 
 func evaluateAccess(target core.Value, val core.Value) (core.Value, error) {
-	if target.Undefined || val.Undefined {
+	if target.IsUndefined() || val.IsUndefined() {
 		return core.U(), nil
 	}
-	switch t := target.Raw.(type) {
-	case []core.Value:
-		return evaluateArrayAccess(t, val)
-	case core.ValueMap:
-		return evaluateObjectAccess(t, val)
+	if arr, ok := target.AsArray(); ok {
+		return evaluateArrayAccess(arr, val)
+	}
+	if obj, ok := target.AsObject(); ok {
+		return evaluateObjectAccess(obj, val)
 	}
 
 	return core.U(), fmt.Errorf("cannot access into %v with value of type %v", target.Type(), val.Type())
 }
 
 func evaluateArrayAccess(from []core.Value, indexVal core.Value) (core.Value, error) {
-	if indexVal.Undefined {
+	if indexVal.IsUndefined() {
 		return core.U(), nil
 	}
-	if !core.IsInt(indexVal.Raw) {
+	idx, ok := indexVal.AsIndex()
+	if !ok {
 		return core.U(), fmt.Errorf("array index must be int, got %s", indexVal.Type())
 	}
-	idx, _ := core.ToInt(indexVal)
 	if idx < 0 || idx >= len(from) {
 		return core.U(), fmt.Errorf("index %d out of bounds (length %d)", idx, len(from))
 	}
@@ -213,10 +213,10 @@ func evaluateArrayAccess(from []core.Value, indexVal core.Value) (core.Value, er
 }
 
 func evaluateObjectAccess(from core.ValueMap, keyVal core.Value) (core.Value, error) {
-	if keyVal.Undefined {
+	if keyVal.IsUndefined() {
 		return core.U(), nil
 	}
-	key, ok := keyVal.Raw.(string)
+	key, ok := keyVal.AsString()
 	if !ok {
 		return core.U(), fmt.Errorf(
 			"field key must be string, got %s",
@@ -242,7 +242,7 @@ func (s *SignalExpr) Evaluate(ctx *EvaluationContext) (core.Value, error) {
 		if err != nil {
 			return core.U(), err
 		}
-		if condBool, ok := val.Raw.(bool); !ok || !condBool {
+		if condBool, ok := val.AsBool(); !ok || !condBool {
 			return core.U(), nil // do not emit signal if condition is false
 		}
 	}
@@ -303,7 +303,7 @@ func (c *CallExpr) Evaluate(ctx *EvaluationContext) (core.Value, error) {
 	// skip functions that intentionally consume undefined
 	if !fn.AcceptsUndefined {
 		for i, arg := range args {
-			if arg.Undefined && i < len(fn.Args) && fn.Args[i].Required {
+			if arg.IsUndefined() && i < len(fn.Args) && fn.Args[i].Required {
 				return core.U(), nil
 			}
 		}
@@ -406,11 +406,11 @@ func (op *Op) Execute(ctx *EvaluationContext) error {
 		if err != nil {
 			return err
 		}
-		if val.Undefined {
+		if val.IsUndefined() {
 			ctx.Slots[*op.Out] = core.U()
 			return nil
 		}
-		b, ok := val.Raw.(bool)
+		b, ok := val.AsBool()
 		if !ok {
 			ctx.Slots[*op.Out] = core.U()
 			return nil
@@ -422,11 +422,11 @@ func (op *Op) Execute(ctx *EvaluationContext) error {
 		if err != nil {
 			return err
 		}
-		if condVal.Undefined {
+		if condVal.IsUndefined() {
 			ctx.Slots[*op.Out] = core.U()
 			return nil
 		}
-		condBool, ok := condVal.Raw.(bool)
+		condBool, ok := condVal.AsBool()
 		if !ok {
 			ctx.Slots[*op.Out] = core.U()
 			return nil
@@ -502,7 +502,7 @@ func executeBinaryOp(op *Op, ctx *EvaluationContext) error {
 	}
 
 	// if either side is undefined, result is undefined
-	if lval.Undefined || rval.Undefined {
+	if lval.IsUndefined() || rval.IsUndefined() {
 		ctx.Slots[*op.Out] = core.U()
 		return nil
 	}
@@ -516,7 +516,7 @@ func executeBinaryOp(op *Op, ctx *EvaluationContext) error {
 		ctx.Slots[*op.Out] = core.Bool(!core.SafeEquals(lval, rval))
 		return nil
 	case opcIn:
-		arr, ok := rval.Raw.([]core.Value)
+		arr, ok := rval.AsArray()
 		if !ok {
 			return fmt.Errorf("right operand of '%v' must be an array, got %v", OpIn, rval.Type())
 		}
@@ -525,10 +525,10 @@ func executeBinaryOp(op *Op, ctx *EvaluationContext) error {
 	}
 
 	// handle string operations
-	if l, ok := lval.Raw.(string); ok {
+	if l, ok := lval.AsString(); ok {
 		switch op.code {
 		case opcAdd:
-			r, ok := rval.Raw.(string)
+			r, ok := rval.AsString()
 			if !ok {
 				ctx.Slots[*op.Out] = core.U()
 				return nil
@@ -541,8 +541,8 @@ func executeBinaryOp(op *Op, ctx *EvaluationContext) error {
 		}
 	}
 
-	l, lok := core.ToFloat64(lval)
-	r, rok := core.ToFloat64(rval)
+	l, lok := lval.AsFloat()
+	r, rok := rval.AsFloat()
 	if !lok || !rok {
 		ctx.Slots[*op.Out] = core.U()
 		return nil
@@ -552,12 +552,12 @@ func executeBinaryOp(op *Op, ctx *EvaluationContext) error {
 
 // three-valued logical AND; false dominates (`false && undefined` is false)
 func kleeneAnd(lval, rval core.Value) core.Value {
-	lb, lok := lval.Raw.(bool)
-	rb, rok := rval.Raw.(bool)
+	lb, lok := lval.AsBool()
+	rb, rok := rval.AsBool()
 	if (lok && !lb) || (rok && !rb) {
 		return core.Bool(false)
 	}
-	if lval.Undefined || rval.Undefined {
+	if lval.IsUndefined() || rval.IsUndefined() {
 		return core.U()
 	}
 	if lok && rok {
@@ -568,12 +568,12 @@ func kleeneAnd(lval, rval core.Value) core.Value {
 
 // three-valued logical OR; true dominates (`true || undefined` is true)
 func kleeneOr(lval, rval core.Value) core.Value {
-	lb, lok := lval.Raw.(bool)
-	rb, rok := rval.Raw.(bool)
+	lb, lok := lval.AsBool()
+	rb, rok := rval.AsBool()
 	if (lok && lb) || (rok && rb) {
 		return core.Bool(true)
 	}
-	if lval.Undefined || rval.Undefined {
+	if lval.IsUndefined() || rval.IsUndefined() {
 		return core.U()
 	}
 	if lok && rok {

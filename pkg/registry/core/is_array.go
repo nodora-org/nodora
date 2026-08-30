@@ -23,9 +23,9 @@ func isArray() types.Func {
 
 func isArrayImpl(args []core.Value) (core.Value, error) {
 	value := args[0]
-	if value.Undefined {
+	if value.IsUndefined() {
 		return core.U(), nil
 	}
-	_, ok := value.Raw.([]core.Value)
+	_, ok := value.AsArray()
 	return core.V(ok), nil
 }

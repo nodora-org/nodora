@@ -107,7 +107,7 @@ func (e *Evaluator) EvaluateRule(ruleName string, input core.ValueMap) (*Evaluat
 			return nil, fmt.Errorf("output index out of bounds for %s", name)
 		}
 		val := evalCtx.Slots[output.Sym]
-		if !val.Undefined {
+		if !val.IsUndefined() {
 			outputs[name] = val.ToRaw()
 		}
 	}

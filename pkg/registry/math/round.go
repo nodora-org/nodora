@@ -24,10 +24,10 @@ func round() types.Func {
 
 func roundImpl(args []core.Value) (core.Value, error) {
 	x := args[0]
-	if x.Undefined {
+	if x.IsUndefined() {
 		return core.U(), nil
 	}
-	xx, ok := core.ToFloat64(x.Raw)
+	xx, ok := x.AsFloat()
 	if !ok {
 		return core.U(), fmt.Errorf("expected number for 'x' argument, got %v", x.Type())
 	}
@@ -35,10 +35,10 @@ func roundImpl(args []core.Value) (core.Value, error) {
 	decimals := 0
 	if len(args) > 1 {
 		d := args[1]
-		if d.Undefined {
+		if d.IsUndefined() {
 			return core.U(), nil
 		}
-		decimals, ok = core.ToInt(d.Raw)
+		decimals, ok = d.AsInt()
 		if !ok {
 			return core.U(), fmt.Errorf("expected number for 'decimals' argument, got %v", d.Type())
 		}

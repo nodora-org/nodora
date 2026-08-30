@@ -24,12 +24,12 @@ func compare() types.Func {
 
 func compareImpl(args []core.Value) (core.Value, error) {
 	v := args[0]
-	vv, ok := args[0].Raw.(string)
+	vv, ok := args[0].AsString()
 	if !ok {
 		return core.U(), fmt.Errorf("expected string for 'v' argument, got %v", v.Type())
 	}
 	w := args[1]
-	ww, ok := args[1].Raw.(string)
+	ww, ok := args[1].AsString()
 	if !ok {
 		return core.U(), fmt.Errorf("expected string for 'w' argument, got %v", w.Type())
 	}

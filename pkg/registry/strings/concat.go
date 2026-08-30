@@ -35,14 +35,14 @@ func concat() types.Func {
 func concatImpl(args []core.Value) (core.Value, error) {
 	delim := args[0]
 	arr := args[1]
-	if delim.Undefined || arr.Undefined {
+	if delim.IsUndefined() || arr.IsUndefined() {
 		return core.U(), nil
 	}
-	delimVal, ok := delim.Raw.(string)
+	delimVal, ok := delim.AsString()
 	if !ok {
 		return core.U(), fmt.Errorf("expected string for 'delim' argument, got %v", delim.Type())
 	}
-	arrVal, ok := arr.Raw.([]core.Value)
+	arrVal, ok := arr.AsArray()
 	if !ok {
 		return core.U(), fmt.Errorf(
 			"expected %v for 'arr' argument, got %v",
@@ -52,7 +52,7 @@ func concatImpl(args []core.Value) (core.Value, error) {
 	}
 	var parts []string
 	for _, v := range arrVal {
-		if str, ok := v.Raw.(string); ok {
+		if str, ok := v.AsString(); ok {
 			parts = append(parts, str)
 		} else {
 			return core.U(), fmt.Errorf("expected string in 'arr', got %v", v.Type())

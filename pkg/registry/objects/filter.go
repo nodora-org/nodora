@@ -23,24 +23,24 @@ func filter() types.Func {
 
 func filterImpl(args []core.Value) (core.Value, error) {
 	obj := args[0]
-	if obj.Undefined {
+	if obj.IsUndefined() {
 		return core.U(), nil
 	}
 
-	objVal, ok := obj.Raw.(core.ValueMap)
+	objVal, ok := obj.AsObject()
 	if !ok {
 		return core.U(), fmt.Errorf("expected object for 'obj' argument, got %v", obj.Type())
 	}
 
 	keys := args[1]
-	keysVal, ok := keys.Raw.([]core.Value)
+	keysVal, ok := keys.AsArray()
 	if !ok {
 		return core.U(), fmt.Errorf("expected array for 'keys' argument, got %v", obj.Type())
 	}
 
 	result := make(core.ValueMap)
 	for _, k := range keysVal {
-		keyVal, ok := k.Raw.(string)
+		keyVal, ok := k.AsString()
 		if !ok {
 			return core.U(), fmt.Errorf("expected string in 'keys' array, got %v", k.Raw)
 		}

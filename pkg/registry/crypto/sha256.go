@@ -22,7 +22,7 @@ func sha256() types.Func {
 
 func sha256Impl(args []core.Value) (core.Value, error) {
 	str := args[0]
-	data, ok := str.Raw.(string)
+	data, ok := str.AsString()
 	if !ok {
 		return core.U(), fmt.Errorf("expected string for 'str' argument, got %v", str.Type())
 	}

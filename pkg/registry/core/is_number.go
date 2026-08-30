@@ -23,9 +23,9 @@ func isNumber() types.Func {
 
 func isNumberImpl(args []core.Value) (core.Value, error) {
 	value := args[0]
-	if value.Undefined {
+	if value.IsUndefined() {
 		return core.U(), nil
 	}
-	_, ok := core.ToFloat64(value)
+	_, ok := value.AsFloat()
 	return core.V(ok), nil
 }

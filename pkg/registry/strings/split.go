@@ -35,14 +35,14 @@ func split() types.Func {
 func splitImpl(args []core.Value) (core.Value, error) {
 	str := args[0]
 	delim := args[1]
-	if str.Undefined || delim.Undefined {
+	if str.IsUndefined() || delim.IsUndefined() {
 		return core.U(), nil
 	}
-	strVal, ok := str.Raw.(string)
+	strVal, ok := str.AsString()
 	if !ok {
 		return core.U(), fmt.Errorf("expected string for 'str' argument, got %v", str.Type())
 	}
-	delimVal, ok := delim.Raw.(string)
+	delimVal, ok := delim.AsString()
 	if !ok {
 		return core.U(), fmt.Errorf("expected string for 'delim' argument, got %v", delim.Type())
 	}

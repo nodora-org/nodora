@@ -26,7 +26,7 @@ func toString() types.Func {
 
 func toStringImpl(args []core.Value) (core.Value, error) {
 	x := args[0]
-	if x.Undefined {
+	if x.IsUndefined() {
 		return core.U(), nil
 	}
 	switch v := x.Raw.(type) {

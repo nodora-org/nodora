@@ -27,7 +27,7 @@ func int_() types.Func {
 
 func intImpl(args []core.Value) (core.Value, error) {
 	value := args[0]
-	if value.Undefined {
+	if value.IsUndefined() {
 		return core.U(), nil
 	}
 	switch v := value.Raw.(type) {

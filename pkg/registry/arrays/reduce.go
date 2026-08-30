@@ -41,10 +41,10 @@ func reduce() types.Func {
 
 func reduceImpl(args []core.Value) (core.Value, error) {
 	arr := args[0]
-	if arr.Undefined {
+	if arr.IsUndefined() {
 		return core.U(), nil
 	}
-	arrVal, ok := arr.Raw.([]core.Value)
+	arrVal, ok := arr.AsArray()
 	if !ok {
 		return core.U(), fmt.Errorf(
 			"expected %v for 'arr' argument, got %v",
@@ -54,10 +54,10 @@ func reduceImpl(args []core.Value) (core.Value, error) {
 	}
 
 	fx := args[1]
-	if fx.Undefined {
+	if fx.IsUndefined() {
 		return core.U(), nil
 	}
-	fn, ok := fx.Raw.(*core.Lambda)
+	fn, ok := fx.AsLambda()
 	if !ok {
 		return core.U(), fmt.Errorf(
 			"expected %v for 'fx' argument, got %v",

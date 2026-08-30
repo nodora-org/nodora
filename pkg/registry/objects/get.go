@@ -24,17 +24,17 @@ func get() types.Func {
 
 func getImpl(args []core.Value) (core.Value, error) {
 	obj := args[0]
-	if obj.Undefined {
+	if obj.IsUndefined() {
 		return core.U(), nil
 	}
 
-	objVal, ok := obj.Raw.(core.ValueMap)
+	objVal, ok := obj.AsObject()
 	if !ok {
 		return core.U(), fmt.Errorf("expected object for 'obj' argument, got %v", obj.Type())
 	}
 
 	key := args[1]
-	keyVal, ok := key.Raw.(string)
+	keyVal, ok := key.AsString()
 	if !ok {
 		return core.U(), fmt.Errorf("expected string for 'key' argument, got %v", key.Type())
 	}

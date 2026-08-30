@@ -23,9 +23,9 @@ func isObject() types.Func {
 
 func isObjectImpl(args []core.Value) (core.Value, error) {
 	value := args[0]
-	if value.Undefined {
+	if value.IsUndefined() {
 		return core.U(), nil
 	}
-	_, ok := value.Raw.(core.ValueMap)
+	_, ok := value.AsObject()
 	return core.V(ok), nil
 }

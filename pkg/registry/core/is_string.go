@@ -23,9 +23,9 @@ func isString() types.Func {
 
 func isStringImpl(args []core.Value) (core.Value, error) {
 	value := args[0]
-	if value.Undefined {
+	if value.IsUndefined() {
 		return core.U(), nil
 	}
-	_, ok := value.Raw.(string)
+	_, ok := value.AsString()
 	return core.V(ok), nil
 }

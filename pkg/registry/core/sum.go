@@ -25,11 +25,11 @@ func sum() types.Func {
 
 func sumImpl(args []core.Value) (core.Value, error) {
 	arr := args[0]
-	if arr.Undefined {
+	if arr.IsUndefined() {
 		return core.U(), nil
 	}
 
-	arrVal, ok := arr.Raw.([]core.Value)
+	arrVal, ok := arr.AsArray()
 	if !ok {
 		return core.U(), fmt.Errorf(
 			"expected %v for 'arr' argument, got %v",
@@ -40,10 +40,10 @@ func sumImpl(args []core.Value) (core.Value, error) {
 
 	sum := float64(0)
 	for _, item := range arrVal {
-		if item.Undefined {
+		if item.IsUndefined() {
 			return core.U(), nil
 		}
-		val, ok := core.ToFloat64(item.Raw)
+		val, ok := item.AsFloat()
 		if !ok {
 			return core.U(), fmt.Errorf(
 				"expected element of type number, got %v",

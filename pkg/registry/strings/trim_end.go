@@ -35,14 +35,14 @@ func trimEnd() types.Func {
 func trimEndImpl(args []core.Value) (core.Value, error) {
 	str := args[0]
 	cutset := args[1]
-	if str.Undefined || cutset.Undefined {
+	if str.IsUndefined() || cutset.IsUndefined() {
 		return core.U(), nil
 	}
-	strVal, ok := str.Raw.(string)
+	strVal, ok := str.AsString()
 	if !ok {
 		return core.U(), fmt.Errorf("expected string for 'str' argument, got %v", str.Type())
 	}
-	cutsetVal, ok := cutset.Raw.(string)
+	cutsetVal, ok := cutset.AsString()
 	if !ok {
 		return core.U(), fmt.Errorf("expected string for 'cutset' argument, got %v", cutset.Type())
 	}
