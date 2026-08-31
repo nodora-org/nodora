@@ -21,5 +21,6 @@ func GetFuncs() []func() types.Func {
 		sum,
 		product,
 		fallback,
+		hash,
 	}
 }
