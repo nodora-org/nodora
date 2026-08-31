@@ -38,12 +38,41 @@ make build
 
 The binary is written to `build/nodora`.
 
+## Quick start
+
+Write a rule to a file, `approval.ruleset`:
+
+```text
+rule AccountApproval {
+    out approved = input.age >= 18
+}
+```
+
+Compile it:
+
+```sh
+nodora compile -f approval.ruleset -o approval.json
+```
+
+Evaluate it against a JSON input:
+
+```sh
+echo '{"age": 21}' | nodora eval -f approval.json --stdin
+```
+
+```json
+{
+  "outputs": { "approved": true },
+  "emitted_signals": []
+}
+```
+
 ## Development
 
 ```sh
-make build      # build the CLI into build/
-make test       # run the full test suite
 make clean      # remove build artifacts
+make test       # run the full test suite
+make build      # build the CLI into build/
 ```
 
 ## License
