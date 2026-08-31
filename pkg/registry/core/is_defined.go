@@ -18,5 +18,5 @@ func isDefined() types.Func {
 }
 
 func isDefinedImpl(args []core.Value) (core.Value, error) {
-	return core.V(!args[0].Undefined), nil
+	return core.V(!args[0].IsUndefined()), nil
 }

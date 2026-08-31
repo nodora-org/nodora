@@ -42,18 +42,18 @@ func replaceImpl(args []core.Value) (core.Value, error) {
 	str := args[0]
 	old := args[1]
 	new := args[2]
-	if str.Undefined || old.Undefined || new.Undefined {
+	if str.IsUndefined() || old.IsUndefined() || new.IsUndefined() {
 		return core.U(), nil
 	}
-	strVal, ok := str.Raw.(string)
+	strVal, ok := str.AsString()
 	if !ok {
 		return core.U(), fmt.Errorf("expected string for 'str' argument, got %v", str.Type())
 	}
-	oldVal, ok := old.Raw.(string)
+	oldVal, ok := old.AsString()
 	if !ok {
 		return core.U(), fmt.Errorf("expected string for 'old' argument, got %v", old.Type())
 	}
-	newVal, ok := new.Raw.(string)
+	newVal, ok := new.AsString()
 	if !ok {
 		return core.U(), fmt.Errorf("expected string for 'new' argument, got %v", new.Type())
 	}

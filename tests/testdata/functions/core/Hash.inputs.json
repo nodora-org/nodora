@@ -1,0 +1,83 @@
+[
+  {
+    "input": {
+      "value": 1
+    },
+    "expected": {
+      "outputs": {
+        "result": 1616307405
+      }
+    }
+  },
+  {
+    "input": {
+      "value": 1,
+      "seed": 1
+    },
+    "expected": {
+      "outputs": {
+        "result": 1132463655
+      }
+    }
+  },
+  {
+    "input": {
+      "value": null
+    },
+    "expected": {
+      "outputs": {
+        "result": 949155633
+      }
+    }
+  },
+  {
+    "input": {
+      "value": true
+    },
+    "expected": {
+      "outputs": {
+        "result": 565077562
+      }
+    }
+  },
+  {
+    "input": {
+      "value": false
+    },
+    "expected": {
+      "outputs": {
+        "result": 3577754232
+      }
+    }
+  },
+  {
+    "input": {
+      "value": "42"
+    },
+    "expected": {
+      "outputs": {
+        "result": 593510670
+      }
+    }
+  },
+  {
+    "input": {
+      "value": ["1", "2"]
+    },
+    "expected": {
+      "outputs": {
+        "result": 3272337350
+      }
+    }
+  },
+  {
+    "input": {
+      "value": { "u": { "id": "x" }, "t": ["a"] }
+    },
+    "expected": {
+      "outputs": {
+        "result": 348022809
+      }
+    }
+  }
+]

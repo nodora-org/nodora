@@ -23,11 +23,11 @@ func concat() types.Func {
 
 func concatImpl(args []core.Value) (core.Value, error) {
 	x := args[0]
-	if x.Undefined {
+	if x.IsUndefined() {
 		return core.U(), nil
 	}
 
-	arr1, ok := x.Raw.([]core.Value)
+	arr1, ok := x.AsArray()
 	if !ok {
 		return core.U(), fmt.Errorf("expected %v for 'x' argument, got %v",
 			types.NewArrayType(types.AnyType),
@@ -36,11 +36,11 @@ func concatImpl(args []core.Value) (core.Value, error) {
 	}
 
 	y := args[1]
-	if y.Undefined {
+	if y.IsUndefined() {
 		return core.U(), nil
 	}
 
-	arr2, ok := y.Raw.([]core.Value)
+	arr2, ok := y.AsArray()
 	if !ok {
 		return core.U(), fmt.Errorf("expected %v for 'y' argument, got %v",
 			types.NewArrayType(types.AnyType),

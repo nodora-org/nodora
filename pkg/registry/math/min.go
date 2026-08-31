@@ -25,14 +25,14 @@ func minFunc() types.Func {
 func minImpl(args []core.Value) (core.Value, error) {
 	x := args[0]
 	y := args[1]
-	if x.Undefined || y.Undefined {
+	if x.IsUndefined() || y.IsUndefined() {
 		return core.U(), nil
 	}
-	xx, ok := core.ToFloat64(x.Raw)
+	xx, ok := x.AsFloat()
 	if !ok {
 		return core.U(), fmt.Errorf("expected number for 'x' argument, got %v", x.Type())
 	}
-	yy, ok := core.ToFloat64(y.Raw)
+	yy, ok := y.AsFloat()
 	if !ok {
 		return core.U(), fmt.Errorf("expected number for 'y' argument, got %v", y.Type())
 	}

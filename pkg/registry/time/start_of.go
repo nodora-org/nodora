@@ -24,19 +24,19 @@ func startOf() types.Func {
 
 func startOfImpl(args []core.Value) (core.Value, error) {
 	tsArg := args[0]
-	if tsArg.Undefined {
+	if tsArg.IsUndefined() {
 		return core.U(), nil
 	}
-	ms, ok := core.ToFloat64(tsArg.Raw)
+	ms, ok := tsArg.AsFloat()
 	if !ok {
 		return core.U(), fmt.Errorf("expected number for 'ts' argument, got %v", tsArg.Type())
 	}
 
 	unitArg := args[1]
-	if unitArg.Undefined {
+	if unitArg.IsUndefined() {
 		return core.U(), nil
 	}
-	unit, ok := unitArg.Raw.(string)
+	unit, ok := unitArg.AsString()
 	if !ok {
 		return core.U(), fmt.Errorf("expected string for 'unit' argument, got %v", unitArg.Type())
 	}

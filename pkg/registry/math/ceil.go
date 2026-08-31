@@ -21,10 +21,10 @@ func ceil() types.Func {
 
 func ceilImpl(args []core.Value) (core.Value, error) {
 	x := args[0]
-	if x.Undefined {
+	if x.IsUndefined() {
 		return core.U(), nil
 	}
-	xx, ok := core.ToFloat64(x.Raw)
+	xx, ok := x.AsFloat()
 	if !ok {
 		return core.U(), fmt.Errorf("expected number for 'x' argument, got %v", x.Type())
 	}

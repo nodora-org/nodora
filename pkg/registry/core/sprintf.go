@@ -24,7 +24,7 @@ func sprintf() types.Func {
 
 func sprintfImpl(args []core.Value) (core.Value, error) {
 	fmt_ := args[0]
-	fmtVal, ok := fmt_.Raw.(string)
+	fmtVal, ok := fmt_.AsString()
 	if !ok {
 		return core.U(), fmt.Errorf(
 			"expected string for 'fmt' argument, got %v",
@@ -35,10 +35,10 @@ func sprintfImpl(args []core.Value) (core.Value, error) {
 	arrVal := make([]core.Value, 0)
 	if len(args) > 1 {
 		args := args[1]
-		if args.Undefined {
+		if args.IsUndefined() {
 			return core.U(), nil
 		}
-		arrVal, ok = args.Raw.([]core.Value)
+		arrVal, ok = args.AsArray()
 		if !ok {
 			return core.U(), fmt.Errorf(
 				"expected %v for 'args' argument, got %v",
@@ -52,7 +52,7 @@ func sprintfImpl(args []core.Value) (core.Value, error) {
 	for i, v := range arrVal {
 		// an undefined substitution value propagates rather than rendering as
 		// the literal "%!s(<nil>)" Go would otherwise produce
-		if v.Undefined {
+		if v.IsUndefined() {
 			return core.U(), nil
 		}
 		// format compatibility

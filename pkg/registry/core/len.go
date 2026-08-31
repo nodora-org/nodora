@@ -25,7 +25,7 @@ func length() types.Func {
 
 func lengthImpl(args []core.Value) (core.Value, error) {
 	value := args[0]
-	if value.Undefined {
+	if value.IsUndefined() {
 		return core.U(), nil
 	}
 

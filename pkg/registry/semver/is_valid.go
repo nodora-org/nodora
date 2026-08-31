@@ -21,7 +21,7 @@ func isValid() types.Func {
 
 func isValidImpl(args []core.Value) (core.Value, error) {
 	version := args[0]
-	v, ok := version.Raw.(string)
+	v, ok := version.AsString()
 	if !ok {
 		return core.U(), fmt.Errorf("expected string for 'version' argument, got %v", version.Type())
 	}

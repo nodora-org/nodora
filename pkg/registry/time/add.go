@@ -23,19 +23,19 @@ func add() types.Func {
 
 func addImpl(args []core.Value) (core.Value, error) {
 	ts := args[0]
-	if ts.Undefined {
+	if ts.IsUndefined() {
 		return core.U(), nil
 	}
-	ms, ok := core.ToFloat64(ts.Raw)
+	ms, ok := ts.AsFloat()
 	if !ok {
 		return core.U(), fmt.Errorf("expected number for 'ts' argument, got %v", ts.Type())
 	}
 
 	dur := args[1]
-	if dur.Undefined {
+	if dur.IsUndefined() {
 		return core.U(), nil
 	}
-	durStr, ok := dur.Raw.(string)
+	durStr, ok := dur.AsString()
 	if !ok {
 		return core.U(), fmt.Errorf("expected string for 'duration' argument, got %v", dur.Type())
 	}

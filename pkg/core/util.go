@@ -109,10 +109,10 @@ func SafeEquals(a, b Value) bool {
 	case nil:
 		return b.Raw == nil
 	case string:
-		bv, ok := b.Raw.(string)
+		bv, ok := b.AsString()
 		return ok && av == bv
 	case bool:
-		bv, ok := b.Raw.(bool)
+		bv, ok := b.AsBool()
 		return ok && av == bv
 	case float64:
 		bv, ok := b.Raw.(float64)

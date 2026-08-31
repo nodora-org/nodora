@@ -35,14 +35,14 @@ func contains() types.Func {
 func containsImpl(args []core.Value) (core.Value, error) {
 	str := args[0]
 	substr := args[1]
-	if str.Undefined || substr.Undefined {
+	if str.IsUndefined() || substr.IsUndefined() {
 		return core.U(), nil
 	}
-	strVal, ok := str.Raw.(string)
+	strVal, ok := str.AsString()
 	if !ok {
 		return core.U(), fmt.Errorf("expected string for 'str' argument, got %v", str.Type())
 	}
-	substrVal, ok := substr.Raw.(string)
+	substrVal, ok := substr.AsString()
 	if !ok {
 		return core.U(), fmt.Errorf("expected string for 'substr' argument, got %v", substr.Type())
 	}

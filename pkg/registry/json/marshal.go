@@ -20,7 +20,7 @@ func marshal() types.Func {
 
 func marshalImpl(args []core.Value) (core.Value, error) {
 	value := args[0]
-	if value.Undefined {
+	if value.IsUndefined() {
 		return core.U(), nil
 	}
 	data, err := json.Marshal(value.ToRaw())

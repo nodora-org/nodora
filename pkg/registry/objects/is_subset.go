@@ -23,27 +23,27 @@ func isSubset() types.Func {
 
 func isSubsetImpl(args []core.Value) (core.Value, error) {
 	super := args[0]
-	if super.Undefined {
+	if super.IsUndefined() {
 		return core.U(), nil
 	}
 
-	superVal, ok := super.Raw.(core.ValueMap)
+	superVal, ok := super.AsObject()
 	if !ok {
 		return core.U(), fmt.Errorf("expected object for 'super' argument, got %v", super.Type())
 	}
 
 	sub := args[1]
-	if sub.Undefined {
+	if sub.IsUndefined() {
 		return core.U(), nil
 	}
 
-	subVal, ok := sub.Raw.(core.ValueMap)
+	subVal, ok := sub.AsObject()
 	if !ok {
 		return core.U(), fmt.Errorf("expected object for 'sub' argument, got %v", sub.Type())
 	}
 
 	for key, subValue := range subVal {
-		if subValue.Undefined {
+		if subValue.IsUndefined() {
 			return core.V(false), nil
 		}
 		val, exists := superVal[key]

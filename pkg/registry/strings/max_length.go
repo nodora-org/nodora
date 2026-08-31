@@ -25,11 +25,11 @@ func maxLength() types.Func {
 
 func maxLengthImpl(args []core.Value) (core.Value, error) {
 	arr := args[0]
-	if arr.Undefined {
+	if arr.IsUndefined() {
 		return core.U(), nil
 	}
 
-	arrVal, ok := arr.Raw.([]core.Value)
+	arrVal, ok := arr.AsArray()
 	if !ok {
 		return core.U(), fmt.Errorf(
 			"expected %v for 'arr' argument, got %v",
@@ -44,8 +44,8 @@ func maxLengthImpl(args []core.Value) (core.Value, error) {
 
 	var max int
 	for i, item := range arrVal {
-		val, ok := item.Raw.(string)
-		if !ok || item.Undefined {
+		val, ok := item.AsString()
+		if !ok || item.IsUndefined() {
 			return core.U(), nil
 		}
 		if i == 0 || len(val) > max {

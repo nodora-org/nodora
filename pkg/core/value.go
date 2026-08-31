@@ -10,8 +10,12 @@ type Value struct {
 	Undefined bool
 }
 
+func Num(f float64) Value   { return Value{Raw: f} }
+func Bool(b bool) Value     { return Value{Raw: b} }
+func String(s string) Value { return Value{Raw: s} }
+
 func (v Value) String() string {
-	if v.Undefined {
+	if v.IsUndefined() {
 		return "undefined"
 	}
 	return fmt.Sprintf("%v", v.Raw)
@@ -56,7 +60,7 @@ func U() Value {
 }
 
 func (v *Value) ToRaw() any {
-	if v.Undefined {
+	if v.IsUndefined() {
 		return nil
 	}
 	switch n := v.Raw.(type) {
@@ -82,7 +86,7 @@ func (v *Value) ToRaw() any {
 }
 
 func (v *Value) Type() string {
-	if v.Undefined {
+	if v.IsUndefined() {
 		return "undefined"
 	}
 	switch inner := v.Raw.(type) {

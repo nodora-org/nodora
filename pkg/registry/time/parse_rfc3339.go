@@ -23,10 +23,10 @@ func parseRFC3339() types.Func {
 
 func parseRFC3339Impl(args []core.Value) (core.Value, error) {
 	v := args[0]
-	if v.Undefined {
+	if v.IsUndefined() {
 		return core.U(), nil
 	}
-	s, ok := v.Raw.(string)
+	s, ok := v.AsString()
 	if !ok {
 		return core.U(), fmt.Errorf("expected string for 'value' argument, got %v", v.Type())
 	}

@@ -24,21 +24,21 @@ func union() types.Func {
 
 func unionImpl(args []core.Value) (core.Value, error) {
 	obj1 := args[0]
-	if obj1.Undefined {
+	if obj1.IsUndefined() {
 		return core.U(), nil
 	}
 
-	obj1Val, ok := obj1.Raw.(core.ValueMap)
+	obj1Val, ok := obj1.AsObject()
 	if !ok {
 		return core.U(), fmt.Errorf("expected object for 'obj1' argument, got %v", obj1.Type())
 	}
 
 	obj2 := args[1]
-	if obj2.Undefined {
+	if obj2.IsUndefined() {
 		return core.U(), nil
 	}
 
-	obj2Val, ok := obj2.Raw.(core.ValueMap)
+	obj2Val, ok := obj2.AsObject()
 	if !ok {
 		return core.U(), fmt.Errorf("expected object for 'obj2' argument, got %v", obj2.Type())
 	}

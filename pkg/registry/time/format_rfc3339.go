@@ -23,10 +23,10 @@ func formatRFC3339() types.Func {
 
 func formatRFC3339Impl(args []core.Value) (core.Value, error) {
 	v := args[0]
-	if v.Undefined {
+	if v.IsUndefined() {
 		return core.U(), nil
 	}
-	ms, ok := core.ToFloat64(v.Raw)
+	ms, ok := v.AsFloat()
 	if !ok {
 		return core.U(), fmt.Errorf("expected number for 'ts' argument, got %v", v.Type())
 	}

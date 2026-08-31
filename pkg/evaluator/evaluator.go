@@ -27,6 +27,9 @@ type Evaluator struct {
 	signalListeners map[string][]SignalListener
 	Debug           bool
 	signalWG        *sync.WaitGroup
+	slotPool        sync.Pool
+	prepareOnce     sync.Once
+	prepareErr      error
 }
 
 type EvaluationResult struct {
@@ -71,12 +74,20 @@ func (e *Evaluator) OnSignalNamed(signalName string, listener func(map[string]an
 }
 
 func (e *Evaluator) EvaluateRule(ruleName string, input core.ValueMap) (*EvaluationResult, error) {
+	e.prepareOnce.Do(func() { e.prepareErr = e.ruleset.Prepare() })
+	if e.prepareErr != nil {
+		return nil, e.prepareErr
+	}
+
 	rule, ok := e.ruleset.GetRule(ruleName)
 	if !ok {
 		return nil, fmt.Errorf("rule not found: %s", ruleName)
 	}
 
-	slots := make([]core.Value, rule.Symslots)
+	ptr := e.acquireSlots(rule.Symslots)
+	defer e.releaseSlots(ptr)
+
+	slots := *ptr
 	slots[0] = core.V(input)
 
 	evalCtx := &nir.EvaluationContext{
@@ -90,13 +101,13 @@ func (e *Evaluator) EvaluateRule(ruleName string, input core.ValueMap) (*Evaluat
 		}
 	}
 
-	outputs := make(map[string]any)
+	outputs := make(map[string]any, len(rule.Outputs))
 	for name, output := range rule.Outputs {
 		if output.Sym >= len(evalCtx.Slots) {
 			return nil, fmt.Errorf("output index out of bounds for %s", name)
 		}
 		val := evalCtx.Slots[output.Sym]
-		if !val.Undefined {
+		if !val.IsUndefined() {
 			outputs[name] = val.ToRaw()
 		}
 	}
@@ -114,6 +125,26 @@ func (e *Evaluator) EvaluateRule(ruleName string, input core.ValueMap) (*Evaluat
 		Outputs: outputs,
 		Signals: evalCtx.Emissions,
 	}, nil
+}
+
+// Returns a pooled slot buffer, stored as a pointer to avoid boxing the slice.
+func (e *Evaluator) acquireSlots(n int) *[]core.Value {
+	p, _ := e.slotPool.Get().(*[]core.Value)
+	if p == nil {
+		s := make([]core.Value, n)
+		return &s
+	}
+	if cap(*p) < n {
+		*p = make([]core.Value, n)
+	} else {
+		*p = (*p)[:n]
+		clear(*p)
+	}
+	return p
+}
+
+func (e *Evaluator) releaseSlots(p *[]core.Value) {
+	e.slotPool.Put(p)
 }
 
 func (e *Evaluator) invokeListeners(

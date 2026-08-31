@@ -29,11 +29,11 @@ func min() types.Func {
 
 func minImpl(args []core.Value) (core.Value, error) {
 	value := args[0]
-	if value.Undefined {
+	if value.IsUndefined() {
 		return core.U(), nil
 	}
 
-	arr, ok := value.Raw.([]core.Value)
+	arr, ok := value.AsArray()
 	if !ok {
 		return core.U(), fmt.Errorf(
 			"expected %v for 'value' argument, got %v",
@@ -68,7 +68,7 @@ func findMin[T cmp.Ordered](arr []core.Value) (T, bool) {
 	var min T
 	for i, item := range arr {
 		val, ok := item.Raw.(T)
-		if !ok || item.Undefined {
+		if !ok || item.IsUndefined() {
 			return min, false
 		}
 		if i == 0 || val < min {

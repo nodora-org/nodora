@@ -21,7 +21,7 @@ func isValid() types.Func {
 
 func isValidImpl(args []core.Value) (core.Value, error) {
 	str := args[0]
-	strVal, ok := args[0].Raw.(string)
+	strVal, ok := args[0].AsString()
 	if !ok {
 		return core.U(), fmt.Errorf("expected string for 'str' argument, got %v", str.Type())
 	}

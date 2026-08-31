@@ -271,7 +271,7 @@ func jsToValue(v js.Value) core.Value {
 
 // converts a core.Value to a JS value
 func valueToJS(v core.Value) js.Value {
-	if v.Undefined {
+	if v.IsUndefined() {
 		return js.Undefined()
 	}
 	if v.Raw == nil {

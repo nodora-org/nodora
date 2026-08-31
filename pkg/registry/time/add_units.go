@@ -24,26 +24,26 @@ func addUnits() types.Func {
 
 func addUnitsImpl(args []core.Value) (core.Value, error) {
 	ts := args[0]
-	if ts.Undefined {
+	if ts.IsUndefined() {
 		return core.U(), nil
 	}
-	ms, ok := core.ToFloat64(ts.Raw)
+	ms, ok := ts.AsFloat()
 	if !ok {
 		return core.U(), fmt.Errorf("expected number for 'ts' argument, got %v", ts.Type())
 	}
 
 	nArg := args[1]
-	if nArg.Undefined {
+	if nArg.IsUndefined() {
 		return core.U(), nil
 	}
-	n, ok := core.ToFloat64(nArg.Raw)
+	n, ok := nArg.AsFloat()
 	if !ok {
 		return core.U(), fmt.Errorf("expected number for 'n' argument, got %v", nArg.Type())
 	}
 
 	unit := "ms"
-	if len(args) > 2 && !args[2].Undefined {
-		u, ok := args[2].Raw.(string)
+	if len(args) > 2 && !args[2].IsUndefined() {
+		u, ok := args[2].AsString()
 		if !ok {
 			return core.U(), fmt.Errorf("expected string for 'unit' argument, got %v", args[2].Type())
 		}

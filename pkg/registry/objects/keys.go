@@ -21,11 +21,11 @@ func keys() types.Func {
 
 func keysImpl(args []core.Value) (core.Value, error) {
 	obj := args[0]
-	if obj.Undefined {
+	if obj.IsUndefined() {
 		return core.U(), nil
 	}
 
-	objVal, ok := obj.Raw.(core.ValueMap)
+	objVal, ok := obj.AsObject()
 	if !ok {
 		return core.U(), fmt.Errorf("expected object for 'obj' argument, got %v", obj.Type())
 	}

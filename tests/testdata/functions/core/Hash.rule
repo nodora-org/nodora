@@ -1,0 +1,3 @@
+rule HashRule {
+    out result = hash(input.value, input.seed)
+}

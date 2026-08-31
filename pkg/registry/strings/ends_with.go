@@ -35,14 +35,14 @@ func endsWith() types.Func {
 func endsWithImpl(args []core.Value) (core.Value, error) {
 	str := args[0]
 	suffix := args[1]
-	if str.Undefined || suffix.Undefined {
+	if str.IsUndefined() || suffix.IsUndefined() {
 		return core.U(), nil
 	}
-	strVal, ok := str.Raw.(string)
+	strVal, ok := str.AsString()
 	if !ok {
 		return core.U(), fmt.Errorf("expected string for 'str' argument, got %v", str.Type())
 	}
-	suffixVal, ok := suffix.Raw.(string)
+	suffixVal, ok := suffix.AsString()
 	if !ok {
 		return core.U(), fmt.Errorf("expected string for 'suffix' argument, got %v", suffix.Type())
 	}

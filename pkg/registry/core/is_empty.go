@@ -25,10 +25,10 @@ func isEmpty() types.Func {
 
 func isEmptyImpl(args []core.Value) (core.Value, error) {
 	value := args[0]
-	if value.Undefined {
+	if value.IsUndefined() {
 		return core.U(), nil
 	}
-	arr, ok := value.Raw.([]core.Value)
+	arr, ok := value.AsArray()
 	if !ok {
 		return core.U(), fmt.Errorf(
 			"expected %s for 'arr' argument, got %v",

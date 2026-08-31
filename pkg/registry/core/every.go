@@ -33,10 +33,10 @@ func every() types.Func {
 
 func everyImpl(args []core.Value) (core.Value, error) {
 	arr := args[0]
-	if arr.Undefined {
+	if arr.IsUndefined() {
 		return core.U(), nil
 	}
-	arrVal, ok := arr.Raw.([]core.Value)
+	arrVal, ok := arr.AsArray()
 	if !ok {
 		return core.U(), fmt.Errorf(
 			"expected %v for 'arr' argument, got %v",
@@ -46,11 +46,11 @@ func everyImpl(args []core.Value) (core.Value, error) {
 	}
 
 	fx := args[1]
-	if fx.Undefined {
+	if fx.IsUndefined() {
 		return core.U(), nil
 	}
 
-	fn, ok := fx.Raw.(*core.Lambda)
+	fn, ok := fx.AsLambda()
 	if !ok {
 		return core.U(), fmt.Errorf(
 			"expected %v for 'fx' argument, got %v",
@@ -65,10 +65,10 @@ func everyImpl(args []core.Value) (core.Value, error) {
 		if err != nil {
 			return core.U(), err
 		}
-		if r.Undefined {
+		if r.IsUndefined() {
 			return core.U(), nil
 		}
-		boolVal, ok := r.Raw.(bool)
+		boolVal, ok := r.AsBool()
 		if !ok {
 			return core.U(), fmt.Errorf(
 				"expected a bool value, got %v",

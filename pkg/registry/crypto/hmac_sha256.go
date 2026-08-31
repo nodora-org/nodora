@@ -27,14 +27,14 @@ func hmacSha256() types.Func {
 func hmacSha256Impl(args []core.Value) (core.Value, error) {
 	keyv := args[0]
 	msgv := args[1]
-	if keyv.Undefined || msgv.Undefined {
+	if keyv.IsUndefined() || msgv.IsUndefined() {
 		return core.U(), nil
 	}
-	key, ok := keyv.Raw.(string)
+	key, ok := keyv.AsString()
 	if !ok {
 		return core.U(), fmt.Errorf("expected string for 'key' argument, got %v", keyv.Type())
 	}
-	msg, ok := msgv.Raw.(string)
+	msg, ok := msgv.AsString()
 	if !ok {
 		return core.U(), fmt.Errorf("expected string for 'msg' argument, got %v", msgv.Type())
 	}

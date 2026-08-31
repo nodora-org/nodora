@@ -24,19 +24,19 @@ func matches() types.Func {
 
 func matchesImpl(args []core.Value) (core.Value, error) {
 	pattern := args[0]
-	if pattern.Undefined {
+	if pattern.IsUndefined() {
 		return core.U(), nil
 	}
 	subj := args[1]
-	if subj.Undefined {
+	if subj.IsUndefined() {
 		return core.U(), nil
 	}
 
-	patternStr, ok := pattern.Raw.(string)
+	patternStr, ok := pattern.AsString()
 	if !ok {
 		return core.U(), fmt.Errorf("expected string for 'pattern' argument, got %v", pattern.Type())
 	}
-	subjStr, ok := subj.Raw.(string)
+	subjStr, ok := subj.AsString()
 	if !ok {
 		return core.U(), fmt.Errorf("expected string for 'subj' argument, got %v", subj.Type())
 	}
