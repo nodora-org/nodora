@@ -18,5 +18,15 @@
         }
       }
     }
+  },
+  {
+    "input": {
+      "users": [
+        { "name": "Alice", "role": 1 },
+        { "name": "Bob", "role": 2 },
+        { "name": "Charlie", "role": 1 }
+      ]
+    },
+    "err": true
   }
 ]

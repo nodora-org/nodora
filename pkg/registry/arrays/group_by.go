@@ -21,7 +21,7 @@ func groupBy() types.Func {
 			{
 				Name:        "fx",
 				Description: "A function that returns the grouping key for each element.",
-				Type:        types.NewLambdaType([]types.Type{types.AnyType}, types.AnyType),
+				Type:        types.NewLambdaType([]types.Type{types.AnyType}, types.StringType),
 				Required:    true,
 			},
 		},
@@ -54,7 +54,7 @@ func groupByImpl(args []core.Value) (core.Value, error) {
 	if !ok {
 		return core.U(), fmt.Errorf(
 			"expected %v for 'fx' argument, got %v",
-			types.NewLambdaType([]types.Type{types.AnyType}, types.AnyType),
+			types.NewLambdaType([]types.Type{types.AnyType}, types.StringType),
 			fx.Type(),
 		)
 	}
@@ -68,9 +68,15 @@ func groupByImpl(args []core.Value) (core.Value, error) {
 		if r.IsUndefined() {
 			return core.U(), nil
 		}
-		key := fmt.Sprintf("%v", r.ToRaw())
+		key, ok := r.AsString()
+		if !ok {
+			return core.U(), fmt.Errorf(
+				"expected %v grouping key from 'fx', got %v",
+				types.StringType,
+				r.Type(),
+			)
+		}
 		if group, ok := result[key]; ok {
-			// groups are only ever built here, so they are always arrays
 			existing, _ := group.AsArray()
 			result[key] = core.V(append(existing, v))
 		} else {
