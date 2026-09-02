@@ -53,6 +53,7 @@ type Rule struct {
 type EvaluationContext struct {
 	Slots     []core.Value
 	Emissions []EmittedSignal
+	Tracer    Tracer
 }
 
 type Expr interface {
@@ -61,6 +62,16 @@ type Expr interface {
 
 type RawExpr struct {
 	Expr
+}
+
+func (w RawExpr) Evaluate(ctx *EvaluationContext) (core.Value, error) {
+	if ctx.Tracer == nil {
+		return w.Expr.Evaluate(ctx)
+	}
+	ctx.Tracer.Enter(TraceNode{Kind: NodeExpr, Expr: w.Expr})
+	val, err := w.Expr.Evaluate(ctx)
+	ctx.Tracer.Exit(val, err)
+	return val, err
 }
 
 type ImmExpr struct {
@@ -336,6 +347,16 @@ func (le *LambdaExpr) Evaluate(ctx *EvaluationContext) (core.Value, error) {
 }
 
 func (le *LambdaExpr) Invoke(ctx *EvaluationContext, args []core.Value) (core.Value, error) {
+	if ctx.Tracer == nil {
+		return le.invoke(ctx, args)
+	}
+	ctx.Tracer.Enter(TraceNode{Kind: NodeLambda, Expr: le, Args: args})
+	val, err := le.invoke(ctx, args)
+	ctx.Tracer.Exit(val, err)
+	return val, err
+}
+
+func (le *LambdaExpr) invoke(ctx *EvaluationContext, args []core.Value) (core.Value, error) {
 	for i, p := range le.Params {
 		slotIdx := p.SymIndex
 		ctx.Slots[slotIdx] = args[i]
@@ -391,6 +412,25 @@ type Op struct {
 }
 
 func (op *Op) Execute(ctx *EvaluationContext) error {
+	if ctx.Tracer == nil {
+		return op.execute(ctx)
+	}
+
+	ctx.Tracer.Enter(TraceNode{Kind: NodeOp, Op: op})
+	err := op.execute(ctx)
+
+	var value core.Value
+	if op.Out != nil {
+		value = ctx.Slots[*op.Out]
+	} else {
+		value = core.U()
+	}
+
+	ctx.Tracer.Exit(value, err)
+	return err
+}
+
+func (op *Op) execute(ctx *EvaluationContext) error {
 	switch op.code {
 	case opcCopy:
 		val, err := op.Args[0].Evaluate(ctx)

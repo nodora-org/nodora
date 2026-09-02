@@ -80,7 +80,10 @@ func Eval(ctx context.Context, cmd *cli.Command) error {
 
 	var wg sync.WaitGroup
 	evaluator := evaluator.NewEvaluator(&ruleset)
-	evaluator.Debug = cmd.Bool("debug")
+	evaluator.Trace = cmd.Bool("trace")
+	traceOpts := nir.ReportOptions{
+		MaxLambdaFrames: cmd.Int("trace-lambda-frames"),
+	}
 
 	execFlags := cmd.StringSlice("exec")
 	if len(execFlags) > 0 {
@@ -128,16 +131,29 @@ func Eval(ctx context.Context, cmd *cli.Command) error {
 	result, err := evaluator.EvaluateRule(ruleName, input)
 	elapsed := time.Since(start)
 
+	if evaluator.Trace {
+		if result != nil && result.Trace != nil {
+			fmt.Print(result.Trace.Format(traceOpts))
+		}
+		if err != nil {
+			return err
+		}
+		wg.Wait()
+		return nil
+	}
+
 	if err != nil {
 		return err
-	} else {
-		var encoded, err = json.Marshal(result)
-		if err != nil {
-			return fmt.Errorf("JSON encoding error: %v", err)
-		}
-		fmt.Printf("\\(^_^)/ evaluation completed in %s\n---\n", formatDuration(elapsed))
-		fmt.Println(string(encoded))
 	}
+
+	encoded, err := json.Marshal(result)
+	if err != nil {
+		return fmt.Errorf("JSON encoding error: %v", err)
+	}
+	if !cmd.Bool("quiet") {
+		fmt.Printf("\\(^_^)/ evaluation completed in %s\n---\n", formatDuration(elapsed))
+	}
+	fmt.Println(string(encoded))
 
 	wg.Wait()
 	return nil

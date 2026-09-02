@@ -23,18 +23,19 @@ func (f SignalListenerFunc) Invoke(args []any) error {
 }
 
 type Evaluator struct {
+	Trace           bool
 	ruleset         *nir.Ruleset
 	signalListeners map[string][]SignalListener
-	Debug           bool
-	signalWG        *sync.WaitGroup
 	slotPool        sync.Pool
 	prepareOnce     sync.Once
 	prepareErr      error
+	signalWG        *sync.WaitGroup
 }
 
 type EvaluationResult struct {
 	Outputs map[string]any      `json:"outputs"`
 	Signals []nir.EmittedSignal `json:"emitted_signals"`
+	Trace   *nir.Trace          `json:"-"`
 }
 
 func NewEvaluator(ruleset *nir.Ruleset) *Evaluator {
@@ -95,9 +96,20 @@ func (e *Evaluator) EvaluateRule(ruleName string, input core.ValueMap) (*Evaluat
 		Emissions: []nir.EmittedSignal{},
 	}
 
-	for i, op := range rule.Ops {
-		if err := op.Execute(evalCtx); err != nil {
-			return nil, fmt.Errorf("execution error at op[%d]: %v", i, err)
+	var recorder *nir.Recorder
+	if e.Trace {
+		recorder = nir.NewRecorder()
+		evalCtx.Tracer = recorder
+	}
+
+	for i := range rule.Ops {
+		if err := rule.Ops[i].Execute(evalCtx); err != nil {
+			err = fmt.Errorf("execution error at op[%d]: %v", i, err)
+			if recorder == nil {
+				return nil, err
+			}
+			trace := nir.NewTrace(ruleName, rule, input, evalCtx, recorder.Root())
+			return &EvaluationResult{Trace: trace}, err
 		}
 	}
 
@@ -117,14 +129,16 @@ func (e *Evaluator) EvaluateRule(ruleName string, input core.ValueMap) (*Evaluat
 		e.invokeListeners(es.Name, es.Args, e.signalWG)
 	}
 
-	if e.Debug {
-		debugRule(ruleName, rule, input, evalCtx)
-	}
-
-	return &EvaluationResult{
+	result := &EvaluationResult{
 		Outputs: outputs,
 		Signals: evalCtx.Emissions,
-	}, nil
+	}
+
+	if recorder != nil {
+		result.Trace = nir.NewTrace(ruleName, rule, input, evalCtx, recorder.Root())
+	}
+
+	return result, nil
 }
 
 // Returns a pooled slot buffer, stored as a pointer to avoid boxing the slice.
@@ -186,39 +200,4 @@ func (e *Evaluator) GetSignalNames() []string {
 		names = append(names, name)
 	}
 	return names
-}
-
-func debugRule(ruleName string, rule *nir.Rule, input core.ValueMap, evalCtx *nir.EvaluationContext) {
-	fmt.Printf("=== rule %s ===\n", ruleName)
-
-	fmt.Printf("\nInputs (len = %d)\n", len(input))
-	for k, v := range input {
-		fmt.Printf("  %s: %v\n", k, v)
-	}
-
-	fmt.Printf("\nSlots (len = %d)\n", len(evalCtx.Slots))
-	for i, value := range evalCtx.Slots {
-		fmt.Printf("  [%d]: %v\n", i, value)
-	}
-
-	fmt.Printf("\nOutputs (len = %d)\n", len(rule.Outputs))
-	for outName, output := range rule.Outputs {
-		fmt.Printf("  [%d]: %s = %v\n", output.Sym, outName, evalCtx.Slots[output.Sym])
-	}
-
-	fmt.Printf("\nOperations (len = %d)\n", len(rule.Ops))
-	for i, op := range rule.Ops {
-		outStr := ""
-		if op.Out != nil {
-			outStr = fmt.Sprintf(" -> [%d]", *op.Out)
-		}
-		fmt.Printf("  %d: %s%v%s\n", i, op.Kind, op.Args, outStr)
-	}
-
-	fmt.Printf("\nSignals Emitted (len = %d)\n", len(evalCtx.Emissions))
-	for _, sig := range evalCtx.Emissions {
-		fmt.Printf("  %s: %v\n", sig.Name, sig.Args)
-	}
-
-	fmt.Println("================================")
 }

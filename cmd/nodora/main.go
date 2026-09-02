@@ -8,6 +8,7 @@ import (
 	"github.com/urfave/cli/v3"
 	version "nodora.org/nodora"
 	"nodora.org/nodora/cmd/nodora/actions"
+	"nodora.org/nodora/pkg/nir"
 	_ "nodora.org/nodora/pkg/registry/all"
 )
 
@@ -48,7 +49,21 @@ func main() {
 					&cli.StringFlag{Name: "rule", Aliases: []string{"r"}},
 					&cli.StringFlag{Name: "input-file", Aliases: []string{"i"}},
 					&cli.BoolFlag{Name: "stdin"},
-					&cli.BoolFlag{Name: "debug"},
+					&cli.BoolFlag{
+						Name:    "quiet",
+						Aliases: []string{"q"},
+						Usage:   "Print only the JSON result",
+					},
+					&cli.BoolFlag{
+						Name:    "trace",
+						Aliases: []string{"debug"},
+						Usage:   "Print a step-by-step evaluation report",
+					},
+					&cli.IntFlag{
+						Name:  "trace-lambda-frames",
+						Value: nir.DefaultMaxLambdaFrames,
+						Usage: "Max lambda invocations shown per call site in a trace",
+					},
 					&cli.StringSliceFlag{
 						Name:    "exec",
 						Aliases: []string{"e"},
