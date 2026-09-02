@@ -492,7 +492,15 @@ func (b *Builder) buildLambdaExpr(le *ast.LambdaExpr) exprResult {
 	}
 
 	bodyExpr := cb.buildExpr(le.Body)
-	_ = cb.materialize(bodyExpr)
+
+	materialized := false
+	if sym, ok := bodyExpr.expr.(*SymExpr); ok && len(cb.ops) > 0 {
+		last := cb.ops[len(cb.ops)-1]
+		materialized = last.Out != nil && *last.Out == sym.Index
+	}
+	if !materialized {
+		cb.materialize(bodyExpr)
+	}
 
 	// restore symbol index in parent builder
 	b.symIndex = cb.symIndex
