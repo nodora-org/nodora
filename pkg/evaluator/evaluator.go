@@ -142,17 +142,20 @@ func (e *Evaluator) EvaluateRule(ruleName string, input core.ValueMap) (*Evaluat
 }
 
 // Returns a pooled slot buffer, stored as a pointer to avoid boxing the slice.
+// Every slot starts undefined; the zero core.Value is null, not undefined.
 func (e *Evaluator) acquireSlots(n int) *[]core.Value {
 	p, _ := e.slotPool.Get().(*[]core.Value)
 	if p == nil {
 		s := make([]core.Value, n)
-		return &s
-	}
-	if cap(*p) < n {
+		p = &s
+	} else if cap(*p) < n {
 		*p = make([]core.Value, n)
 	} else {
 		*p = (*p)[:n]
-		clear(*p)
+	}
+	undef := core.U()
+	for i := range *p {
+		(*p)[i] = undef
 	}
 	return p
 }

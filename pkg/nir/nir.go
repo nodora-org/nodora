@@ -3,6 +3,8 @@ package nir
 import (
 	"encoding/json"
 	"fmt"
+	"maps"
+	"slices"
 
 	"nodora.org/nodora/pkg/core"
 	"nodora.org/nodora/pkg/types"
@@ -100,11 +102,19 @@ func (i *ArrExpr) Evaluate(ctx *EvaluationContext) (core.Value, error) {
 
 type ObjExpr struct {
 	Value map[string]RawExpr `json:"obj"`
+
+	// field keys in sorted order
+	keys []string
 }
 
 func (i *ObjExpr) Evaluate(ctx *EvaluationContext) (core.Value, error) {
+	keys := i.keys
+	if len(keys) != len(i.Value) {
+		keys = slices.Sorted(maps.Keys(i.Value))
+	}
 	obj := make(core.ValueMap, len(i.Value))
-	for k, v := range i.Value {
+	for _, k := range keys {
+		v := i.Value[k]
 		ev, err := v.Evaluate(ctx)
 		if err != nil {
 			return core.U(), err
@@ -218,7 +228,7 @@ func evaluateArrayAccess(from []core.Value, indexVal core.Value) (core.Value, er
 		return core.U(), fmt.Errorf("array index must be int, got %s", indexVal.Type())
 	}
 	if idx < 0 || idx >= len(from) {
-		return core.U(), fmt.Errorf("index %d out of bounds (length %d)", idx, len(from))
+		return core.U(), nil
 	}
 	return from[idx], nil
 }
@@ -357,6 +367,9 @@ func (le *LambdaExpr) Invoke(ctx *EvaluationContext, args []core.Value) (core.Va
 }
 
 func (le *LambdaExpr) invoke(ctx *EvaluationContext, args []core.Value) (core.Value, error) {
+	if len(args) < len(le.Params) {
+		return core.U(), fmt.Errorf("lambda expects %d argument(s), got %d", len(le.Params), len(args))
+	}
 	for i, p := range le.Params {
 		slotIdx := p.SymIndex
 		ctx.Slots[slotIdx] = args[i]
@@ -503,11 +516,19 @@ func performFloatOp(l, r float64, op *Op, ctx *EvaluationContext) error {
 		}
 		ctx.Slots[*op.Out] = core.Num(l / r)
 	case opcMod:
-		if r == 0 {
+		// integer modulo on the truncated operands; NaN or operands outside the
+		// int64 range are undefined, and a divisor in (-1, 1) truncates to
+		// zero, so it is a modulo by zero as well
+		if !core.InInt64Range(l) || !core.InInt64Range(r) {
+			ctx.Slots[*op.Out] = core.U()
+			return nil
+		}
+		ri := int64(r)
+		if ri == 0 {
 			ctx.Slots[*op.Out] = core.U() // mod (div) by zero is undefined
 			return nil
 		}
-		ctx.Slots[*op.Out] = core.Num(float64(int64(l) % int64(r)))
+		ctx.Slots[*op.Out] = core.Num(float64(int64(l) % ri))
 	case opcLt:
 		ctx.Slots[*op.Out] = core.Bool(l < r)
 	case opcGt:
@@ -574,6 +595,26 @@ func executeBinaryOp(op *Op, ctx *EvaluationContext) error {
 				return nil
 			}
 			ctx.Slots[*op.Out] = core.V(l + r)
+			return nil
+		case opcLt, opcGt, opcLte, opcGte:
+			// lexicographic by byte (UTF-8 code point order)
+			r, ok := rval.AsString()
+			if !ok {
+				ctx.Slots[*op.Out] = core.U()
+				return nil
+			}
+			var res bool
+			switch op.code {
+			case opcLt:
+				res = l < r
+			case opcGt:
+				res = l > r
+			case opcLte:
+				res = l <= r
+			case opcGte:
+				res = l >= r
+			}
+			ctx.Slots[*op.Out] = core.Bool(res)
 			return nil
 		default:
 			ctx.Slots[*op.Out] = core.U()

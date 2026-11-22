@@ -521,9 +521,11 @@ func (sc *SemanticAnalyzer) VisitBinaryExpr(be *ast.BinaryExpr) error {
 		}
 		be.Annotate(types.BoolType)
 	case "<", "<=", ">", ">=":
-		lok := sc.isType(leftType, types.NumberType)
-		rok := sc.isType(rightType, types.NumberType)
-		if !(lok && rok) {
+		// numbers compare numerically, strings lexicographically; mixing is an error
+		valid := sc.isType(leftType, types.NumberType, types.StringType) &&
+			sc.isType(rightType, types.NumberType, types.StringType) &&
+			sc.typesCompatible(leftType, rightType)
+		if !valid {
 			sc.addError(sc.errorAt(be, "operator '%s' cannot be applied to '%s' and '%s'", be.Op, leftType.String(), rightType.String()))
 		}
 		be.Annotate(types.BoolType)

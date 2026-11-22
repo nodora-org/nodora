@@ -14,7 +14,7 @@ func (v Value) AsInt() (int, bool) {
 	if !ok {
 		return 0, false
 	}
-	return int(f), true
+	return int(ToInt64(f)), true
 }
 
 func (v Value) AsIndex() (int, bool) {
@@ -22,7 +22,7 @@ func (v Value) AsIndex() (int, bool) {
 	if !ok || f != math.Trunc(f) {
 		return 0, false
 	}
-	return int(f), true
+	return int(ToInt64(f)), true
 }
 
 func (v Value) AsString() (string, bool) {

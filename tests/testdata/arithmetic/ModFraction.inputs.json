@@ -1,0 +1,6 @@
+[
+  { "input": { "a": 7, "b": 0.5 }, "expected": { "outputs": {} } },
+  { "input": { "a": 7, "b": -0.9 }, "expected": { "outputs": {} } },
+  { "input": { "a": 7, "b": 2.5 }, "expected": { "outputs": { "m": 1 } } },
+  { "input": { "a": -7, "b": 2 }, "expected": { "outputs": { "m": -1 } } }
+]

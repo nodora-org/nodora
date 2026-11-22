@@ -56,7 +56,7 @@ func sprintfImpl(args []core.Value) (core.Value, error) {
 			return core.U(), nil
 		}
 		// format compatibility
-		if f, ok := v.Raw.(float64); ok && f == math.Trunc(f) && !math.IsInf(f, 0) {
+		if f, ok := v.Raw.(float64); ok && f == math.Trunc(f) && core.InInt64Range(f) {
 			interfaceArgs[i] = int64(f)
 		} else {
 			interfaceArgs[i] = v.ToRaw()

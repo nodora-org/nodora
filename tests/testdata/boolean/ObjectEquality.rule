@@ -1,0 +1,5 @@
+rule ObjectEqualityRule {
+    out ab = input.a == input.b
+    out ba = input.b == input.a
+    out member = input.a in [input.b]
+}

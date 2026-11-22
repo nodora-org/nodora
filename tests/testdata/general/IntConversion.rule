@@ -1,0 +1,5 @@
+rule IntConversionRule {
+    out m = input.a % input.b
+    out sub = strings::substring("abc", input.start)
+    out sl = arrays::slice([1, 2, 3], input.start)
+}

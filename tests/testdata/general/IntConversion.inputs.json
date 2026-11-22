@@ -1,0 +1,18 @@
+[
+  {
+    "input": { "a": 1e300, "b": 100, "start": 1e19 },
+    "expected": { "outputs": { "sub": "", "sl": [] } }
+  },
+  {
+    "input": { "a": 7, "b": 1e300, "start": -1e19 },
+    "expected": { "outputs": { "sub": "abc", "sl": [1, 2, 3] } }
+  },
+  {
+    "input": { "a": -9.3e18, "b": 2, "start": 1 },
+    "expected": { "outputs": { "sub": "bc", "sl": [2, 3] } }
+  },
+  {
+    "input": { "a": 9007199254740993, "b": 10, "start": 0 },
+    "expected": { "outputs": { "m": 2, "sub": "abc", "sl": [1, 2, 3] } }
+  }
+]

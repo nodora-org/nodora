@@ -31,6 +31,6 @@ func formatRFC3339Impl(args []core.Value) (core.Value, error) {
 		return core.U(), fmt.Errorf("expected number for 'ts' argument, got %v", v.Type())
 	}
 
-	t := gotime.UnixMilli(int64(ms)).UTC()
+	t := gotime.UnixMilli(core.ToInt64(ms)).UTC()
 	return core.V(t.Format(gotime.RFC3339Nano)), nil
 }

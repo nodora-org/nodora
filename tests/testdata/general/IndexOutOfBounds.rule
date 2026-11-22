@@ -1,0 +1,8 @@
+rule IndexOutOfBoundsRule {
+    out direct = input.arr[5]
+    out negative = input.arr[-1]
+    out guarded_and = len(input.arr) > 5 && input.arr[5] > 0
+    out guarded_or = len(input.arr) <= 5 || input.arr[5] > 0
+    out ternary_plain = len(input.arr) > 5 ? input.arr[5] : 0
+    out ternary_expr = len(input.arr) > 5 ? input.arr[5] + 1 : 0
+}

@@ -94,6 +94,24 @@ func ToInt(v any) (int, bool) {
 	return 0, false
 }
 
+const two63 = 9223372036854775808.0
+
+func InInt64Range(f float64) bool {
+	return f >= -two63 && f < two63 // false for NaN
+}
+
+func ToInt64(f float64) int64 {
+	switch {
+	case math.IsNaN(f):
+		return 0
+	case f >= two63:
+		return math.MaxInt64
+	case f < -two63:
+		return math.MinInt64
+	}
+	return int64(f)
+}
+
 const epsilon = 1e-9
 
 func floatEquals(a, b float64) bool {
@@ -107,7 +125,7 @@ func floatEquals(a, b float64) bool {
 func SafeEquals(a, b Value) bool {
 	switch av := a.Raw.(type) {
 	case nil:
-		return b.Raw == nil
+		return b.Raw == nil && a.Undefined == b.Undefined
 	case string:
 		bv, ok := b.AsString()
 		return ok && av == bv
@@ -142,8 +160,8 @@ func SafeEquals(a, b Value) bool {
 		if !ok {
 			return false
 		}
-		if &av == &bv {
-			return true
+		if len(av) != len(bv) {
+			return false
 		}
 		for k, v := range av {
 			bvv, exists := bv[k]

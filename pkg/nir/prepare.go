@@ -2,6 +2,8 @@ package nir
 
 import (
 	"fmt"
+	"maps"
+	"slices"
 	"strings"
 
 	"nodora.org/nodora/pkg/registry"
@@ -65,6 +67,9 @@ func (p *Ruleset) Prepare() error {
 
 func (p *Ruleset) prepare() error {
 	for name, rule := range p.Rules {
+		if rule.Symslots < 1 {
+			return fmt.Errorf("rule %s: symslots must be at least 1 (slot 0 holds the input), got %d", name, rule.Symslots)
+		}
 		if err := prepareOps(rule.Ops, rule.Symslots); err != nil {
 			return fmt.Errorf("rule %s: %w", name, err)
 		}
@@ -142,6 +147,7 @@ func prepareExpr(e Expr, symslots int) error {
 		}
 
 	case *ObjExpr:
+		ex.keys = slices.Sorted(maps.Keys(ex.Value))
 		for k := range ex.Value {
 			if err := prepareExpr(ex.Value[k].Expr, symslots); err != nil {
 				return err
@@ -158,6 +164,9 @@ func prepareExpr(e Expr, symslots int) error {
 
 	case *SelExpr:
 		ex.keys = strings.Split(ex.Path, ".")
+		if dyn := countDynamic(ex.keys); dyn != len(ex.Exprs) {
+			return fmt.Errorf("path %q has %d dynamic segment(s) but %d index expression(s)", ex.Path, dyn, len(ex.Exprs))
+		}
 		if err := prepareExpr(ex.From.Expr, symslots); err != nil {
 			return err
 		}
@@ -180,9 +189,23 @@ func prepareExpr(e Expr, symslots int) error {
 		}
 
 	case *LambdaExpr:
+		for _, p := range ex.Params {
+			if p.SymIndex < 0 || p.SymIndex >= symslots {
+				return fmt.Errorf("lambda parameter slot %d out of bounds [0,%d)", p.SymIndex, symslots)
+			}
+		}
 		if err := prepareOps(ex.Ops, symslots); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func countDynamic(keys []string) (n int) {
+	for _, k := range keys {
+		if k == "$" {
+			n++
+		}
+	}
+	return
 }

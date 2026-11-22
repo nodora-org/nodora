@@ -1,0 +1,25 @@
+[
+  {
+    "input": { "arr": [1, 2] },
+    "expected": {
+      "outputs": {
+        "guarded_and": false,
+        "guarded_or": true,
+        "ternary_plain": 0,
+        "ternary_expr": 0
+      }
+    }
+  },
+  {
+    "input": { "arr": [1, 2, 3, 4, 5, 6] },
+    "expected": {
+      "outputs": {
+        "direct": 6,
+        "guarded_and": true,
+        "guarded_or": true,
+        "ternary_plain": 6,
+        "ternary_expr": 7
+      }
+    }
+  }
+]

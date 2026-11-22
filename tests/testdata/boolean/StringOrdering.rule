@@ -1,0 +1,9 @@
+rule StringOrderingRule {
+    out lt = input.a < input.b
+    out lte = input.a <= input.b
+    out gt = input.a > input.b
+    out gte = input.a >= input.b
+    out literal = "apple" < "banana"
+    out iso_date = input.date < "2026-01-01"
+    out mixed = input.a < input.n
+}

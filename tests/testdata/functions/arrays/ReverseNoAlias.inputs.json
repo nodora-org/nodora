@@ -1,0 +1,6 @@
+[
+  {
+    "input": { "xs": [1, 2, 3] },
+    "expected": { "outputs": { "reversed": [3, 2, 1], "original": [1, 2, 3] } }
+  }
+]

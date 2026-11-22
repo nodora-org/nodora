@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"strings"
 	gotime "time"
+
+	"nodora.org/nodora/pkg/core"
 )
 
 var durationRe = regexp.MustCompile(`(\d+)(ms|[smhdw])`)
@@ -62,8 +64,8 @@ func unitToDuration(unit string) (gotime.Duration, error) {
 }
 
 func msToTime(ms float64) gotime.Time {
-	sec := int64(ms / 1000)
-	nsec := int64((ms - float64(sec)*1000) * 1e6)
+	sec := core.ToInt64(ms / 1000)
+	nsec := core.ToInt64((ms - float64(sec)*1000) * 1e6)
 	return gotime.Unix(sec, nsec).UTC()
 }
 

@@ -1,0 +1,10 @@
+[
+  {
+    "input": { "a": { "x": 1 }, "b": { "x": 1, "y": 2 } },
+    "expected": { "outputs": { "ab": false, "ba": false, "member": false } }
+  },
+  {
+    "input": { "a": { "x": 1, "y": 2 }, "b": { "y": 2, "x": 1 } },
+    "expected": { "outputs": { "ab": true, "ba": true, "member": true } }
+  }
+]

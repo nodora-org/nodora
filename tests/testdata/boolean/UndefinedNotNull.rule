@@ -1,0 +1,5 @@
+rule UndefinedNotNullRule {
+    out has_null = null in [input.missing]
+    out arrays_equal = [input.missing] == [null]
+    out unique_len = len(arrays::unique([input.missing, null]))
+}

@@ -1,0 +1,20 @@
+[
+  {
+    "input": { "a": "abc", "b": "abd", "date": "2025-12-31", "n": 1 },
+    "expected": {
+      "outputs": { "lt": true, "lte": true, "gt": false, "gte": false, "literal": true, "iso_date": true }
+    }
+  },
+  {
+    "input": { "a": "b", "b": "b", "date": "2026-01-01T00:00:00Z", "n": 1 },
+    "expected": {
+      "outputs": { "lt": false, "lte": true, "gt": false, "gte": true, "literal": true, "iso_date": false }
+    }
+  },
+  {
+    "input": { "a": "Zebra", "b": "apple", "date": "2026-03-01", "n": 1 },
+    "expected": {
+      "outputs": { "lt": true, "lte": true, "gt": false, "gte": false, "literal": true, "iso_date": false }
+    }
+  }
+]

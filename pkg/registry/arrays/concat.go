@@ -2,6 +2,7 @@ package arrays
 
 import (
 	"fmt"
+	"slices"
 
 	"nodora.org/nodora/pkg/core"
 	"nodora.org/nodora/pkg/types"
@@ -48,5 +49,5 @@ func concatImpl(args []core.Value) (core.Value, error) {
 		)
 	}
 
-	return core.V(append(arr1, arr2...)), nil
+	return core.V(slices.Concat(arr1, arr2)), nil
 }

@@ -1,0 +1,4 @@
+rule ReverseNoAliasRule {
+    out reversed = arrays::reverse(input.xs)
+    out original = input.xs
+}

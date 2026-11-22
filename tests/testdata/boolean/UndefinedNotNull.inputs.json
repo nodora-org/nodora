@@ -1,0 +1,10 @@
+[
+  {
+    "input": {},
+    "expected": { "outputs": { "has_null": false, "arrays_equal": false, "unique_len": 2 } }
+  },
+  {
+    "input": { "missing": null },
+    "expected": { "outputs": { "has_null": true, "arrays_equal": true, "unique_len": 1 } }
+  }
+]

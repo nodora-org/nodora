@@ -36,6 +36,7 @@ func reverseImpl(args []core.Value) (core.Value, error) {
 		)
 	}
 
-	slices.Reverse(arrVal)
-	return core.V(arrVal), nil
+	result := slices.Clone(arrVal)
+	slices.Reverse(result)
+	return core.V(result), nil
 }
